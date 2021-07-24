@@ -21,7 +21,15 @@ class Dji {
     return battery?.level;
   }
 
-  static Future<void> get registerDjiApp async {
-    await _api?.registerDjiApp();
+  static Future<void> get registerApp async {
+    await _api?.registerApp();
+  }
+
+  static Future<void> get connectDrone async {
+    await _api?.connectDrone();
+  }
+
+  static Future<void> get disconnectDrone async {
+    await _api?.disconnectDrone();
   }
 }

@@ -26,7 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 @protocol FLTDjiHostApi
 -(nullable FLTVersion *)getPlatformVersion:(FlutterError *_Nullable *_Nonnull)error;
 -(nullable FLTBattery *)getBatteryLevel:(FlutterError *_Nullable *_Nonnull)error;
--(void)registerDjiApp:(FlutterError *_Nullable *_Nonnull)error;
+-(void)registerApp:(FlutterError *_Nullable *_Nonnull)error;
+-(void)connectDrone:(FlutterError *_Nullable *_Nonnull)error;
+-(void)disconnectDrone:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTDjiHostApi> _Nullable api);

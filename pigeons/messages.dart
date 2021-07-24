@@ -9,14 +9,16 @@ class Battery {
 }
 
 class Drone {
-  String droneStatus = 'Disconnected';
+  String status = 'Disconnected'; // Disconnected, Registered, Connected
 }
 
 @HostApi()
 abstract class DjiHostApi {
   Version getPlatformVersion();
   Battery getBatteryLevel();
-  void registerDjiApp();
+  void registerApp();
+  void connectDrone();
+  void disconnectDrone();
 }
 
 @FlutterApi()

@@ -27,6 +27,20 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		FLTDjiHostApiSetup(messenger, api)
 		fltDjiFlutterApi = FLTDjiFlutterApi.init(binaryMessenger: messenger)
 	}
+
+	private func _fltSetDroneStatus(_ status: String) {
+			let fltDrone = FLTDrone()
+			fltDrone.droneStatus = status
+			
+			SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
+				if let error = e {
+					print("=== Error: SetDroneStatus Closure Error")
+					NSLog("error: %@", error.localizedDescription)
+				} else {
+					print("=== setDroneStatus Closure Success")
+				}
+			}
+	}
 	
 	//MARK: - Dji Plugin Methods
 
@@ -52,39 +66,40 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		return result
 	}
 
-	public func registerDjiApp(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== registerDjiApp Started")
+	public func registerApp(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		print("=== registerApp Started")
 		DJISDKManager.registerApp(with: self)		
 	}
-	
+
+	public func connectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		print("=== connectDrone Started")
+		DJISDKManager.startConnectionToProduct()
+	}
+
+	public func disconnectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		print("=== connectDrone Started")
+		DJISDKManager.stopConnectionToProduct()
+	}
+
 	//MARK: - DJISDKManagerDelegate Methods
     
 	public func productConnected(_ product: DJIBaseProduct?) {
 		print("=== Product Connected")
+		_fltSetDroneStatus("Connected")
 	}
 
 	public func productDisconnected() {
 		print("=== Product Disconnected")
+		_fltSetDroneStatus("Disconnected")
 	}
 
 	public func appRegisteredWithError(_ error: Error?) {
 		if (error != nil) {
 			print("=== Error: Register app failed! Please enter your app key and check the network.")
 		} else {
-			DJISDKManager.startConnectionToProduct()
 			print("=== Register App Successed!")
 			
-			let fltDrone = FLTDrone()
-			fltDrone.droneStatus = "Connected"
-			
-			SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
-				if let error = e {
-					print("=== Error: SetDroneStatus Closure Error")
-					NSLog("error: %@", error.localizedDescription)
-				} else {
-					print("=== setDroneStatus Closure Success")
-				}
-			}
+			_fltSetDroneStatus("Registered")
 		}
 	}
 
