@@ -104,7 +104,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('DJI Flutter Plugin Example'),
         ),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.start,
