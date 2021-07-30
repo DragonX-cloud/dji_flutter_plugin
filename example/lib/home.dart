@@ -15,7 +15,10 @@ class HomeWidget extends StatefulWidget {
 class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   int _batteryLevel = -1;
-  String _droneStatus = 'Disconnected';
+  String? _droneStatus = 'Disconnected';
+  double? _droneAltitude = 0.0;
+  double? _droneLatitude = 0.0;
+  double? _droneLongitude = 0.0;
 
   @override
   void initState() {
@@ -28,10 +31,13 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   @override
   void setDroneStatus(Drone drone) async {
     setState(() {
-      _droneStatus = drone.droneStatus ?? 'Disconnected';
+      _droneStatus = drone.status ?? 'Disconnected';
+      _droneAltitude = drone.altitude;
+      _droneLatitude = drone.latitude;
+      _droneLongitude = drone.longitude;
     });
 
-    if (drone.droneStatus == 'Registered') {
+    if (drone.status == 'Registered') {
       await Dji.connectDrone;
     }
   }
@@ -163,48 +169,23 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                         padding: const EdgeInsets.all(kSpacer),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Running on',
-                                  style: Theme.of(context).textTheme.bodyText2,
-                                ),
-                                Text(
-                                  '$_platformVersion',
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Battery Level',
-                                  style: Theme.of(context).textTheme.bodyText2,
-                                ),
-                                Text(
-                                  '$_batteryLevel',
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                ),
-                              ],
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Text(
-                                  'Drone Status',
-                                  style: Theme.of(context).textTheme.bodyText2,
-                                ),
-                                Text(
-                                  '$_droneStatus',
-                                  style: Theme.of(context).textTheme.bodyText1,
-                                ),
-                              ],
-                            ),
+                            dronePropertyRow(
+                                label: 'Running on', value: _platformVersion),
+                            dronePropertyRow(
+                                label: 'Battery Level',
+                                value: _batteryLevel.toString()),
+                            dronePropertyRow(
+                                label: 'Drone Status',
+                                value: _droneStatus ?? ''),
+                            dronePropertyRow(
+                                label: 'Altitude',
+                                value: _droneAltitude.toString()),
+                            dronePropertyRow(
+                                label: 'Latitude',
+                                value: _droneLatitude.toString()),
+                            dronePropertyRow(
+                                label: 'Longitude',
+                                value: _droneLongitude.toString()),
                           ],
                         ),
                       ),
@@ -216,6 +197,34 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
           ],
         ),
       ),
+    );
+  }
+}
+
+class dronePropertyRow extends StatelessWidget {
+  const dronePropertyRow({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyText2,
+        ),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyText1,
+        ),
+      ],
     );
   }
 }

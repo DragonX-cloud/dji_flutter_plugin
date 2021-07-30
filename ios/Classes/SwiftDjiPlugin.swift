@@ -17,9 +17,10 @@ import Flutter
 import UIKit
 import DJISDK
 
-public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate {
+public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate {
 	
 	static var fltDjiFlutterApi : FLTDjiFlutterApi?
+	let fltDrone = FLTDrone()
 	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -29,17 +30,16 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 
 	private func _fltSetDroneStatus(_ status: String) {
-			let fltDrone = FLTDrone()
-			fltDrone.droneStatus = status
-			
-			SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
-				if let error = e {
-					print("=== Error: SetDroneStatus Closure Error")
-					NSLog("error: %@", error.localizedDescription)
-				} else {
-					print("=== setDroneStatus Closure Success")
-				}
+		fltDrone.status = status
+		
+		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
+			if let error = e {
+				print("=== Error: SetDroneStatus Closure Error")
+				NSLog("error: %@", error.localizedDescription)
+			} else {
+				print("=== setDroneStatus Closure Success")
 			}
+		}
 	}
 	
 	//MARK: - Dji Plugin Methods
@@ -105,6 +105,40 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	public func didUpdateDatabaseDownloadProgress(_ progress: Progress) {
 		print("Downloading database: \(progress.completedUnitCount) / \(progress.totalUnitCount)")
+	}
+	
+	//MARK: - DJIFlightController Methods
+	
+	public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
+		var _droneAltitude: NSNumber = 0
+		var _droneLatitude: NSNumber = 0
+		var _droneLongitude: NSNumber = 0
+		
+		if let altitude = state.aircraftLocation?.altitude {
+			_droneAltitude = altitude as NSNumber
+		}
+		
+		if let latitude = state.aircraftLocation?.coordinate.latitude {
+			_droneLatitude = latitude as NSNumber
+		}
+		
+		if let longitude = state.aircraftLocation?.coordinate.longitude {
+			_droneLongitude = longitude as NSNumber
+		}
+		
+		// Updating Flutter
+		fltDrone.altitude = _droneAltitude
+		fltDrone.latitude = _droneLatitude
+		fltDrone.longitude = _droneLongitude
+		
+		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
+			if let error = e {
+				print("=== Error: SetDroneStatus Closure Error")
+				NSLog("error: %@", error.localizedDescription)
+			} else {
+				print("=== setDroneStatus Closure Success")
+			}
+		}
 	}
 
 }

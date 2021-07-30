@@ -40,18 +40,27 @@ class Battery {
 }
 
 class Drone {
-  String? droneStatus;
+  String? status;
+  double? altitude;
+  double? latitude;
+  double? longitude;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
-    pigeonMap['droneStatus'] = droneStatus;
+    pigeonMap['status'] = status;
+    pigeonMap['altitude'] = altitude;
+    pigeonMap['latitude'] = latitude;
+    pigeonMap['longitude'] = longitude;
     return pigeonMap;
   }
 
   static Drone decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return Drone()
-      ..droneStatus = pigeonMap['droneStatus'] as String?;
+      ..status = pigeonMap['status'] as String?
+      ..altitude = pigeonMap['altitude'] as double?
+      ..latitude = pigeonMap['latitude'] as double?
+      ..longitude = pigeonMap['longitude'] as double?;
   }
 }
 

@@ -10,6 +10,9 @@ class Battery {
 
 class Drone {
   String status = 'Disconnected'; // Disconnected, Registered, Connected
+  double altitude = 0.0;
+  double latitude = 0.0;
+  double longitude = 0.0;
 }
 
 @HostApi()

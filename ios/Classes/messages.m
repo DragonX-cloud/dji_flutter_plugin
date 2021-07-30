@@ -66,14 +66,26 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
 @implementation FLTDrone
 +(FLTDrone*)fromMap:(NSDictionary*)dict {
   FLTDrone* result = [[FLTDrone alloc] init];
-  result.droneStatus = dict[@"droneStatus"];
-  if ((NSNull *)result.droneStatus == [NSNull null]) {
-    result.droneStatus = nil;
+  result.status = dict[@"status"];
+  if ((NSNull *)result.status == [NSNull null]) {
+    result.status = nil;
+  }
+  result.altitude = dict[@"altitude"];
+  if ((NSNull *)result.altitude == [NSNull null]) {
+    result.altitude = nil;
+  }
+  result.latitude = dict[@"latitude"];
+  if ((NSNull *)result.latitude == [NSNull null]) {
+    result.latitude = nil;
+  }
+  result.longitude = dict[@"longitude"];
+  if ((NSNull *)result.longitude == [NSNull null]) {
+    result.longitude = nil;
   }
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.droneStatus ? self.droneStatus : [NSNull null]), @"droneStatus", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.status ? self.status : [NSNull null]), @"status", (self.altitude ? self.altitude : [NSNull null]), @"altitude", (self.latitude ? self.latitude : [NSNull null]), @"latitude", (self.longitude ? self.longitude : [NSNull null]), @"longitude", nil];
 }
 @end
 
