@@ -1,6 +1,8 @@
 # dji
+## A Flutter plugin for DJI SDK.
+This open source project intends to bring the DJI SDK functionalities into Flutter.
 
-A Flutter plugin for DJI SDK.
+**// WORK IN PROGRESS**
 
 ## Plugin Creation
 
