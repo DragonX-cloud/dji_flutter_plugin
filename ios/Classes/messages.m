@@ -70,6 +70,10 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
   if ((NSNull *)result.status == [NSNull null]) {
     result.status = nil;
   }
+  result.batteryPercent = dict[@"batteryPercent"];
+  if ((NSNull *)result.batteryPercent == [NSNull null]) {
+    result.batteryPercent = nil;
+  }
   result.altitude = dict[@"altitude"];
   if ((NSNull *)result.altitude == [NSNull null]) {
     result.altitude = nil;
@@ -101,7 +105,7 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.status ? self.status : [NSNull null]), @"status", (self.altitude ? self.altitude : [NSNull null]), @"altitude", (self.latitude ? self.latitude : [NSNull null]), @"latitude", (self.longitude ? self.longitude : [NSNull null]), @"longitude", (self.speed ? self.speed : [NSNull null]), @"speed", (self.roll ? self.roll : [NSNull null]), @"roll", (self.pitch ? self.pitch : [NSNull null]), @"pitch", (self.yaw ? self.yaw : [NSNull null]), @"yaw", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.status ? self.status : [NSNull null]), @"status", (self.batteryPercent ? self.batteryPercent : [NSNull null]), @"batteryPercent", (self.altitude ? self.altitude : [NSNull null]), @"altitude", (self.latitude ? self.latitude : [NSNull null]), @"latitude", (self.longitude ? self.longitude : [NSNull null]), @"longitude", (self.speed ? self.speed : [NSNull null]), @"speed", (self.roll ? self.roll : [NSNull null]), @"roll", (self.pitch ? self.pitch : [NSNull null]), @"pitch", (self.yaw ? self.yaw : [NSNull null]), @"yaw", nil];
 }
 @end
 

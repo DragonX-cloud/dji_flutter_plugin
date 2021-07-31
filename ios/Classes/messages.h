@@ -21,6 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTDrone : NSObject
 @property(nonatomic, copy, nullable) NSString * status;
+@property(nonatomic, strong, nullable) NSNumber * batteryPercent;
 @property(nonatomic, strong, nullable) NSNumber * altitude;
 @property(nonatomic, strong, nullable) NSNumber * latitude;
 @property(nonatomic, strong, nullable) NSNumber * longitude;

@@ -41,6 +41,7 @@ class Battery {
 
 class Drone {
   String? status;
+  double? batteryPercent;
   double? altitude;
   double? latitude;
   double? longitude;
@@ -52,6 +53,7 @@ class Drone {
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
     pigeonMap['status'] = status;
+    pigeonMap['batteryPercent'] = batteryPercent;
     pigeonMap['altitude'] = altitude;
     pigeonMap['latitude'] = latitude;
     pigeonMap['longitude'] = longitude;
@@ -66,6 +68,7 @@ class Drone {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return Drone()
       ..status = pigeonMap['status'] as String?
+      ..batteryPercent = pigeonMap['batteryPercent'] as double?
       ..altitude = pigeonMap['altitude'] as double?
       ..latitude = pigeonMap['latitude'] as double?
       ..longitude = pigeonMap['longitude'] as double?

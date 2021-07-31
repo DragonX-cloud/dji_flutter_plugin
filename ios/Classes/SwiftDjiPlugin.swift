@@ -17,7 +17,7 @@ import Flutter
 import UIKit
 import DJISDK
 
-public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate {
+public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate {
 	
 	static var fltDjiFlutterApi : FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
@@ -93,7 +93,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		aircraft?.flightController?.startLanding(completion: nil)
 	}
 	
-	//MARK: - DJISDKManagerDelegate Methods
+	//MARK: - DJISDKManager Delegate Methods
     
 	public func productConnected(_ product: DJIBaseProduct?) {
 		print("=== Product Connected")
@@ -119,7 +119,24 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		print("Downloading database: \(progress.completedUnitCount) / \(progress.totalUnitCount)")
 	}
 	
-	//MARK: - DJIFlightController Methods
+	//MARK: - DJIBattery Delegate Methods
+	
+	public func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
+		// Updating Flutter
+		fltDrone.batteryPercent = state.chargeRemainingInPercent as NSNumber
+		
+		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
+			if let error = e {
+				print("=== Error: SetDroneStatus Closure Error")
+				NSLog("error: %@", error.localizedDescription)
+			} else {
+				print("=== setDroneStatus Closure Success")
+			}
+		}
+		
+	}
+	
+	//MARK: - DJIFlightController Delegate Methods
 	
 	public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
 		var _droneAltitude: NSNumber = 0

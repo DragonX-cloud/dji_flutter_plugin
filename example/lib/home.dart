@@ -14,8 +14,9 @@ class HomeWidget extends StatefulWidget {
 
 class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
-  int _batteryLevel = -1;
+  // int _batteryLevel = -1;
   String? _droneStatus = 'Disconnected';
+  double? _droneBatteryPercent = 0.0;
   double? _droneAltitude = 0.0;
   double? _droneLatitude = 0.0;
   double? _droneLongitude = 0.0;
@@ -37,6 +38,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
       _droneAltitude = drone.altitude;
+      _droneBatteryPercent = drone.batteryPercent;
       _droneLatitude = drone.latitude;
       _droneLongitude = drone.longitude;
       _droneSpeed = drone.speed;
@@ -76,7 +78,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
 
     setState(() {
       _platformVersion = platformVersion;
-      _batteryLevel = batteryLevel;
+      // _batteryLevel = batteryLevel;
     });
   }
 
@@ -217,13 +219,17 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                               label: 'Running on',
                               value: _platformVersion,
                             ),
-                            dronePropertyRow(
-                              label: 'Battery Level',
-                              value: _batteryLevel.toString(),
-                            ),
+                            // dronePropertyRow(
+                            //   label: 'Battery Level',
+                            //   value: _batteryLevel.toString(),
+                            // ),
                             dronePropertyRow(
                               label: 'Drone Status',
                               value: _droneStatus ?? '',
+                            ),
+                            dronePropertyRow(
+                              label: 'Drone Battery',
+                              value: _droneBatteryPercent.toString() + ' %',
                             ),
                             dronePropertyRow(
                               label: 'Altitude',
