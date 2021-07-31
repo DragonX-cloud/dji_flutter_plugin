@@ -24,6 +24,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) NSNumber * altitude;
 @property(nonatomic, strong, nullable) NSNumber * latitude;
 @property(nonatomic, strong, nullable) NSNumber * longitude;
+@property(nonatomic, strong, nullable) NSNumber * speed;
+@property(nonatomic, strong, nullable) NSNumber * roll;
+@property(nonatomic, strong, nullable) NSNumber * pitch;
+@property(nonatomic, strong, nullable) NSNumber * yaw;
 @end
 
 @protocol FLTDjiHostApi
@@ -32,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)registerApp:(FlutterError *_Nullable *_Nonnull)error;
 -(void)connectDrone:(FlutterError *_Nullable *_Nonnull)error;
 -(void)disconnectDrone:(FlutterError *_Nullable *_Nonnull)error;
+-(void)takeOff:(FlutterError *_Nullable *_Nonnull)error;
+-(void)land:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTDjiHostApi> _Nullable api);

@@ -22,6 +22,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	static var fltDjiFlutterApi : FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
 	
+	var aircraft = DJISDKManager.product() as? DJIAircraft
+	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger : FlutterBinaryMessenger = registrar.messenger()
 		let api : FLTDjiHostApi = SwiftDjiPlugin.init()
@@ -67,20 +69,30 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 
 	public func registerApp(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== registerApp Started")
-		DJISDKManager.registerApp(with: self)		
+		print("=== Register App Started")
+		DJISDKManager.registerApp(with: self)
 	}
 
 	public func connectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== connectDrone Started")
+		print("=== Connect Drone Started")
 		DJISDKManager.startConnectionToProduct()
 	}
-
+	
 	public func disconnectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== connectDrone Started")
+		print("=== Disconnect Drone Started")
 		DJISDKManager.stopConnectionToProduct()
 	}
-
+	
+	public func takeOff(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		print("=== Takeoff Started")
+		aircraft?.flightController?.startTakeoff(completion: nil)
+	}
+	
+	public func land(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		print("=== Landing Started")
+		aircraft?.flightController?.startLanding(completion: nil)
+	}
+	
 	//MARK: - DJISDKManagerDelegate Methods
     
 	public func productConnected(_ product: DJIBaseProduct?) {
@@ -113,6 +125,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		var _droneAltitude: NSNumber = 0
 		var _droneLatitude: NSNumber = 0
 		var _droneLongitude: NSNumber = 0
+		var _droneSpeed: NSNumber = 0
+		var _droneRoll: NSNumber = 0
+		var _dronePitch: NSNumber = 0
+		var _droneYaw: NSNumber = 0
 		
 		if let altitude = state.aircraftLocation?.altitude {
 			_droneAltitude = altitude as NSNumber
@@ -126,10 +142,22 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			_droneLongitude = longitude as NSNumber
 		}
 		
+		if let speed = state.aircraftLocation?.speed {
+			_droneSpeed = speed as NSNumber
+		}
+		
+		_droneRoll = state.attitude.roll as NSNumber
+		_dronePitch = state.attitude.pitch as NSNumber
+		_droneYaw = state.attitude.yaw as NSNumber
+		
 		// Updating Flutter
 		fltDrone.altitude = _droneAltitude
 		fltDrone.latitude = _droneLatitude
 		fltDrone.longitude = _droneLongitude
+		fltDrone.speed = _droneSpeed
+		fltDrone.roll = _droneRoll
+		fltDrone.pitch = _dronePitch
+		fltDrone.yaw = _droneYaw
 		
 		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
 			if let error = e {
@@ -140,6 +168,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			}
 		}
 	}
-
+	
 }
 

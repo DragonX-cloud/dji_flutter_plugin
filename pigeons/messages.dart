@@ -13,6 +13,10 @@ class Drone {
   double altitude = 0.0;
   double latitude = 0.0;
   double longitude = 0.0;
+  double speed = 0.0;
+  double roll = 0.0;
+  double pitch = 0.0;
+  double yaw = 0.0;
 }
 
 @HostApi()
@@ -22,6 +26,8 @@ abstract class DjiHostApi {
   void registerApp();
   void connectDrone();
   void disconnectDrone();
+  void takeOff();
+  void land();
 }
 
 @FlutterApi()

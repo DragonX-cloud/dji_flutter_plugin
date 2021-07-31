@@ -32,4 +32,12 @@ class Dji {
   static Future<void> get disconnectDrone async {
     await _api?.disconnectDrone();
   }
+
+  static Future<void> get takeOff async {
+    await _api?.takeOff();
+  }
+
+  static Future<void> get land async {
+    await _api?.land();
+  }
 }

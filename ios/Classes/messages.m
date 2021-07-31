@@ -82,10 +82,26 @@ static NSDictionary<NSString*, id>* wrapResult(NSDictionary *result, FlutterErro
   if ((NSNull *)result.longitude == [NSNull null]) {
     result.longitude = nil;
   }
+  result.speed = dict[@"speed"];
+  if ((NSNull *)result.speed == [NSNull null]) {
+    result.speed = nil;
+  }
+  result.roll = dict[@"roll"];
+  if ((NSNull *)result.roll == [NSNull null]) {
+    result.roll = nil;
+  }
+  result.pitch = dict[@"pitch"];
+  if ((NSNull *)result.pitch == [NSNull null]) {
+    result.pitch = nil;
+  }
+  result.yaw = dict[@"yaw"];
+  if ((NSNull *)result.yaw == [NSNull null]) {
+    result.yaw = nil;
+  }
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.status ? self.status : [NSNull null]), @"status", (self.altitude ? self.altitude : [NSNull null]), @"altitude", (self.latitude ? self.latitude : [NSNull null]), @"latitude", (self.longitude ? self.longitude : [NSNull null]), @"longitude", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.status ? self.status : [NSNull null]), @"status", (self.altitude ? self.altitude : [NSNull null]), @"altitude", (self.latitude ? self.latitude : [NSNull null]), @"latitude", (self.longitude ? self.longitude : [NSNull null]), @"longitude", (self.speed ? self.speed : [NSNull null]), @"speed", (self.roll ? self.roll : [NSNull null]), @"roll", (self.pitch ? self.pitch : [NSNull null]), @"pitch", (self.yaw ? self.yaw : [NSNull null]), @"yaw", nil];
 }
 @end
 
@@ -163,6 +179,38 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTDjiHos
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         FlutterError *error;
         [api disconnectDrone:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.takeOff"
+        binaryMessenger:binaryMessenger];
+    if (api) {
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api takeOff:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.land"
+        binaryMessenger:binaryMessenger];
+    if (api) {
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api land:&error];
         callback(wrapResult(nil, error));
       }];
     }
