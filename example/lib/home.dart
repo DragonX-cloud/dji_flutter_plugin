@@ -35,6 +35,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   // This function is triggered by the Native Host side whenever the Drone Status is changed.
   @override
   void setDroneStatus(Drone drone) async {
+    print('=== setDroneStatus triggered');
+
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
       _droneAltitude = drone.altitude;
@@ -47,9 +49,9 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
       _droneYaw = drone.yaw;
     });
 
-    if (drone.status == 'Registered') {
-      await Dji.connectDrone;
-    }
+    // if (drone.status == 'Registered') {
+    //   await Dji.connectDrone;
+    // }
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -177,14 +179,14 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                             ),
                             ElevatedButton(
                               key: Key('connectDroneButton'),
-                              child: Text('Connect Drone'),
+                              child: Text('Connect'),
                               onPressed: () async {
                                 await _connectDrone();
                               },
                             ),
                             ElevatedButton(
                               key: Key('disconnectDroneButton'),
-                              child: Text('Disconnect Drone'),
+                              child: Text('Disconnect'),
                               onPressed: () async {
                                 await _disconnectDrone();
                               },

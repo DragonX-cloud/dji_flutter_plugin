@@ -22,7 +22,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	static var fltDjiFlutterApi : FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
 	
-	var aircraft = DJISDKManager.product() as? DJIAircraft
+	var aircraft : DJIAircraft?
 	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -36,10 +36,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		
 		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
 			if let error = e {
-				print("=== Error: SetDroneStatus Closure Error")
+				print("=== iOS: Error: SetDroneStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			} else {
-				print("=== setDroneStatus Closure Success")
+				print("=== iOS: setDroneStatus Closure Success: \(status)")
 			}
 		}
 	}
@@ -69,47 +69,66 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 
 	public func registerApp(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== Register App Started")
+		print("=== iOS: Register App Started")
 		DJISDKManager.registerApp(with: self)
 	}
 
 	public func connectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== Connect Drone Started")
+		print("=== iOS: Connect Drone Started")
 		DJISDKManager.startConnectionToProduct()
 	}
 	
 	public func disconnectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== Disconnect Drone Started")
+		print("=== iOS: Disconnect Drone Started")
 		DJISDKManager.stopConnectionToProduct()
 	}
 	
 	public func takeOff(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== Takeoff Started")
+		print("=== iOS: Takeoff Started")
+		
 		aircraft?.flightController?.startTakeoff(completion: nil)
+		
+		// Takeoff using Timeline
+		/*
+		let element = DJITakeOffAction()
+		let error = DJISDKManager.missionControl()?.scheduleElement(element)
+		
+		if error != nil {
+			NSLog("Error scheduling element \(String(describing: error))")
+			return;
+		}
+		
+		var scheduledElements = [DJIMissionAction]()
+		scheduledElements.append(element)
+		
+		DJISDKManager.missionControl()?.startTimeline()
+		*/
 	}
 	
 	public func land(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== Landing Started")
+		print("=== iOS: Landing Started")
 		aircraft?.flightController?.startLanding(completion: nil)
 	}
 	
 	//MARK: - DJISDKManager Delegate Methods
     
 	public func productConnected(_ product: DJIBaseProduct?) {
-		print("=== Product Connected")
+		print("=== iOS: Product Connected")
 		_fltSetDroneStatus("Connected")
 	}
 
 	public func productDisconnected() {
-		print("=== Product Disconnected")
+		print("=== iOS: Product Disconnected")
 		_fltSetDroneStatus("Disconnected")
 	}
 
 	public func appRegisteredWithError(_ error: Error?) {
 		if (error != nil) {
-			print("=== Error: Register app failed! Please enter your app key and check the network.")
+			print("=== iOS: Error: Register app failed! Please enter your app key and check the network.")
 		} else {
-			print("=== Register App Successed!")
+			print("=== iOS: Register App Successed!")
+			
+			aircraft = DJISDKManager.product() as? DJIAircraft
 			
 			_fltSetDroneStatus("Registered")
 		}
@@ -123,14 +142,15 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	public func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
 		// Updating Flutter
+		print("=== iOS: Battery Pecentage - \(state.chargeRemainingInPercent)")
 		fltDrone.batteryPercent = state.chargeRemainingInPercent as NSNumber
 		
 		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
 			if let error = e {
-				print("=== Error: SetDroneStatus Closure Error")
+				print("=== iOS: Error: SetDroneStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			} else {
-				print("=== setDroneStatus Closure Success")
+				print("=== iOS: setDroneStatus Closure Success")
 			}
 		}
 		
@@ -148,21 +168,26 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		var _droneYaw: NSNumber = 0
 		
 		if let altitude = state.aircraftLocation?.altitude {
+			print("= iOS: Altitude - \(altitude)")
 			_droneAltitude = altitude as NSNumber
 		}
 		
 		if let latitude = state.aircraftLocation?.coordinate.latitude {
+			print("= iOS: Latitude - \(latitude)")
 			_droneLatitude = latitude as NSNumber
 		}
 		
 		if let longitude = state.aircraftLocation?.coordinate.longitude {
+			print("= iOS: Longitude - \(longitude)")
 			_droneLongitude = longitude as NSNumber
 		}
 		
 		if let speed = state.aircraftLocation?.speed {
+			print("= iOS: Speed - \(speed)")
 			_droneSpeed = speed as NSNumber
 		}
 		
+		print("= iOS: Roll \(state.attitude.roll) | Pitch \(state.attitude.pitch) | Yaw \(state.attitude.yaw)")
 		_droneRoll = state.attitude.roll as NSNumber
 		_dronePitch = state.attitude.pitch as NSNumber
 		_droneYaw = state.attitude.yaw as NSNumber
@@ -178,10 +203,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		
 		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
 			if let error = e {
-				print("=== Error: SetDroneStatus Closure Error")
+				print("=== iOS: Error: SetDroneStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			} else {
-				print("=== setDroneStatus Closure Success")
+				print("=== iOS: setDroneStatus Closure Success")
 			}
 		}
 	}
