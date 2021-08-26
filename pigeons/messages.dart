@@ -29,6 +29,7 @@ abstract class DjiHostApi {
   void disconnectDrone();
   void takeOff();
   void land();
+  void timeline();
 }
 
 @FlutterApi()

@@ -52,3 +52,6 @@ Add the key `NSBluetoothAlwaysUsageDescription` to the Info.plist with a descrip
 
 Note:
 Don't forget to run `pod install` from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).
+
+## DJI References
+Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios

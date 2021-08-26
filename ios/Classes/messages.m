@@ -222,6 +222,22 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTDjiHos
       [channel setMessageHandler:nil];
     }
   }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.timeline"
+        binaryMessenger:binaryMessenger];
+    if (api) {
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api timeline:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
 @interface FLTDjiFlutterApi ()
 @property (nonatomic, strong) NSObject<FlutterBinaryMessenger>* binaryMessenger;

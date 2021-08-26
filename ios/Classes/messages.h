@@ -39,6 +39,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)disconnectDrone:(FlutterError *_Nullable *_Nonnull)error;
 -(void)takeOff:(FlutterError *_Nullable *_Nonnull)error;
 -(void)land:(FlutterError *_Nullable *_Nonnull)error;
+-(void)timeline:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTDjiHostApi> _Nullable api);

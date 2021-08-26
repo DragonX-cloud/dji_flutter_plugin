@@ -40,4 +40,8 @@ class Dji {
   static Future<void> get land async {
     await _api?.land();
   }
+
+  static Future<void> get timeline async {
+    await _api?.timeline();
+  }
 }

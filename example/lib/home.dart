@@ -15,15 +15,15 @@ class HomeWidget extends StatefulWidget {
 class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   // int _batteryLevel = -1;
-  String? _droneStatus = 'Disconnected';
-  double? _droneBatteryPercent = 0.0;
-  double? _droneAltitude = 0.0;
-  double? _droneLatitude = 0.0;
-  double? _droneLongitude = 0.0;
-  double? _droneSpeed = 0.0;
-  double? _droneRoll = 0.0;
-  double? _dronePitch = 0.0;
-  double? _droneYaw = 0.0;
+  String _droneStatus = 'Disconnected';
+  String _droneBatteryPercent = '0.0';
+  String _droneAltitude = '0.0';
+  String _droneLatitude = '0.0';
+  String _droneLongitude = '0.0';
+  String _droneSpeed = '0.0';
+  String _droneRoll = '0.0';
+  String _dronePitch = '0.0';
+  String _droneYaw = '0.0';
 
   @override
   void initState() {
@@ -35,18 +35,18 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   // This function is triggered by the Native Host side whenever the Drone Status is changed.
   @override
   void setDroneStatus(Drone drone) async {
-    print('=== setDroneStatus triggered');
+    // print('=== setDroneStatus triggered');
 
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
-      _droneAltitude = drone.altitude;
-      _droneBatteryPercent = drone.batteryPercent;
-      _droneLatitude = drone.latitude;
-      _droneLongitude = drone.longitude;
-      _droneSpeed = drone.speed;
-      _droneRoll = drone.roll;
-      _dronePitch = drone.pitch;
-      _droneYaw = drone.yaw;
+      _droneAltitude = drone.altitude?.toStringAsFixed(2) ?? '0.0';
+      _droneBatteryPercent = drone.batteryPercent?.toStringAsFixed(2) ?? '0.0';
+      _droneLatitude = drone.latitude?.toStringAsFixed(7) ?? '0.0';
+      _droneLongitude = drone.longitude?.toStringAsFixed(7) ?? '0.0';
+      _droneSpeed = drone.speed?.toStringAsFixed(2) ?? '0.0';
+      _droneRoll = drone.roll?.toStringAsFixed(3) ?? '0.0';
+      _dronePitch = drone.pitch?.toStringAsFixed(3) ?? '0.0';
+      _droneYaw = drone.yaw?.toStringAsFixed(3) ?? '0.0';
     });
 
     // if (drone.status == 'Registered') {
@@ -139,6 +139,17 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
     }
   }
 
+  Future<void> _timeline() async {
+    try {
+      await Dji.timeline;
+      print('Timeline succeeded.');
+    } on PlatformException catch (e) {
+      print('Timeline PlatformException Error: ${e.message}');
+    } catch (e) {
+      print('Timeline Error: ${e.toString()}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -205,6 +216,13 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                                 await _land();
                               },
                             ),
+                            ElevatedButton(
+                              key: Key('timelineDroneButton'),
+                              child: Text('Timeline'),
+                              onPressed: () async {
+                                await _timeline();
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -235,31 +253,31 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                             ),
                             dronePropertyRow(
                               label: 'Altitude',
-                              value: _droneAltitude.toString(),
+                              value: _droneAltitude,
                             ),
                             dronePropertyRow(
                               label: 'Latitude',
-                              value: _droneLatitude.toString(),
+                              value: _droneLatitude,
                             ),
                             dronePropertyRow(
                               label: 'Longitude',
-                              value: _droneLongitude.toString(),
+                              value: _droneLongitude,
                             ),
                             dronePropertyRow(
                               label: 'Speed',
-                              value: _droneSpeed.toString(),
+                              value: _droneSpeed,
                             ),
                             dronePropertyRow(
                               label: 'Roll',
-                              value: _droneRoll.toString(),
+                              value: _droneRoll,
                             ),
                             dronePropertyRow(
                               label: 'Pitch',
-                              value: _dronePitch.toString(),
+                              value: _dronePitch,
                             ),
                             dronePropertyRow(
                               label: 'Yaw',
-                              value: _droneYaw.toString(),
+                              value: _droneYaw,
                             ),
                           ],
                         ),
