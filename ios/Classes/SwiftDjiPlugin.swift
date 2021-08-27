@@ -22,8 +22,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	static var fltDjiFlutterApi : FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
 	
-	var flightController : DJIFlightController?
-	var droneCurrentLocationCoordinates : CLLocationCoordinate2D?
+	var drone : DJIAircraft?
+	var droneCurrentLocation : CLLocation?
 	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger : FlutterBinaryMessenger = registrar.messenger()
@@ -76,6 +76,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	public func connectDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		print("=== iOS: Connect Drone Started")
+		
+//		DJISDKManager.enableBridgeMode(withBridgeAppIP: "192.168.1.105")
 		DJISDKManager.startConnectionToProduct()
 	}
 	
@@ -85,7 +87,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	public func takeOff(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		if let _droneFlightController = flightController {
+		if let _droneFlightController = drone?.flightController {
 			print("=== iOS: Takeoff Started")
 			_droneFlightController.startTakeoff(completion: nil)
 		} else {
@@ -94,7 +96,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	public func land(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		if let _droneFlightController = flightController {
+		if let _droneFlightController = drone?.flightController {
 			print("=== iOS: Landing Started")
 			_droneFlightController.startLanding(completion: nil)
 		} else {
@@ -103,11 +105,15 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	public func timeline(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		if let _droneFlightController = flightController {
-			print("=== iOS: Timeline Started")
+		if let _droneFlightController = drone?.flightController {
 			
-			// First we stop any existing timeline, before scheduling elements
-			DJISDKManager.missionControl()?.stopTimeline()
+			// First we check if a timeline is already running
+			if (DJISDKManager.missionControl()?.isTimelineRunning == true) {
+				print("=== iOS: Error - Timeline already running")
+				return
+			} else {
+				print("=== iOS: Timeline Started")
+			}
 			
 			let offset = 0.0000899322
 			
@@ -129,7 +135,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 //			let droneLocation = droneLocationValue.value as! CLLocation
 //			let droneCoordinates = droneLocation.coordinate
 
-			guard let droneCoordinates = droneCurrentLocationCoordinates else {
+			guard let droneCoordinates = droneCurrentLocation?.coordinate else {
 				print("=== iOS: Timeline Failed - No droneCurrentLocationCoordinates")
 				return
 			}
@@ -138,6 +144,9 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				print("=== iOS: Timeline Failed - Invalid droneCoordinates")
 				return
 			}
+			
+			// Set Home Coordinates
+			drone?.flightController?.setHomeLocation(droneCurrentLocation!)
 			
 			var scheduledElements = [DJIMissionAction]()
 			
@@ -170,11 +179,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			
 			// Land
 			scheduledElements.append(DJILandAction())
-			
-//			// Must make sure motors are turned off
-//			_droneFlightController.turnOnMotors(completion: nil)
-//			// Turn motors off
-//			_droneFlightController.turnOffMotors(completion: nil)
 
 			var timelineSchedulingCompleted : Bool = true
 			for element in scheduledElements {
@@ -220,25 +224,23 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	//MARK: - DJISDKManager Delegate Methods
     
 	public func productConnected(_ product: DJIBaseProduct?) {
-		print("=== iOS: Product Connected")
-		
 		// DJI Product is available only after registration and connection. So we initialize it here.
 		if let _ = product {
-            if DJISDKManager.product()!.isKind(of: DJIAircraft.self) {
-                // Setting the delegate
-                flightController = (DJISDKManager.product()! as! DJIAircraft).flightController!
-                flightController!.delegate = self
+            if DJISDKManager.product()!.isKind(of: DJIAircraft.self) && (DJISDKManager.product()! as! DJIAircraft).flightController != nil {
+                print("=== iOS: Product Connected")
                 
-                // Setting the Beep to FALSE
-                flightController!.setESCBeepEnabled(false, withCompletion: { _ in
-					print("= iOS Error: Unable to set Flight Controller ESC Beep to FALSE")
-				})
-            }
+                // Setting the delegates
+                drone = (DJISDKManager.product()! as! DJIAircraft)
+				drone!.flightController!.delegate = self
+				drone!.battery!.delegate = self
+				
+				_fltSetDroneStatus("Connected")
+			} else {
+				print("=== iOS: Product Connect Error - flightController does not exist")
+			}
         }
-		
-		_fltSetDroneStatus("Connected")
 	}
-
+	
 	public func productDisconnected() {
 		print("=== iOS: Product Disconnected")
 		_fltSetDroneStatus("Disconnected")
@@ -292,8 +294,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 		
 		// Updating the drone's current location coordinates variable
-		if let droneCoordinates = state.aircraftLocation?.coordinate {
-			droneCurrentLocationCoordinates = droneCoordinates
+		if let droneLocation = state.aircraftLocation {
+			droneCurrentLocation = droneLocation
 		}
 		
 		if let latitude = state.aircraftLocation?.coordinate.latitude {
@@ -315,6 +317,11 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		_droneRoll = state.attitude.roll as NSNumber
 		_dronePitch = state.attitude.pitch as NSNumber
 		_droneYaw = state.attitude.yaw as NSNumber
+		
+		// Confirm Landing
+		if (state.isLandingConfirmationNeeded == true) {
+			fc.confirmLanding(completion: nil)
+		}
 		
 		// Updating Flutter
 		fltDrone.altitude = _droneAltitude
