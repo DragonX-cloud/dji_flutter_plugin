@@ -16,7 +16,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   // int _batteryLevel = -1;
   String _droneStatus = 'Disconnected';
-  String _droneBatteryPercent = '0.0';
+  String _droneBatteryPercent = '0';
   String _droneAltitude = '0.0';
   String _droneLatitude = '0.0';
   String _droneLongitude = '0.0';
@@ -35,12 +35,12 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   // This function is triggered by the Native Host side whenever the Drone Status is changed.
   @override
   void setDroneStatus(Drone drone) async {
-    // print('=== setDroneStatus triggered');
+    // print('=== setDroneStatus triggered ${drone.batteryPercent}');
 
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
       _droneAltitude = drone.altitude?.toStringAsFixed(2) ?? '0.0';
-      _droneBatteryPercent = drone.batteryPercent?.toStringAsFixed(2) ?? '0.0';
+      _droneBatteryPercent = drone.batteryPercent?.toStringAsFixed(0) ?? '0';
       _droneLatitude = drone.latitude?.toStringAsFixed(7) ?? '0.0';
       _droneLongitude = drone.longitude?.toStringAsFixed(7) ?? '0.0';
       _droneSpeed = drone.speed?.toStringAsFixed(2) ?? '0.0';
@@ -114,6 +114,17 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
       print('disconnectDrone PlatformException Error: ${e.message}');
     } catch (e) {
       print('disconnectDrone Error: ${e.toString()}');
+    }
+  }
+
+  Future<void> _delegateDrone() async {
+    try {
+      await Dji.delegateDrone;
+      print('delegateDrone succeeded.');
+    } on PlatformException catch (e) {
+      print('delegateDrone PlatformException Error: ${e.message}');
+    } catch (e) {
+      print('delegateDrone Error: ${e.toString()}');
     }
   }
 
@@ -203,6 +214,13 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                               },
                             ),
                             ElevatedButton(
+                              key: Key('delegateButton'),
+                              child: Text('Delegate'),
+                              onPressed: () async {
+                                await _delegateDrone();
+                              },
+                            ),
+                            ElevatedButton(
                               key: Key('takeOffDroneButton'),
                               child: Text('Take Off'),
                               onPressed: () async {
@@ -245,11 +263,11 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                             // ),
                             dronePropertyRow(
                               label: 'Drone Status',
-                              value: _droneStatus ?? '',
+                              value: _droneStatus,
                             ),
                             dronePropertyRow(
                               label: 'Drone Battery',
-                              value: _droneBatteryPercent.toString() + ' %',
+                              value: _droneBatteryPercent + '%',
                             ),
                             dronePropertyRow(
                               label: 'Altitude',

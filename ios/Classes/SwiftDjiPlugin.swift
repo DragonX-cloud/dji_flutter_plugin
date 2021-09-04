@@ -86,6 +86,41 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		DJISDKManager.stopConnectionToProduct()
 	}
 	
+	public func delegateDrone(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		print("=== iOS: Delegate Drone Started")
+		if let product = DJISDKManager.product() {
+			if product.isKind(of: DJIAircraft.self) {
+				drone = (DJISDKManager.product()! as! DJIAircraft)
+				
+				if let _ = drone?.flightController {
+					print("=== iOS: Drone Flight Controller Delegate successfuly configured")
+					drone!.flightController!.delegate = self
+				} else {
+					print("=== iOS: Product Connect Error - No Flight Controller Object")
+					_fltSetDroneStatus("Error")
+					return
+				}
+				
+				if let _ = drone?.battery {
+					print("=== iOS: Drone Battery Delegate successfuly configured")
+					drone!.battery!.delegate = self
+				} else {
+					print("=== iOS: Product Connect Error - No Battery Object")
+					_fltSetDroneStatus("Error")
+					return
+				}
+				
+				print("=== iOS: Delegations completed")
+				_fltSetDroneStatus("Delegated")
+
+			} else {
+				print("=== iOS: Error - Delegations - DJI Aircraft Object does not exist")
+			}
+		} else {
+			print("=== iOS: Error - Delegations - DJI Product Object does not exist")
+		}
+	}
+	
 	public func takeOff(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if let _droneFlightController = drone?.flightController {
 			print("=== iOS: Takeoff Started")
@@ -114,26 +149,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			} else {
 				print("=== iOS: Timeline Started")
 			}
-			
-			let offset = 0.0000899322
-			
-//			let takeOffElement = DJITakeOffAction()
-//			let error = DJISDKManager.missionControl()?.scheduleElement(takeOffElement)
-//			if error != nil {
-//				NSLog("Error scheduling element \(String(describing: error))")
-//			 	return;
-//			}
-			
-//			guard let droneLocationKey = DJIFlightControllerKey(param: DJIFlightControllerParamAircraftLocation) else {
-//				print("=== iOS: Timeline Failed - No droneLocationKey")
-//				return
-//			}
-//			guard let droneLocationValue = DJISDKManager.keyManager()?.getValueFor(droneLocationKey) else {
-//				print("=== iOS: Timeline Failed - No droneLocationValue")
-//				return
-//			}
-//			let droneLocation = droneLocationValue.value as! CLLocation
-//			let droneCoordinates = droneLocation.coordinate
 
 			guard let droneCoordinates = droneCurrentLocation?.coordinate else {
 				print("=== iOS: Timeline Failed - No droneCurrentLocationCoordinates")
@@ -146,36 +161,34 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			}
 			
 			// Set Home Coordinates
-			drone?.flightController?.setHomeLocation(droneCurrentLocation!)
+			let droneHomeLocation = CLLocation(latitude: droneCoordinates.latitude, longitude: droneCoordinates.longitude)
+			let droneHomeCoordinates = droneHomeLocation.coordinate
+			_droneFlightController.setHomeLocation(droneHomeLocation)
+			//_droneFlightController.setHomeLocationUsingAircraftCurrentLocationWithCompletion(nil)
 			
-			var scheduledElements = [DJIMissionAction]()
+			var scheduledElements = [DJIMissionControlTimelineElement]()
 			
 			// Take Off
 			scheduledElements.append(DJITakeOffAction())
 			
-			// Goto Waypoint
-			let wp1 = CLLocationCoordinate2DMake(droneCoordinates.latitude + offset, droneCoordinates.longitude)
-			if let gotoElement = DJIGoToAction(coordinate: wp1, altitude: 15) {
-				scheduledElements.append(gotoElement)
-			}
-			
-			// Goto Waypoint
-			let wp2 = CLLocationCoordinate2DMake(droneCoordinates.latitude, droneCoordinates.longitude - offset)
-			if let gotoElement = DJIGoToAction(coordinate: wp2, altitude: 15) {
-				scheduledElements.append(gotoElement)
+			// Waypoint Mission
+			if let wayPointMission = waypointMission(droneHomeCoordinates) {
+				scheduledElements.append(wayPointMission)
 			}
 			
 			// Hot Point
-			let wp3 = CLLocationCoordinate2DMake(droneCoordinates.latitude + offset, droneCoordinates.longitude)
-			if let hotPointElement = hotPointAction(hotpoint: wp3, altitude: 15, radius: 5) {
+			let hotPointCoordinates = CLLocationCoordinate2DMake(droneHomeCoordinates.latitude, droneHomeCoordinates.longitude)
+			if let hotPointElement = hotPointAction(hotpoint: hotPointCoordinates, altitude: 15, radius: 5) {
 				scheduledElements.append(hotPointElement)
 			}
 			
-			// Zoom Out (Dronie)
-			// TBD
-			
 			// Goto Home
-			scheduledElements.append(DJIGoHomeAction())
+//			scheduledElements.append(DJIGoHomeAction())
+
+			// Goto Waypoint (Home)
+			if let gotoElement = DJIGoToAction(coordinate: droneHomeCoordinates, altitude: 15) {
+				scheduledElements.append(gotoElement)
+			}
 			
 			// Land
 			scheduledElements.append(DJILandAction())
@@ -202,6 +215,73 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
+	func waypointMission(_ droneCoordinates : CLLocationCoordinate2D) -> DJIWaypointMission? {
+        let mission = DJIMutableWaypointMission()
+        mission.maxFlightSpeed = 15
+        mission.autoFlightSpeed = 8
+        mission.finishedAction = .noAction
+        mission.headingMode = .usingWaypointHeading
+        mission.flightPathMode = .curved
+        mission.rotateGimbalPitch = true
+        mission.exitMissionOnRCSignalLost = true
+        mission.gotoFirstWaypointMode = .pointToPoint
+        mission.repeatTimes = 1
+        
+//        guard let droneLocationKey = DJIFlightControllerKey(param: DJIFlightControllerParamAircraftLocation) else {
+//            return nil
+//        }
+//
+//        guard let droneLocationValue = DJISDKManager.keyManager()?.getValueFor(droneLocationKey) else {
+//            return nil
+//        }
+//
+//		  let droneLocation = droneLocationValue.value as! CLLocation
+//        let droneCoordinates = droneLocation.coordinate
+        
+		if !CLLocationCoordinate2DIsValid(droneCoordinates) {
+            return nil
+        }
+
+        mission.pointOfInterest = droneCoordinates
+        let offset = 0.0000899322
+        
+        let loc1 = CLLocationCoordinate2DMake(droneCoordinates.latitude, droneCoordinates.longitude)
+        let waypoint1 = DJIWaypoint(coordinate: loc1)
+        waypoint1.altitude = 2
+        waypoint1.heading = 0
+        waypoint1.actionRepeatTimes = 1
+        waypoint1.actionTimeoutInSeconds = 30
+        waypoint1.cornerRadiusInMeters = 5
+        waypoint1.turnMode = .clockwise
+        waypoint1.gimbalPitch = 0
+        
+        let loc2 = CLLocationCoordinate2DMake(droneCoordinates.latitude + (offset * 5), droneCoordinates.longitude)
+        let waypoint2 = DJIWaypoint(coordinate: loc2)
+        waypoint1.altitude = 15
+        //waypoint1.heading = 0
+        waypoint1.actionRepeatTimes = 1
+        waypoint1.actionTimeoutInSeconds = 30
+        waypoint1.cornerRadiusInMeters = 5
+        waypoint1.turnMode = .clockwise
+        waypoint1.gimbalPitch = -30
+        
+        let loc3 = CLLocationCoordinate2DMake(droneCoordinates.latitude, droneCoordinates.longitude + (offset * 5))
+        let waypoint3 = DJIWaypoint(coordinate: loc3)
+        waypoint2.altitude = 15
+        //waypoint2.heading = 0
+        waypoint2.actionRepeatTimes = 1
+        waypoint2.actionTimeoutInSeconds = 30
+        waypoint2.cornerRadiusInMeters = 5
+        waypoint2.turnMode = .clockwise
+        waypoint2.gimbalPitch = -45
+        
+        mission.add(waypoint1)
+        mission.add(waypoint2)
+        mission.add(waypoint3)
+        
+        return DJIWaypointMission(mission: mission)
+    }
+	
 	func hotPointAction(hotpoint : CLLocationCoordinate2D, altitude : Float, radius: Float) -> DJIHotpointAction? {
         if !CLLocationCoordinate2DIsValid(hotpoint) {
             return nil
@@ -222,31 +302,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
     }
 	
 	//MARK: - DJISDKManager Delegate Methods
-    
-	public func productConnected(_ product: DJIBaseProduct?) {
-		// DJI Product is available only after registration and connection. So we initialize it here.
-		if let _ = product {
-            if DJISDKManager.product()!.isKind(of: DJIAircraft.self) && (DJISDKManager.product()! as! DJIAircraft).flightController != nil {
-                print("=== iOS: Product Connected")
-                
-                // Setting the delegates
-                drone = (DJISDKManager.product()! as! DJIAircraft)
-				drone!.flightController!.delegate = self
-				drone!.battery!.delegate = self
-				
-				_fltSetDroneStatus("Connected")
-			} else {
-				print("=== iOS: Product Connect Error - flightController does not exist")
-			}
-        }
-	}
 	
-	public func productDisconnected() {
-		print("=== iOS: Product Disconnected")
-		_fltSetDroneStatus("Disconnected")
+	public func didUpdateDatabaseDownloadProgress(_ progress: Progress) {
+		print("Downloading database: \(progress.completedUnitCount) / \(progress.totalUnitCount)")
 	}
-
-	public func appRegisteredWithError(_ error: Error?) {
+    
+    public func appRegisteredWithError(_ error: Error?) {
 		if (error != nil) {
 			print("=== iOS: Error: Register app failed! Please enter your app key and check the network.")
 		} else {
@@ -254,24 +315,33 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			_fltSetDroneStatus("Registered")
 		}
 	}
-
-	public func didUpdateDatabaseDownloadProgress(_ progress: Progress) {
-		print("Downloading database: \(progress.completedUnitCount) / \(progress.totalUnitCount)")
+	
+	public func productConnected(_ product: DJIBaseProduct?) {
+		// DJI Product is available only after registration and connection. So we initialize it here.
+		if let _ = product {
+			print("=== iOS: Product Connected successfuly")
+			_fltSetDroneStatus("Connected")
+        } else {
+			print("=== iOS: Error Connecting Product - DJIBaseProduct does not exist")
+		}
 	}
 	
+	public func productDisconnected() {
+		print("=== iOS: Product Disconnected")
+		_fltSetDroneStatus("Disconnected")
+	}
+
 	//MARK: - DJIBattery Delegate Methods
 	
 	public func battery(_ battery: DJIBattery, didUpdate state: DJIBatteryState) {
 		// Updating Flutter
-		print("=== iOS: Battery Pecentage - \(state.chargeRemainingInPercent)")
-		fltDrone.batteryPercent = state.chargeRemainingInPercent as NSNumber
+		fltDrone.batteryPercent = Double(state.chargeRemainingInPercent) as NSNumber
+		//print("=== iOS: Battery Percent \(fltDrone.batteryPercent ?? 0)%")
 		
 		SwiftDjiPlugin.fltDjiFlutterApi?.setDroneStatus(fltDrone) {e in
 			if let error = e {
 				print("=== iOS: Error: SetDroneStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
-			} else {
-				print("=== iOS: setDroneStatus Closure Success")
 			}
 		}
 		
@@ -336,8 +406,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			if let error = e {
 				print("=== iOS: Error: SetDroneStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
-			} else {
-				//print("=== iOS: setDroneStatus Closure Success")
 			}
 		}
 	}

@@ -193,6 +193,22 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, id<FLTDjiHos
   {
     FlutterBasicMessageChannel *channel =
       [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.delegateDrone"
+        binaryMessenger:binaryMessenger];
+    if (api) {
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api delegateDrone:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
         messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.takeOff"
         binaryMessenger:binaryMessenger];
     if (api) {

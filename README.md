@@ -53,5 +53,20 @@ Add the key `NSBluetoothAlwaysUsageDescription` to the Info.plist with a descrip
 Note:
 Don't forget to run `pod install` from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).
 
+## Notes in regards to DJI SDK
+- Decided not to implement the "Bridge App" support, because turned out that - for debugging / development purposes - it is much easier to simply connect to the drone's Wifi, and let it connect using it (instead of using the Remote Controller).
+
+[ ! ] Important Note
+A bug in DJI's SDK in regards to Wifi Connection:
+If you're developing / debugging, and your phone is connected to the Drone's Wifi - it means your mobile device does NOT have any internet connection.
+Therefore, the Registration won't work.
+However, due to a bug in the SDK - the appRegisteredWithError() responds with a "success", although it actually fails.
+
+The solution is to first make sure you're disconnected from the Drone's Wifi - and let your App perform the Registration successfully.
+And only after it has been registered - connect your mobile device to the Drone's Wifi, and execute the startConnectionToProduct()
+
+Hint was taken from this issue on Github:
+https://github.com/dji-sdk/Mobile-SDK-Android/issues/232
+
 ## DJI References
 Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios

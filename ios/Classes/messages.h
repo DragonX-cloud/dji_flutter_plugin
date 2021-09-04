@@ -37,6 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)registerApp:(FlutterError *_Nullable *_Nonnull)error;
 -(void)connectDrone:(FlutterError *_Nullable *_Nonnull)error;
 -(void)disconnectDrone:(FlutterError *_Nullable *_Nonnull)error;
+-(void)delegateDrone:(FlutterError *_Nullable *_Nonnull)error;
 -(void)takeOff:(FlutterError *_Nullable *_Nonnull)error;
 -(void)land:(FlutterError *_Nullable *_Nonnull)error;
 -(void)timeline:(FlutterError *_Nullable *_Nonnull)error;
