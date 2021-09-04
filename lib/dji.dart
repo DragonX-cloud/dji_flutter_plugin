@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'messages.dart';
+import 'flight.dart';
 
 class Dji {
   static DjiHostApi? _apiInstance;
@@ -33,6 +34,10 @@ class Dji {
     await _api?.disconnectDrone();
   }
 
+  static Future<void> get delegateDrone async {
+    await _api?.delegateDrone();
+  }
+
   static Future<void> get takeOff async {
     await _api?.takeOff();
   }
@@ -43,5 +48,47 @@ class Dji {
 
   static Future<void> get timeline async {
     await _api?.timeline();
+  }
+
+  static Future<void> get start async {
+    // List<FlightElement> timeline = [];
+
+    // final FlightElement takeOffElement =
+    //     FlightElement(type: FlightElementType.takeOff);
+    // final FlightElement landElement =
+    //     FlightElement(type: FlightElementType.land);
+
+    // timeline.add(takeOffElement);
+    // timeline.add(landElement);
+
+    // Flight flight = Flight(timeline);
+
+    Flight flight = Flight.fromJson({
+      'timeline': [
+        {
+          'type': 'takeOff',
+        },
+        {
+          'type': 'land',
+        },
+        // {
+        //   'type': 'waypointMission',
+        //   'waypoints': [
+        //     {
+        //       'longitude': 1.0,
+        //       'latidue': 1.0,
+        //       'altitude': 1.0,
+        //     },
+        //     {
+        //       'longitude': 2.0,
+        //       'latidue': 2.0,
+        //       'altitude': 2.0,
+        //     },
+        //   ],
+        // },
+      ],
+    });
+
+    await _api?.start(flight);
   }
 }

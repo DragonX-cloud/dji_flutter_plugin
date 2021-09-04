@@ -1,3 +1,4 @@
+import 'package:dji/flight.dart';
 import 'package:pigeon/pigeon.dart';
 
 class Version {
@@ -27,9 +28,11 @@ abstract class DjiHostApi {
   void registerApp();
   void connectDrone();
   void disconnectDrone();
+  void delegateDrone();
   void takeOff();
   void land();
   void timeline();
+  void start(Flight flight);
 }
 
 @FlutterApi()
