@@ -4,7 +4,12 @@ class Flight {
   final List<FlightElement> timeline;
 
   Flight(this.timeline);
+
   Flight.fromJson(Map<String, dynamic> json) : this.timeline = json['timeline'];
+
+  Map<String, dynamic> toJson() => {
+        'timeline': timeline,
+      };
 }
 
 enum FlightElementType {
@@ -22,7 +27,12 @@ class FlightElement {
   final FlightElementType type;
 
   FlightElement({required this.type});
+
   FlightElement.fromJson(Map<String, dynamic> json) : this.type = json['type'];
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+      };
 }
 
 // Waypoint
@@ -61,6 +71,16 @@ class FlightWaypoint {
         this.cornerRadiusInMeters = json['cornerRadiusInMeters'],
         this.turnMode = json['turnMode'],
         this.gimbalPitch = json['gimbalPitch'];
+
+  Map<String, dynamic> toJson() => {
+        'longitude': longitude,
+        'latitude': latitude,
+        'altitude': altitude,
+        'heading': heading,
+        'cornerRadiusInMeters': cornerRadiusInMeters,
+        'turnMode': turnMode,
+        'gimbalPitch': gimbalPitch,
+      };
 }
 
 // Waypoint Mission
@@ -116,4 +136,16 @@ class FlightElementWaypointMission extends FlightElement {
         this.exitMissionOnRCSignalLost = json['exitMissionOnRCSignalLost'],
         this.waypoints = json['waypoints'],
         super(type: FlightElementType.waypointMission);
+
+  Map<String, dynamic> toJson() => {
+        'type': type,
+        'maxFlightSpeed': maxFlightSpeed,
+        'autoFlightSpeed': autoFlightSpeed,
+        'finishedAction': finishedAction,
+        'headingMode': headingMode,
+        'flightPathMode': flightPathMode,
+        'rotateGimbalPitch': rotateGimbalPitch,
+        'exitMissionOnRCSignalLost': exitMissionOnRCSignalLost,
+        'waypoints': waypoints,
+      };
 }

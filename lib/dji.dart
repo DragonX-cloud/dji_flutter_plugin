@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'messages.dart';
 import 'flight.dart';
 
@@ -71,24 +72,26 @@ class Dji {
         {
           'type': 'land',
         },
-        // {
-        //   'type': 'waypointMission',
-        //   'waypoints': [
-        //     {
-        //       'longitude': 1.0,
-        //       'latidue': 1.0,
-        //       'altitude': 1.0,
-        //     },
-        //     {
-        //       'longitude': 2.0,
-        //       'latidue': 2.0,
-        //       'altitude': 2.0,
-        //     },
-        //   ],
-        // },
+        {
+          'type': 'waypointMission',
+          'waypoints': [
+            {
+              'longitude': 1.0,
+              'latidue': 1.0,
+              'altitude': 1.0,
+            },
+            {
+              'longitude': 2.0,
+              'latidue': 2.0,
+              'altitude': 2.0,
+            },
+          ],
+        },
       ],
     });
 
-    await _api?.start(flight);
+    Map<String, dynamic> flightJson = flight.toJson();
+
+    await _api?.start(jsonEncode(flightJson));
   }
 }

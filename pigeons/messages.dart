@@ -1,24 +1,23 @@
-import 'package:dji/flight.dart';
 import 'package:pigeon/pigeon.dart';
 
 class Version {
-  String string = '';
+  String? string;
 }
 
 class Battery {
-  int level = 0;
+  int? level;
 }
 
 class Drone {
-  String status = 'Disconnected'; // Disconnected, Registered, Connected
-  double batteryPercent = 0.0;
-  double altitude = 0.0;
-  double latitude = 0.0;
-  double longitude = 0.0;
-  double speed = 0.0;
-  double roll = 0.0;
-  double pitch = 0.0;
-  double yaw = 0.0;
+  String? status;
+  double? batteryPercent;
+  double? altitude;
+  double? latitude;
+  double? longitude;
+  double? speed;
+  double? roll;
+  double? pitch;
+  double? yaw;
 }
 
 @HostApi()
@@ -32,10 +31,10 @@ abstract class DjiHostApi {
   void takeOff();
   void land();
   void timeline();
-  void start(Flight flight);
+  void start(String flightJson);
 }
 
 @FlutterApi()
 abstract class DjiFlutterApi {
-  void setDroneStatus(Drone drone);
+  void setStatus(Drone drone);
 }

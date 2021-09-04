@@ -34,8 +34,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
 
   // This function is triggered by the Native Host side whenever the Drone Status is changed.
   @override
-  void setDroneStatus(Drone drone) async {
-    // print('=== setDroneStatus triggered ${drone.batteryPercent}');
+  void setStatus(Drone drone) async {
+    // print('=== setStatus triggered ${drone.batteryPercent}');
 
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
