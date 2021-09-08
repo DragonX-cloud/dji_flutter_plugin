@@ -1,3 +1,4 @@
+import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -161,6 +162,77 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
     }
   }
 
+  Future<void> _start() async {
+    try {
+      // List<FlightElement> timeline = [];
+
+      // final FlightElement takeOffElement =
+      //     FlightElement(type: FlightElementType.takeOff);
+      // final FlightElement landElement =
+      //     FlightElement(type: FlightElementType.land);
+
+      // timeline.add(takeOffElement);
+      // timeline.add(landElement);
+
+      // Flight flight = Flight(timeline);
+
+      // print('=== Flight: ');
+      // print(flight.toJson());
+
+      Flight flight = Flight.fromJson({
+        'timeline': [
+          {
+            'type': 'takeOff',
+          },
+          {
+            'type': 'waypointMission',
+            'maxFlightSpeed': 25.0,
+            'autoFlightSpeed': 10.0,
+            'finishedAction': 'noAction',
+            'headingMode': 'towardPointOfInterest',
+            'flightPathMode': 'curved',
+            'rotateGimbalPitch': true,
+            'exitMissionOnRCSignalLost': true,
+            'waypoints': [
+              {
+                'location': {
+                  'longitude': 1.0,
+                  'latitude': 1.0,
+                  'altitude': 1.0,
+                },
+                'heading': 0,
+                'cornerRadiusInMeters': 5,
+                'turnMode': 'clockwise',
+                'gimbalPitch': 0,
+              },
+              {
+                'location': {
+                  'longitude': 2.0,
+                  'latitude': 2.0,
+                  'altitude': 2.0,
+                },
+                'heading': 0,
+                'cornerRadiusInMeters': 5,
+                'turnMode': 'clockwise',
+                'gimbalPitch': 0,
+              },
+            ],
+          },
+          {
+            'type': 'land',
+          },
+        ],
+      });
+
+      await Dji.start(flight: flight);
+      print('Start Flight succeeded.');
+    } on PlatformException catch (e) {
+      print('Start Flight PlatformException Error: ${e.message}');
+    } catch (e) {
+      print('Start Flight Error: ${e.toString()}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -239,6 +311,13 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                               child: Text('Timeline'),
                               onPressed: () async {
                                 await _timeline();
+                              },
+                            ),
+                            ElevatedButton(
+                              key: Key('start'),
+                              child: Text('Start'),
+                              onPressed: () async {
+                                await _start();
                               },
                             ),
                           ],

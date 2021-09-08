@@ -51,45 +51,7 @@ class Dji {
     await _api?.timeline();
   }
 
-  static Future<void> get start async {
-    // List<FlightElement> timeline = [];
-
-    // final FlightElement takeOffElement =
-    //     FlightElement(type: FlightElementType.takeOff);
-    // final FlightElement landElement =
-    //     FlightElement(type: FlightElementType.land);
-
-    // timeline.add(takeOffElement);
-    // timeline.add(landElement);
-
-    // Flight flight = Flight(timeline);
-
-    Flight flight = Flight.fromJson({
-      'timeline': [
-        {
-          'type': 'takeOff',
-        },
-        {
-          'type': 'land',
-        },
-        {
-          'type': 'waypointMission',
-          'waypoints': [
-            {
-              'longitude': 1.0,
-              'latidue': 1.0,
-              'altitude': 1.0,
-            },
-            {
-              'longitude': 2.0,
-              'latidue': 2.0,
-              'altitude': 2.0,
-            },
-          ],
-        },
-      ],
-    });
-
+  static Future<void> start({required Flight flight}) async {
     Map<String, dynamic> flightJson = flight.toJson();
 
     await _api?.start(jsonEncode(flightJson));

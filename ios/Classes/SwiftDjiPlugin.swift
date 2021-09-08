@@ -24,6 +24,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	var drone : DJIAircraft?
 	var droneCurrentLocation : CLLocation?
 	
+	var flight: Flight?
+	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger : FlutterBinaryMessenger = registrar.messenger()
 		let api : FLTDjiHostApi & NSObjectProtocol = SwiftDjiPlugin.init()
@@ -171,7 +173,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			scheduledElements.append(DJITakeOffAction())
 			
 			// Waypoint Mission
-			if let wayPointMission = waypointMission(droneHomeCoordinates) {
+			if let wayPointMission = hardcodedWaypointMission(droneHomeCoordinates) {
 				scheduledElements.append(wayPointMission)
 			}
 			
@@ -215,12 +217,148 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	public func startFlightJson(_ flightJson: String, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== iOS: Start Flight: \(flightJson)")
+		print("=== iOS: Start Flight JSON: \(flightJson)")
+		
+		let decoder = JSONDecoder()
+		let data = flightJson.data(using: .utf8)!
+		flight = try? decoder.decode(Flight.self, from: data)
+		
+		if let f = flight {
+			print("=== iOS: Start Flight JSON parsed successfully: \(f)")
+			startFlightTimeline(f)
+		}
+	}
+	
+	func startFlightTimeline(_ flight: Flight) {
+		guard let timeline = flight.timeline, timeline.count == 0 else {
+			print("=== iOS: _convertFlightToTimeline - timeline Array is empty.")
+			return
+		}
+		
+		guard let _droneFlightController = drone?.flightController else {
+			print("=== iOS: _convertFlightToTimeline - No Flight Controller")
+			return
+		}
+		
+		var scheduledElements = [DJIMissionControlTimelineElement]()
+		
+		for flightElement in flight.timeline! {
+			switch flightElement.type {
+				case "takeOff":
+					// Take Off
+					scheduledElements.append(DJITakeOffAction())
+					
+				case "land":
+					// Land
+					scheduledElements.append(DJILandAction())
+					
+				case "waypointMission":
+					// Waypoint Mission
+					if let wayPointMission = waypointMission(flightElement) {
+						scheduledElements.append(wayPointMission)
+					}
+				
+				case "hotpointAction":
+					// Hot Point
+					// TBD...
+					return
+					
+				default:
+					// Do Nothing
+					return
+			}
+		}
+		
+		var timelineSchedulingCompleted : Bool = true
+		for element in scheduledElements {
+			let error = DJISDKManager.missionControl()?.scheduleElement(element)
+			if error != nil {
+				NSLog("=== iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
+				timelineSchedulingCompleted = false
+				return;
+			}
+		}
+		if (timelineSchedulingCompleted) {
+			// Starting Motors
+			_droneFlightController.turnOnMotors(completion: nil)
+		
+			// Starting the Timeline Mission
+			DJISDKManager.missionControl()?.startTimeline()
+		}
 	}
 	
 	//Mark: - DJI Timeline Methods
 	
-	func waypointMission(_ droneCoordinates : CLLocationCoordinate2D) -> DJIWaypointMission? {
+	func waypointMission(_ flightElementWaypointMission: FlightElement) -> DJIWaypointMission? {
+		
+		// Waypoint Mission Initialization
+		let mission = DJIMutableWaypointMission()
+        mission.maxFlightSpeed = Float(flightElementWaypointMission.maxFlightSpeed ?? 15)
+        mission.autoFlightSpeed = Float(flightElementWaypointMission.autoFlightSpeed ?? 8)
+		
+		switch flightElementWaypointMission.finishedAction {
+			case "autoLand":
+				mission.finishedAction = .autoLand
+			case "continueUntilStop":
+				mission.finishedAction = .continueUntilStop
+			default:
+				mission.finishedAction = .noAction
+		}
+		
+		switch flightElementWaypointMission.headingMode {
+			case "auto":
+				mission.headingMode = .auto
+			case "towardPointOfInterest":
+				mission.headingMode = .towardPointOfInterest
+			default:
+				mission.headingMode = .usingWaypointHeading
+		}
+		
+		switch flightElementWaypointMission.flightPathMode {
+			case "normal":
+				mission.flightPathMode = .normal
+			default:
+				mission.flightPathMode = .curved
+		}
+        
+        mission.rotateGimbalPitch = flightElementWaypointMission.rotateGimbalPitch ?? true
+        mission.exitMissionOnRCSignalLost = flightElementWaypointMission.exitMissionOnRCSignalLost ?? true
+        
+        mission.gotoFirstWaypointMode = .pointToPoint
+        mission.repeatTimes = 1
+        
+        // Waypoints
+        if let flightWaypoints = flightElementWaypointMission.waypoints {
+			for flightWaypoint in flightWaypoints {
+				if let latitude = flightWaypoint.location?.latitude, let longitude = flightWaypoint.location?.longitude, let altitude = flightWaypoint.location?.altitude {
+					let coordinate = CLLocationCoordinate2DMake(latitude, longitude)
+					let waypoint = DJIWaypoint(coordinate: coordinate)
+					waypoint.altitude = Float(altitude)
+					waypoint.heading = flightWaypoint.heading ?? 0
+					waypoint.cornerRadiusInMeters = flightWaypoint.cornerRadiusInMeters != nil ? Float(flightWaypoint.cornerRadiusInMeters!) : 5
+					switch flightWaypoint.turnMode {
+						case "counterClockwise":
+							waypoint.turnMode = .counterClockwise
+						default:
+							waypoint.turnMode = .clockwise
+					}
+					waypoint.gimbalPitch = flightWaypoint.gimbalPitch != nil ? Float(flightWaypoint.gimbalPitch!) : 0
+					waypoint.actionTimeoutInSeconds = 30
+					waypoint.actionRepeatTimes = 1
+					
+					mission.add(waypoint)
+				} else {
+					print("=== iOS: waypointMission - waypoint without location coordinates - skipping.")
+				}
+			}
+			return DJIWaypointMission(mission: mission)
+		} else {
+			print("=== iOS: waypointMission - No waypoints available - exiting.")
+			return nil;
+		}
+	}
+	
+	func hardcodedWaypointMission(_ droneCoordinates: CLLocationCoordinate2D) -> DJIWaypointMission? {
         let mission = DJIMutableWaypointMission()
         mission.maxFlightSpeed = 15
         mission.autoFlightSpeed = 8
@@ -412,6 +550,94 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				print("=== iOS: Error: SetStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			}
+		}
+	}
+	
+	//Mark: - Flight Struct
+	
+	struct Flight: Codable {
+		var timeline: [FlightElement]?
+		
+		enum CodingKeys: String, CodingKey {
+			case timeline
+		}
+
+		init(from decoder: Decoder) throws {
+			let values = try decoder.container(keyedBy: CodingKeys.self)
+			
+			timeline = try values.decodeIfPresent([FlightElement].self, forKey: .timeline)
+		}
+	}
+
+	struct FlightElement: Codable {
+		var type: String?
+		var pointOfInterest: FlightLocation?
+		var maxFlightSpeed: Double?
+		var autoFlightSpeed: Double?
+		var finishedAction: String?
+		var headingMode: String?
+		var flightPathMode: String?
+		var rotateGimbalPitch: Bool?
+		var exitMissionOnRCSignalLost: Bool?
+		var waypoints: [FlightWaypoint]?
+		
+		enum CodingKeys: String, CodingKey {
+			case type, pointOfInterest, maxFlightSpeed, autoFlightSpeed, finishedAction, headingMode, flightPathMode, rotateGimbalPitch, exitMissionOnRCSignalLost, waypoints
+		}
+
+		init(from decoder: Decoder) throws {
+			let values = try decoder.container(keyedBy: CodingKeys.self)
+			
+			type = try values.decodeIfPresent(String.self, forKey: .type)
+			pointOfInterest = try values.decodeIfPresent(FlightLocation.self, forKey: .pointOfInterest)
+			autoFlightSpeed = try values.decodeIfPresent(Double.self, forKey: .autoFlightSpeed)
+			maxFlightSpeed = try values.decodeIfPresent(Double.self, forKey: .maxFlightSpeed)
+			exitMissionOnRCSignalLost = try values.decodeIfPresent(Bool.self, forKey: .exitMissionOnRCSignalLost)
+			finishedAction = try values.decodeIfPresent(String.self, forKey: .finishedAction)
+			flightPathMode = try values.decodeIfPresent(String.self, forKey: .flightPathMode)
+			headingMode = try values.decodeIfPresent(String.self, forKey: .headingMode)
+			rotateGimbalPitch = try values.decodeIfPresent(Bool.self, forKey: .rotateGimbalPitch)
+			waypoints = try values.decodeIfPresent([FlightWaypoint].self, forKey: .waypoints)
+		}
+	}
+	
+	struct FlightLocation: Codable {
+		var longitude: Double?
+		var latitude: Double?
+		var altitude: Double?
+		
+		enum CodingKeys: String, CodingKey {
+			case longitude, latitude, altitude
+		}
+		
+		init(from decoder: Decoder) throws {
+			let values = try decoder.container(keyedBy: CodingKeys.self)
+			
+			longitude = try values.decodeIfPresent(Double.self, forKey: .longitude)
+			latitude = try values.decodeIfPresent(Double.self, forKey: .latitude)
+			altitude = try values.decodeIfPresent(Double.self, forKey: .altitude)
+		}
+	}
+
+	struct FlightWaypoint: Codable {
+		var location: FlightLocation?
+		var heading: Int?
+		var cornerRadiusInMeters: Double?
+		var turnMode: String?
+		var gimbalPitch: Double?
+		
+		enum CodingKeys: String, CodingKey {
+			case location, heading, cornerRadiusInMeters, turnMode, gimbalPitch
+		}
+		
+		init(from decoder: Decoder) throws {
+			let values = try decoder.container(keyedBy: CodingKeys.self)
+			
+			location = try values.decodeIfPresent(FlightLocation.self, forKey: .location)
+			heading = try values.decodeIfPresent(Int.self, forKey: .heading)
+			cornerRadiusInMeters = try values.decodeIfPresent(Double.self, forKey: .cornerRadiusInMeters)
+			turnMode = try values.decodeIfPresent(String.self, forKey: .turnMode)
+			gimbalPitch = try values.decodeIfPresent(Double.self, forKey: .gimbalPitch)
 		}
 	}
 }
