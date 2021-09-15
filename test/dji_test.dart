@@ -22,7 +22,7 @@ void main() {
   //   expect(await Dji.platformVersion, '42');
   // });
 
-  test('Convertng Waypoint Mission Vector Objects to Location Objects', () {
+  test('Converting Waypoint Mission Vector Objects to Location Objects', () {
     Flight flight = Flight.fromJson({
       'timeline': [
         {
