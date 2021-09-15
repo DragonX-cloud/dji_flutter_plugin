@@ -1,7 +1,11 @@
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:async';
+
+import 'package:dji/constants.dart';
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:dji/dji.dart';
@@ -26,6 +30,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
+  FlightLocation? droneHomeLocation;
+
   @override
   void initState() {
     super.initState();
@@ -36,8 +42,6 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   // This function is triggered by the Native Host side whenever the Drone Status is changed.
   @override
   void setStatus(Drone drone) async {
-    // print('=== setStatus triggered ${drone.batteryPercent}');
-
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
       _droneAltitude = drone.altitude?.toStringAsFixed(2) ?? '0.0';
@@ -49,6 +53,17 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
       _dronePitch = drone.pitch?.toStringAsFixed(3) ?? '0.0';
       _droneYaw = drone.yaw?.toStringAsFixed(3) ?? '0.0';
     });
+
+    // Setting the inital drone location as the home location of the drone.
+    if (droneHomeLocation == null &&
+        drone.latitude != null &&
+        drone.longitude != null &&
+        drone.altitude != null) {
+      droneHomeLocation = FlightLocation(
+          latitude: drone.latitude!,
+          longitude: drone.longitude!,
+          altitude: drone.altitude!);
+    }
 
     // if (drone.status == 'Registered') {
     //   await Dji.connectDrone;
@@ -88,77 +103,154 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   Future<void> _registerApp() async {
     try {
       await Dji.registerApp;
-      print('registerApp succeeded.');
+      developer.log(
+        'registerApp succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('registerApp PlatformException Error: ${e.message}');
+      developer.log(
+        'registerApp PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('registerApp Error: ${e.toString()}');
+      developer.log(
+        'registerApp Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
   Future<void> _connectDrone() async {
     try {
       await Dji.connectDrone;
-      print('connectDrone succeeded.');
+      developer.log(
+        'connectDrone succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('connectDrone PlatformException Error: ${e.message}');
+      developer.log(
+        'connectDrone PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('connectDrone Error: ${e.toString()}');
+      developer.log(
+        'connectDrone Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
   Future<void> _disconnectDrone() async {
     try {
       await Dji.disconnectDrone;
-      print('disconnectDrone succeeded.');
+      developer.log(
+        'disconnectDrone succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('disconnectDrone PlatformException Error: ${e.message}');
+      developer.log(
+        'disconnectDrone PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('disconnectDrone Error: ${e.toString()}');
+      developer.log(
+        'disconnectDrone Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
   Future<void> _delegateDrone() async {
     try {
       await Dji.delegateDrone;
-      print('delegateDrone succeeded.');
+      developer.log(
+        'delegateDrone succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('delegateDrone PlatformException Error: ${e.message}');
+      developer.log(
+        'delegateDrone PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('delegateDrone Error: ${e.toString()}');
+      developer.log(
+        'delegateDrone Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
   Future<void> _takeOff() async {
     try {
       await Dji.takeOff;
-      print('Takeoff succeeded.');
+      developer.log(
+        'Takeoff succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('Takeoff PlatformException Error: ${e.message}');
+      developer.log(
+        'Takeoff PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('Takeoff Error: ${e.toString()}');
+      developer.log(
+        'Takeoff Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
   Future<void> _land() async {
     try {
       await Dji.land;
-      print('Land succeeded.');
+      developer.log(
+        'Land succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('Land PlatformException Error: ${e.message}');
+      developer.log(
+        'Land PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('Land Error: ${e.toString()}');
+      developer.log(
+        'Land Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
   Future<void> _timeline() async {
     try {
       await Dji.timeline;
-      print('Timeline succeeded.');
+      developer.log(
+        'Timeline succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('Timeline PlatformException Error: ${e.message}');
+      developer.log(
+        'Timeline PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('Timeline Error: ${e.toString()}');
+      developer.log(
+        'Timeline Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
@@ -176,9 +268,6 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
 
       // Flight flight = Flight(timeline);
 
-      // print('=== Flight: ');
-      // print(flight.toJson());
-
       Flight flight = Flight.fromJson({
         'timeline': [
           {
@@ -186,6 +275,11 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
           },
           {
             'type': 'waypointMission',
+            'pointOfInterest': {
+              'longitude': 0.0,
+              'latitude': 0.0,
+              'altitude': 0.0,
+            },
             'maxFlightSpeed': 25.0,
             'autoFlightSpeed': 10.0,
             'finishedAction': 'noAction',
@@ -195,23 +289,33 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
             'exitMissionOnRCSignalLost': true,
             'waypoints': [
               {
-                'location': {
-                  'longitude': 1.0,
-                  'latitude': 1.0,
-                  'altitude': 1.0,
+                // 'location': {
+                //   'longitude': 1.0,
+                //   'latitude': 1.0,
+                //   'altitude': 1.0,
+                // },
+                'vector': {
+                  'distanceFromPointOfInterest': 100,
+                  'headingRelativeToPointOfInterest': 45,
+                  'destinationAltitude': 20,
                 },
-                'heading': 0,
+                //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
                 'gimbalPitch': 0,
               },
               {
-                'location': {
-                  'longitude': 2.0,
-                  'latitude': 2.0,
-                  'altitude': 2.0,
+                // 'location': {
+                //   'longitude': 2.0,
+                //   'latitude': 2.0,
+                //   'altitude': 2.0,
+                // },
+                'vector': {
+                  'distanceFromPointOfInterest': 10,
+                  'headingRelativeToPointOfInterest': -45,
+                  'destinationAltitude': 5,
                 },
-                'heading': 0,
+                //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
                 'gimbalPitch': 0,
@@ -224,12 +328,47 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
         ],
       });
 
+      droneHomeLocation =
+          FlightLocation(latitude: 0.0, longitude: 0.0, altitude: 0);
+
+      if (droneHomeLocation == null) {
+        developer.log(
+            'No drone home location exist - unable to start the flight',
+            name: kLogKindDjiFlutterPlugin);
+        return;
+      }
+
+      // Converting any vector definitions in waypoint-mission to locations
+      for (dynamic element in flight.timeline) {
+        if (element.type == FlightElementType.waypointMission) {
+          coordinatesConvertion.convertWaypointMissionVectorsToLocations(
+              flightElementWaypointMission: element,
+              droneHomeLocation: droneHomeLocation!);
+        }
+      }
+
+      developer.log(
+        'Flight Object: ${jsonEncode(flight)}',
+        name: kLogKindDjiFlutterPlugin,
+      );
+
       await Dji.start(flight: flight);
-      print('Start Flight succeeded.');
+      developer.log(
+        'Start Flight succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
-      print('Start Flight PlatformException Error: ${e.message}');
+      developer.log(
+        'Start Flight PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     } catch (e) {
-      print('Start Flight Error: ${e.toString()}');
+      developer.log(
+        'Start Flight Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 

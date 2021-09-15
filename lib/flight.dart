@@ -8,6 +8,12 @@
 * https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b
 */
 
+import 'dart:convert';
+import 'dart:developer' as developer;
+import 'dart:math';
+
+import 'package:dji/constants.dart';
+
 class EnumConvertion {
   static bool _isEnumItem(enumItem) {
     final splitEnum = enumItem.toString().split('.');
@@ -30,6 +36,88 @@ class EnumConvertion {
     } on StateError catch (_) {
       return null;
     }
+  }
+}
+
+class coordinatesConvertion {
+  // Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
+  // Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
+  // 1 degree = 111,319.9 m
+  // 0.00000898311 degrees = 1m
+  //
+  // Example:
+  //          Destination (x3, y3)
+  //                 /
+  //     Drone      /
+  //    (x2,y2)    /
+  //       |      /
+  //       |     / a
+  //       |    /
+  //       |   /
+  //       |  /
+  //       | /
+  //       |/
+  // pointOfInterest (x1, y1)
+  //
+  static FlightLocation vectorToLocation(
+      {required FlightLocation droneLocation,
+      required FlightLocation pointOfInterest,
+      required FlightVector vector}) {
+    final double azimuthToDestination;
+    final double destinationLatitude;
+    final double destinationLongitude;
+
+    const meterToDecimalDegree = 0.00000898311;
+
+    azimuthToDestination = 180 -
+        vector.headingRelativeToPointOfInterest -
+        (atan((droneLocation.latitude - pointOfInterest.latitude).abs() /
+                (pointOfInterest.longitude - pointOfInterest.longitude).abs()) *
+            180 /
+            pi);
+    // Latitude = North/South
+    destinationLatitude = pointOfInterest.latitude +
+        (vector.distanceFromPointOfInterest *
+            sin(azimuthToDestination * pi / 180) *
+            meterToDecimalDegree);
+    // Longitude = East/West
+    destinationLongitude = pointOfInterest.longitude +
+        (vector.distanceFromPointOfInterest *
+            cos(azimuthToDestination * pi / 180) *
+            meterToDecimalDegree);
+
+    return FlightLocation(
+        latitude: destinationLatitude,
+        longitude: destinationLongitude,
+        altitude: vector.destinationAltitude);
+  }
+
+  static FlightElementWaypointMission? convertWaypointMissionVectorsToLocations(
+      {required FlightElementWaypointMission flightElementWaypointMission,
+      required FlightLocation droneHomeLocation}) {
+    if (flightElementWaypointMission.pointOfInterest == null) {
+      developer.log(
+        'convertWaypointMissionVectorsToLocations - Waypoint Mission Point of Interest does not exist',
+        name: kLogKindDjiFlutterPlugin,
+      );
+      return null;
+    }
+
+    for (FlightWaypoint waypoint in flightElementWaypointMission.waypoints) {
+      if (waypoint.vector != null && waypoint.location == null) {
+        waypoint.location = coordinatesConvertion.vectorToLocation(
+            droneLocation: droneHomeLocation,
+            pointOfInterest: flightElementWaypointMission.pointOfInterest!,
+            vector: waypoint.vector!);
+      } else {
+        // Location already exists - Keeping the existing waypoint
+      }
+    }
+
+    developer.log(
+      'convertWaypointMissionVectorsToLocations - updated waypoints: ${jsonEncode(flightElementWaypointMission.waypoints)}',
+      name: kLogKindDjiFlutterPlugin,
+    );
   }
 }
 
@@ -89,25 +177,54 @@ class FlightElement {
 // In the DJI SDK, 2D Coordinates (Longitude, Latitude) are defined by Class CLLocationCoordinate2D
 // While 3D Coordinates (Longitude, Latitude, Altitude) are defined by Class CLLocation
 class FlightLocation {
-  final double longitude;
   final double latitude;
+  final double longitude;
   final double altitude;
 
   FlightLocation({
-    required this.longitude,
     required this.latitude,
+    required this.longitude,
     required this.altitude,
   });
 
   FlightLocation.fromJson(Map<String, dynamic> json)
-      : this.longitude = double.parse(json['longitude'].toString()),
-        this.latitude = double.parse(json['latitude'].toString()),
+      : this.latitude = double.parse(json['latitude'].toString()),
+        this.longitude = double.parse(json['longitude'].toString()),
         this.altitude = double.parse(json['altitude'].toString());
 
   Map<String, dynamic> toJson() => {
-        'longitude': longitude,
         'latitude': latitude,
+        'longitude': longitude,
         'altitude': altitude,
+      };
+}
+
+// The Flight Vector defines the distance and heading towards the destination in relation to the point-of-interest.
+// Including the altitude at the destination.
+// The destination is the waypoint.
+// The heading is the angle between the point-of-interest (of the Waypoint Mission) and the destination waypoint.
+class FlightVector {
+  final double distanceFromPointOfInterest;
+  final double headingRelativeToPointOfInterest;
+  final double destinationAltitude;
+
+  FlightVector(
+      {required this.distanceFromPointOfInterest,
+      required this.headingRelativeToPointOfInterest,
+      required this.destinationAltitude});
+
+  FlightVector.fromJson(Map<String, dynamic> json)
+      : this.distanceFromPointOfInterest =
+            double.parse(json['distanceFromPointOfInterest'].toString()),
+        this.headingRelativeToPointOfInterest =
+            double.parse(json['headingRelativeToPointOfInterest'].toString()),
+        this.destinationAltitude =
+            double.parse(json['destinationAltitude'].toString());
+
+  Map<String, dynamic> toJson() => {
+        'distanceFromPointOfInterest': distanceFromPointOfInterest,
+        'headingRelativeToPointOfInterest': headingRelativeToPointOfInterest,
+        'destinationAltitude': destinationAltitude,
       };
 }
 
@@ -119,7 +236,9 @@ enum FlightWaypointTurnMode {
 }
 
 class FlightWaypoint {
-  final FlightLocation? location;
+  FlightLocation?
+      location; // location is mutatable because if we have a vector instead of location - we convert the vector to a location before using the waypoint.
+  final FlightVector? vector;
   final int?
       heading; // -180..180 degrees; Relevant only if flightWaypointMissionHeadingMode is FlightWaypointMissionHeadingMode.usingWaypointHeading;
   final double? cornerRadiusInMeters;
@@ -129,6 +248,7 @@ class FlightWaypoint {
 
   FlightWaypoint({
     required this.location,
+    required this.vector,
     this.heading = 0,
     this.cornerRadiusInMeters = 2,
     this.turnMode = FlightWaypointTurnMode.clockwise,
@@ -136,7 +256,12 @@ class FlightWaypoint {
   });
 
   FlightWaypoint.fromJson(Map<String, dynamic> json)
-      : this.location = json['location'].fromJson(),
+      : this.location = json['location'] != null
+            ? FlightLocation.fromJson(json['location'])
+            : null,
+        this.vector = json['vector'] != null
+            ? FlightVector.fromJson(json['vector'])
+            : null,
         this.heading = json['heading'] != null
             ? int.parse(json['heading'].toString())
             : null,
@@ -151,6 +276,7 @@ class FlightWaypoint {
 
   Map<String, dynamic> toJson() => {
         'location': location?.toJson(),
+        'vector': vector?.toJson(),
         'heading': heading,
         'cornerRadiusInMeters': cornerRadiusInMeters,
         'turnMode': EnumConvertion.convertToString(turnMode),
@@ -204,7 +330,9 @@ class FlightElementWaypointMission extends FlightElement {
   }) : super(type: FlightElementType.waypointMission);
 
   FlightElementWaypointMission.fromJson(Map<String, dynamic> json)
-      : this.pointOfInterest = json['pointOfInterest'].fromJson(),
+      : this.pointOfInterest = json['pointOfInterest'] != null
+            ? FlightLocation.fromJson(json['pointOfInterest'])
+            : null,
         this.maxFlightSpeed = json['maxFlightSpeed'] != null
             ? double.parse(json['maxFlightSpeed'].toString())
             : null,
