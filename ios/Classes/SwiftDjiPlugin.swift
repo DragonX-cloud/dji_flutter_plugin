@@ -493,9 +493,9 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	//MARK: - DJIFlightController Delegate Methods
 	
 	public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
-		var _droneAltitude: NSNumber = 0
 		var _droneLatitude: NSNumber = 0
 		var _droneLongitude: NSNumber = 0
+		var _droneAltitude: NSNumber = 0
 		var _droneSpeed: NSNumber = 0
 		var _droneRoll: NSNumber = 0
 		var _dronePitch: NSNumber = 0
@@ -537,9 +537,9 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 		
 		// Updating Flutter
-		fltDrone.altitude = _droneAltitude
 		fltDrone.latitude = _droneLatitude
 		fltDrone.longitude = _droneLongitude
+		fltDrone.altitude = _droneAltitude
 		fltDrone.speed = _droneSpeed
 		fltDrone.roll = _droneRoll
 		fltDrone.pitch = _dronePitch
@@ -602,19 +602,19 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	struct FlightLocation: Codable {
-		var longitude: Double?
 		var latitude: Double?
+		var longitude: Double?
 		var altitude: Double?
 		
 		enum CodingKeys: String, CodingKey {
-			case longitude, latitude, altitude
+			case latitude, longitude, altitude
 		}
 		
 		init(from decoder: Decoder) throws {
 			let values = try decoder.container(keyedBy: CodingKeys.self)
 			
-			longitude = try values.decodeIfPresent(Double.self, forKey: .longitude)
 			latitude = try values.decodeIfPresent(Double.self, forKey: .latitude)
+			longitude = try values.decodeIfPresent(Double.self, forKey: .longitude)
 			altitude = try values.decodeIfPresent(Double.self, forKey: .altitude)
 		}
 	}
