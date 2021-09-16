@@ -4,7 +4,7 @@ import 'package:dji/flight.dart';
 import 'package:dji/dji.dart';
 
 void main() {
-  const MethodChannel channel = MethodChannel('dji');
+  // const MethodChannel channel = MethodChannel('dji');
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -71,7 +71,7 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        coordinatesConvertion.convertWaypointMissionVectorsToLocations(
+        CoordinatesConvertion.convertWaypointMissionVectorsToLocations(
             flightElementWaypointMission: element,
             droneHomeLocation: droneHomeLocation);
       }

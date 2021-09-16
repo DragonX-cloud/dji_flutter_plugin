@@ -39,7 +39,7 @@ class EnumConvertion {
   }
 }
 
-class coordinatesConvertion {
+class CoordinatesConvertion {
   // Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
   // Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
   // 1 degree = 111,319.9 m
@@ -105,7 +105,7 @@ class coordinatesConvertion {
 
     for (FlightWaypoint waypoint in flightElementWaypointMission.waypoints) {
       if (waypoint.vector != null && waypoint.location == null) {
-        waypoint.location = coordinatesConvertion.vectorToLocation(
+        waypoint.location = CoordinatesConvertion.vectorToLocation(
             droneLocation: droneHomeLocation,
             pointOfInterest: flightElementWaypointMission.pointOfInterest!,
             vector: waypoint.vector!);
