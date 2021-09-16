@@ -341,9 +341,10 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
       // Converting any vector definitions in waypoint-mission to locations
       for (dynamic element in flight.timeline) {
         if (element.type == FlightElementType.waypointMission) {
-          CoordinatesConvertion.convertWaypointMissionVectorsToLocations(
-              flightElementWaypointMission: element,
-              droneHomeLocation: droneHomeLocation!);
+          CoordinatesConvertion
+              .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+                  flightElementWaypointMission: element,
+                  droneHomeLocation: droneHomeLocation!);
         }
       }
 

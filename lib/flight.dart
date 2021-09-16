@@ -40,6 +40,8 @@ class EnumConvertion {
 }
 
 class CoordinatesConvertion {
+  static const meterToDecimalDegree = 0.00000898311;
+
   // Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
   // Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
   // 1 degree = 111,319.9 m
@@ -67,8 +69,6 @@ class CoordinatesConvertion {
     final double destinationLatitude;
     final double destinationLongitude;
 
-    const meterToDecimalDegree = 0.00000898311;
-
     azimuthToDestination = 180 -
         vector.headingRelativeToPointOfInterest -
         (atan((droneLocation.latitude - pointOfInterest.latitude).abs() /
@@ -92,9 +92,38 @@ class CoordinatesConvertion {
         altitude: vector.destinationAltitude);
   }
 
-  static FlightElementWaypointMission? convertWaypointMissionVectorsToLocations(
-      {required FlightElementWaypointMission flightElementWaypointMission,
-      required FlightLocation droneHomeLocation}) {
+  static double computeGimbalAngle(
+      FlightLocation pointOfInterest, FlightLocation droneLocation) {
+    // Calculating the distance between the drone and the point-of-interest (inclduing height)
+    final double latitudeDeltaInMeters =
+        (droneLocation.latitude / meterToDecimalDegree) -
+            (pointOfInterest.latitude / meterToDecimalDegree);
+
+    final double longitudeDeltaInMeters =
+        (droneLocation.longitude / meterToDecimalDegree) -
+            (pointOfInterest.longitude / meterToDecimalDegree);
+
+    final double altitudeDeltaInMeters =
+        droneLocation.altitude - pointOfInterest.altitude;
+
+    // The ground distance (in meters) between the drone and the point-of-interest (without altitude)
+    final double groundDistanceInMeters =
+        sqrt(pow(longitudeDeltaInMeters, 2) + pow(latitudeDeltaInMeters, 2));
+
+    // The distance between the drone and the point-of-interest (with altitude)
+    //final double distance = sqrt(pow(groundDistanceInMeters, 2) + pow(altitudeDeltaInMeters, 2));
+
+    final double gimbalAngleInDegrees =
+        atan(groundDistanceInMeters / altitudeDeltaInMeters) * 180 / pi;
+
+    // We return the gimbal angle as a "minus" to match the DJI SDK gimbalPitch definition.
+    return gimbalAngleInDegrees.abs() * -1;
+  }
+
+  static FlightElementWaypointMission?
+      convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+          {required FlightElementWaypointMission flightElementWaypointMission,
+          required FlightLocation droneHomeLocation}) {
     if (flightElementWaypointMission.pointOfInterest == null) {
       developer.log(
         'convertWaypointMissionVectorsToLocations - Waypoint Mission Point of Interest does not exist',
@@ -104,6 +133,7 @@ class CoordinatesConvertion {
     }
 
     for (FlightWaypoint waypoint in flightElementWaypointMission.waypoints) {
+      // Compute Location per Vector definition
       if (waypoint.vector != null && waypoint.location == null) {
         waypoint.location = CoordinatesConvertion.vectorToLocation(
             droneLocation: droneHomeLocation,
@@ -111,6 +141,12 @@ class CoordinatesConvertion {
             vector: waypoint.vector!);
       } else {
         // Location already exists - Keeping the existing waypoint
+      }
+
+      // Compute Gimbal Angle, but only if it doesn't exist
+      if (waypoint.gimbalPitch == null && waypoint.location != null) {
+        waypoint.gimbalPitch = CoordinatesConvertion.computeGimbalAngle(
+            flightElementWaypointMission.pointOfInterest!, waypoint.location!);
       }
     }
 
@@ -204,9 +240,9 @@ class FlightLocation {
 // The destination is the waypoint.
 // The heading is the angle between the point-of-interest (of the Waypoint Mission) and the destination waypoint.
 class FlightVector {
-  final double distanceFromPointOfInterest;
-  final double headingRelativeToPointOfInterest;
-  final double destinationAltitude;
+  final double distanceFromPointOfInterest; // Distance in Meters
+  final double headingRelativeToPointOfInterest; // Angle in Degrees
+  final double destinationAltitude; // Altitude in Meters
 
   FlightVector(
       {required this.distanceFromPointOfInterest,
@@ -243,7 +279,7 @@ class FlightWaypoint {
       heading; // -180..180 degrees; Relevant only if flightWaypointMissionHeadingMode is FlightWaypointMissionHeadingMode.usingWaypointHeading;
   final double? cornerRadiusInMeters;
   final FlightWaypointTurnMode? turnMode;
-  final double?
+  double?
       gimbalPitch; // The final position of the gimbal, when the drone reaches the endpoint; Relevant only if rotateGimbalPitch is TRUE;
 
   FlightWaypoint({
@@ -252,7 +288,7 @@ class FlightWaypoint {
     this.heading = 0,
     this.cornerRadiusInMeters = 2,
     this.turnMode = FlightWaypointTurnMode.clockwise,
-    this.gimbalPitch = 0,
+    this.gimbalPitch,
   });
 
   FlightWaypoint.fromJson(Map<String, dynamic> json)

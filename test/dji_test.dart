@@ -22,7 +22,9 @@ void main() {
   //   expect(await Dji.platformVersion, '42');
   // });
 
-  test('Converting Waypoint Mission Vector Objects to Location Objects', () {
+  test(
+      'Converting Waypoint Mission Vector Objects to Location Objects and compute Gimbal Pitch',
+      () {
     Flight flight = Flight.fromJson({
       'timeline': [
         {
@@ -48,7 +50,6 @@ void main() {
               },
               'cornerRadiusInMeters': 5,
               'turnMode': 'clockwise',
-              'gimbalPitch': 0,
             },
             {
               'vector': {
@@ -58,7 +59,6 @@ void main() {
               },
               'cornerRadiusInMeters': 5,
               'turnMode': 'clockwise',
-              'gimbalPitch': 0,
             },
           ],
         },
@@ -71,17 +71,20 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        CoordinatesConvertion.convertWaypointMissionVectorsToLocations(
-            flightElementWaypointMission: element,
-            droneHomeLocation: droneHomeLocation);
+        CoordinatesConvertion
+            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+                flightElementWaypointMission: element,
+                droneHomeLocation: droneHomeLocation);
       }
     }
 
     final FlightElementWaypointMission element =
         flight.timeline[0] as FlightElementWaypointMission;
+
     expect(element.waypoints[0].location?.latitude,
         equals(0.000006352017997144686));
     expect(element.waypoints[0].location?.longitude,
         equals(0.000006352017997144687));
+    expect(element.waypoints[0].gimbalPitch, equals(-45));
   });
 }
