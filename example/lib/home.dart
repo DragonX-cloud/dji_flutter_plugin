@@ -19,7 +19,6 @@ class HomeWidget extends StatefulWidget {
 
 class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
-  // int _batteryLevel = -1;
   String _droneStatus = 'Disconnected';
   String _droneBatteryPercent = '0';
   String _droneAltitude = '0.0';
@@ -64,16 +63,11 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
           longitude: drone.longitude!,
           altitude: drone.altitude!);
     }
-
-    // if (drone.status == 'Registered') {
-    //   await Dji.connectDrone;
-    // }
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> _initDroneState() async {
     String platformVersion;
-    int batteryLevel;
 
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
@@ -83,12 +77,6 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
       platformVersion = 'Failed to get platform version.';
     }
 
-    try {
-      batteryLevel = await Dji.batteryLevel ?? 0;
-    } on PlatformException {
-      batteryLevel = -1;
-    }
-
     // If the widget was removed from the tree while the asynchronous platform
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
@@ -96,7 +84,6 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
 
     setState(() {
       _platformVersion = platformVersion;
-      // _batteryLevel = batteryLevel;
     });
   }
 
@@ -256,18 +243,6 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
 
   Future<void> _start() async {
     try {
-      // List<FlightElement> timeline = [];
-
-      // final FlightElement takeOffElement =
-      //     FlightElement(type: FlightElementType.takeOff);
-      // final FlightElement landElement =
-      //     FlightElement(type: FlightElementType.land);
-
-      // timeline.add(takeOffElement);
-      // timeline.add(landElement);
-
-      // Flight flight = Flight(timeline);
-
       Flight flight = Flight.fromJson({
         'timeline': [
           {
@@ -305,7 +280,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                 //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
-                'gimbalPitch': 0,
+                // 'gimbalPitch': 0,
               },
               {
                 // 'location': {
@@ -321,7 +296,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                 //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
-                'gimbalPitch': 0,
+                // 'gimbalPitch': 0,
               },
             ],
           },
@@ -482,10 +457,6 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                               label: 'Running on',
                               value: _platformVersion,
                             ),
-                            // dronePropertyRow(
-                            //   label: 'Battery Level',
-                            //   value: _batteryLevel.toString(),
-                            // ),
                             dronePropertyRow(
                               label: 'Drone Status',
                               value: _droneStatus,
