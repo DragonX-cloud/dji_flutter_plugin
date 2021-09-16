@@ -5,11 +5,12 @@ This open source project intends to bring the DJI SDK functionalities into Flutt
 **// WORK IN PROGRESS**
 
 ## Plugin Creation
-
 This project was created by the Flutter plugin template using:
 ```
-flutter create --org cloud.dragonx.plugin.flutter --template=plugin --platforms=ios -i swift dji
+flutter create --org cloud.dragonx.plugin.flutter --template=plugin --platforms=android,ios -i swift dji
 ```
+Note: When not specifying "-a java" - the Android project is Kotlin.
+We're using iOS Swift and Android Kotlin (The Android project is Kotlin, although the DJI SDK is in Java).
 
 [ ! ] Important Note
 Make sure you `cd example` and run `flutter build ios --no-codesign` before starting to change anything in Xcode or Flutter.
@@ -26,8 +27,8 @@ flutter pub run pigeon \
   --objc_header_out ios/Classes/messages.h \
   --objc_source_out ios/Classes/messages.m \
   --objc_prefix FLT \
-//  --java_out android/src/main/java/cloud/dragonx/dji/Messages.java \
-//  --java_package "cloud.dragonx.plugin.flutter.dji"
+  --java_out android/src/main/java/cloud/dragonx/dji/Messages.java \
+  --java_package "cloud.dragonx.plugin.flutter.dji"
 
 ### Pigeon Swift Example
 https://github.com/DJI-Mobile-SDK-Tutorials/iOS-ImportAndActivateSDKInXcode-Swift
@@ -52,6 +53,11 @@ Add the key `NSBluetoothAlwaysUsageDescription` to the Info.plist with a descrip
 
 Note:
 Don't forget to run `pod install` from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).
+
+## Configuring the Android Studio Kotlin project
+https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#import-maven-dependency
+
+
 
 ## Notes in regards to DJI SDK
 - Decided not to implement the "Bridge App" support, because turned out that - for debugging / development purposes - it is much easier to simply connect to the drone's Wifi, and let it connect using it (instead of using the Remote Controller).
