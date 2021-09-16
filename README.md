@@ -7,9 +7,14 @@ This open source project intends to bring the DJI SDK functionalities into Flutt
 ## Plugin Creation
 This project was created by the Flutter plugin template using:
 ```
-flutter create --org cloud.dragonx.plugin.flutter --template=plugin --platforms=android,ios -i swift dji
+flutter create --org cloud.dragonx.plugin.flutter --template=plugin --platforms=ios -i swift dji
 ```
-Note: When not specifying "-a java" - the Android project is Kotlin.
+Android was added later on using:
+```
+flutter create --org cloud.dragonx.plugin.flutter --template=plugin --platforms=android .
+```
+Note: The folder name is "dji", just like we specified in the original flutter create command for iOS (otherwise it will cause different package names and class paths).
+Also, when not specifying "-a java" - the Android project is Kotlin.
 We're using iOS Swift and Android Kotlin (The Android project is Kotlin, although the DJI SDK is in Java).
 
 [ ! ] Important Note
@@ -27,7 +32,7 @@ flutter pub run pigeon \
   --objc_header_out ios/Classes/messages.h \
   --objc_source_out ios/Classes/messages.m \
   --objc_prefix FLT \
-  --java_out android/src/main/java/cloud/dragonx/dji/Messages.java \
+  --java_out android/src/main/java/cloud/dragonx/plugin/flutter/dji/Messages.java \
   --java_package "cloud.dragonx.plugin.flutter.dji"
 
 ### Pigeon Swift Example
