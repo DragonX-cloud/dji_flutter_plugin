@@ -263,6 +263,18 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 					// TBD...
 					return
 					
+				case "singleShootPhoto":
+					scheduledElements.append(DJIShootPhotoAction(singleShootPhoto: ())!)
+					return
+					
+				case "startRecordVideo":
+					scheduledElements.append(DJIRecordVideoAction(startRecordVideo: ())!)
+					return
+				
+				case "stopRecordVideo":
+					scheduledElements.append(DJIRecordVideoAction(stopRecordVideo: ())!)
+					return
+					
 				default:
 					// Do Nothing
 					return

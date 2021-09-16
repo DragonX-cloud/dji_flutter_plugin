@@ -185,12 +185,15 @@ class Flight {
 }
 
 enum FlightElementType {
-  takeOff, // 'DJITakeOffAction';
-  land, // 'DJILandAction';
-  goto, // 'DJIGoToAction';
-  home, // 'DJIGoHomeAction';
-  hotpoint, // 'hotPointAction';
-  waypointMission, // 'waypointMission';
+  takeOff,
+  land,
+  // goto,
+  // home,
+  // hotpoint,
+  waypointMission,
+  singleShootPhoto,
+  startRecordVideo,
+  stopRecordVideo,
 }
 
 // Flight Element

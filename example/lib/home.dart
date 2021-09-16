@@ -274,6 +274,9 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
             'type': 'takeOff',
           },
           {
+            'type': 'startRecordVideo',
+          },
+          {
             'type': 'waypointMission',
             'pointOfInterest': {
               'longitude': 0.0,
@@ -321,6 +324,9 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
                 'gimbalPitch': 0,
               },
             ],
+          },
+          {
+            'type': 'stopRecordVideo',
           },
           {
             'type': 'land',
