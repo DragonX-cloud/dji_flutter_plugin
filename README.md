@@ -60,8 +60,16 @@ Note:
 Don't forget to run `pod install` from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).
 
 ## Configuring the Android Studio Kotlin project
+https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio
+
+The DJI Tutorial can be found here below, but please note you must rely on the above Github Repo as reference, because many of the code examples inside this tutorial are outdated:
 https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#import-maven-dependency
 
+In MainActivity.kt:
+- Need to remove "import android.R"
+
+In build.gradle(:app):
+- Had to set the Target SDK to 30 (and not 31, as it caused issues with the Manifest merge)
 
 
 ## Notes in regards to DJI SDK
