@@ -108,36 +108,40 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi {
 
   companion object {
     private val TAG = "=== DjiPlugin Android"
-//    const val FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change"
+    const val FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change"
     private val mProduct: BaseProduct? = null
-//    private val REQUIRED_PERMISSION_LIST = arrayOf<String>(
-//      Manifest.permission.VIBRATE,
-//      Manifest.permission.INTERNET,
-//      Manifest.permission.ACCESS_WIFI_STATE,
-//      Manifest.permission.WAKE_LOCK,
-//      Manifest.permission.ACCESS_COARSE_LOCATION,
-//      Manifest.permission.ACCESS_NETWORK_STATE,
-//      Manifest.permission.ACCESS_FINE_LOCATION,
-//      Manifest.permission.CHANGE_WIFI_STATE,
-//      Manifest.permission.WRITE_EXTERNAL_STORAGE,
-//      Manifest.permission.BLUETOOTH,
-//      Manifest.permission.BLUETOOTH_ADMIN,
-//      Manifest.permission.READ_EXTERNAL_STORAGE,
-//      Manifest.permission.READ_PHONE_STATE
-//    )
-//    private const val REQUEST_PERMISSION_CODE = 12345
+    private val REQUIRED_PERMISSION_LIST = arrayOf<String>(
+      Manifest.permission.VIBRATE,
+      Manifest.permission.INTERNET,
+      Manifest.permission.ACCESS_WIFI_STATE,
+      Manifest.permission.WAKE_LOCK,
+      Manifest.permission.ACCESS_COARSE_LOCATION,
+      Manifest.permission.ACCESS_NETWORK_STATE,
+      Manifest.permission.ACCESS_FINE_LOCATION,
+      Manifest.permission.CHANGE_WIFI_STATE,
+      Manifest.permission.WRITE_EXTERNAL_STORAGE,
+      Manifest.permission.BLUETOOTH,
+      Manifest.permission.BLUETOOTH_ADMIN,
+      Manifest.permission.READ_EXTERNAL_STORAGE,
+      Manifest.permission.READ_PHONE_STATE
+    )
+    private const val REQUEST_PERMISSION_CODE = 12345
   }
 
   override fun registerApp() {
-    DJISDKManager.getInstance().registerApp(null, object : SDKManagerCallback {
+    Log.d(TAG, "Register App Started")
+    
+    DJISDKManager.getInstance().registerApp(null, object: SDKManagerCallback {
       override fun onRegister(djiError: DJIError) {
         if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
 //          DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
-          Log.v(TAG, "Register Success")
+          Log.d(TAG, "Register Success")
+          print("Register Success")
           _fltSetStatus("Registered")
         } else {
-          Log.v(TAG, "Register Failed")
-          Log.v(TAG, djiError.description)
+          Log.d(TAG, "Register Failed")
+          print("Register Failed")
+          Log.d(TAG, djiError.description)
         }
       }
 
