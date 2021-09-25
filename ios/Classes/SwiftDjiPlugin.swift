@@ -23,10 +23,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
 			if let error = e {
-				print("=== iOS: Error: SetStatus Closure Error")
+				print("=== DjiPlugin iOS: Error: SetStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			} else {
-				print("=== iOS: setStatus Closure Success: \(status)")
+				print("=== DjiPlugin iOS: setStatus Closure Success: \(status)")
 			}
 		}
 	}
@@ -45,10 +45,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		let device = UIDevice.current
 		device.isBatteryMonitoringEnabled = true
 		if device.batteryState == .unknown {
-			print("=== iOS Error: Host (Mobile Device) Battery info unavailable; \(device.batteryState.rawValue)")
+			print("=== DjiPlugin iOS Error: Host (Mobile Device) Battery info unavailable; \(device.batteryState.rawValue)")
 			result.level = -1
 		} else {
-			print("=== iOS: Host (Mobile Device) Battery level \(device.batteryLevel)")
+			print("=== DjiPlugin iOS: Host (Mobile Device) Battery level \(device.batteryLevel)")
 			result.level = Int(device.batteryLevel * 100) as NSNumber
 		}
 
@@ -56,72 +56,72 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 
 	public func registerAppWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== iOS: Register App Started")
+		print("=== DjiPlugin iOS: Register App Started")
 		DJISDKManager.registerApp(with: self)
 	}
 
 	public func connectDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== iOS: Connect Drone Started")
+		print("=== DjiPlugin iOS: Connect Drone Started")
 
 //		DJISDKManager.enableBridgeMode(withBridgeAppIP: "192.168.1.105")
 		DJISDKManager.startConnectionToProduct()
 	}
 
 	public func disconnectDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== iOS: Disconnect Drone Started")
+		print("=== DjiPlugin iOS: Disconnect Drone Started")
 		DJISDKManager.stopConnectionToProduct()
 	}
 
 	public func delegateDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== iOS: Delegate Drone Started")
+		print("=== DjiPlugin iOS: Delegate Drone Started")
 		if let product = DJISDKManager.product() {
 			if product.isKind(of: DJIAircraft.self) {
 				drone = (DJISDKManager.product()! as! DJIAircraft)
 
 				if let _ = drone?.flightController {
-					print("=== iOS: Drone Flight Controller Delegate successfuly configured")
+					print("=== DjiPlugin iOS: Drone Flight Controller Delegate successfuly configured")
 					drone!.flightController!.delegate = self
 				} else {
-					print("=== iOS: Product Connect Error - No Flight Controller Object")
+					print("=== DjiPlugin iOS: Product Connect Error - No Flight Controller Object")
 					_fltSetStatus("Error")
 					return
 				}
 
 				if let _ = drone?.battery {
-					print("=== iOS: Drone Battery Delegate successfuly configured")
+					print("=== DjiPlugin iOS: Drone Battery Delegate successfuly configured")
 					drone!.battery!.delegate = self
 				} else {
-					print("=== iOS: Product Connect Error - No Battery Object")
+					print("=== DjiPlugin iOS: Product Connect Error - No Battery Object")
 					_fltSetStatus("Error")
 					return
 				}
 
-				print("=== iOS: Delegations completed")
+				print("=== DjiPlugin iOS: Delegations completed")
 				_fltSetStatus("Delegated")
 
 			} else {
-				print("=== iOS: Error - Delegations - DJI Aircraft Object does not exist")
+				print("=== DjiPlugin iOS: Error - Delegations - DJI Aircraft Object does not exist")
 			}
 		} else {
-			print("=== iOS: Error - Delegations - DJI Product Object does not exist")
+			print("=== DjiPlugin iOS: Error - Delegations - DJI Product Object does not exist")
 		}
 	}
 
 	public func takeOffWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if let _droneFlightController = drone?.flightController {
-			print("=== iOS: Takeoff Started")
+			print("=== DjiPlugin iOS: Takeoff Started")
 			_droneFlightController.startTakeoff(completion: nil)
 		} else {
-			print("=== iOS: Takeoff Failed - No Flight Controller")
+			print("=== DjiPlugin iOS: Takeoff Failed - No Flight Controller")
 		}
 	}
 
 	public func landWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if let _droneFlightController = drone?.flightController {
-			print("=== iOS: Landing Started")
+			print("=== DjiPlugin iOS: Landing Started")
 			_droneFlightController.startLanding(completion: nil)
 		} else {
-			print("=== iOS: Landing Failed - No Flight Controller")
+			print("=== DjiPlugin iOS: Landing Failed - No Flight Controller")
 		}
 	}
 
@@ -129,19 +129,19 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		if let _droneFlightController = drone?.flightController {
 			// First we check if a timeline is already running
 			if DJISDKManager.missionControl()?.isTimelineRunning == true {
-				print("=== iOS: Error - Timeline already running")
+				print("=== DjiPlugin iOS: Error - Timeline already running")
 				return
 			} else {
-				print("=== iOS: Timeline Started")
+				print("=== DjiPlugin iOS: Timeline Started")
 			}
 
 			guard let droneCoordinates = droneCurrentLocation?.coordinate else {
-				print("=== iOS: Timeline Failed - No droneCurrentLocationCoordinates")
+				print("=== DjiPlugin iOS: Timeline Failed - No droneCurrentLocationCoordinates")
 				return
 			}
 
 			if !CLLocationCoordinate2DIsValid(droneCoordinates) {
-				print("=== iOS: Timeline Failed - Invalid droneCoordinates")
+				print("=== DjiPlugin iOS: Timeline Failed - Invalid droneCoordinates")
 				return
 			}
 
@@ -182,7 +182,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			for element in scheduledElements {
 				let error = DJISDKManager.missionControl()?.scheduleElement(element)
 				if error != nil {
-					NSLog("=== iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
+					NSLog("=== DjiPlugin iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
 					timelineSchedulingCompleted = false
 					return
 				}
@@ -196,31 +196,31 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			}
 
 		} else {
-			print("=== iOS: Timeline Failed - No Flight Controller")
+			print("=== DjiPlugin iOS: Timeline Failed - No Flight Controller")
 		}
 	}
 
 	public func startFlightJson(_ flightJson: String, error _: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		print("=== iOS: Start Flight JSON: \(flightJson)")
+		print("=== DjiPlugin iOS: Start Flight JSON: \(flightJson)")
 
 		let decoder = JSONDecoder()
 		let data = flightJson.data(using: .utf8)!
 		flight = try? decoder.decode(Flight.self, from: data)
 
 		if let f = flight {
-			print("=== iOS: Start Flight JSON parsed successfully: \(f)")
+			print("=== DjiPlugin iOS: Start Flight JSON parsed successfully: \(f)")
 			startFlightTimeline(f)
 		}
 	}
 
 	func startFlightTimeline(_ flight: Flight) {
 		guard let timeline = flight.timeline, timeline.count == 0 else {
-			print("=== iOS: _convertFlightToTimeline - timeline Array is empty.")
+			print("=== DjiPlugin iOS: _convertFlightToTimeline - timeline Array is empty.")
 			return
 		}
 
 		guard let _droneFlightController = drone?.flightController else {
-			print("=== iOS: _convertFlightToTimeline - No Flight Controller")
+			print("=== DjiPlugin iOS: _convertFlightToTimeline - No Flight Controller")
 			return
 		}
 
@@ -269,7 +269,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		for element in scheduledElements {
 			let error = DJISDKManager.missionControl()?.scheduleElement(element)
 			if error != nil {
-				NSLog("=== iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
+				NSLog("=== DjiPlugin iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
 				timelineSchedulingCompleted = false
 				return
 			}
@@ -343,12 +343,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 					mission.add(waypoint)
 				} else {
-					print("=== iOS: waypointMission - waypoint without location coordinates - skipping.")
+					print("=== DjiPlugin iOS: waypointMission - waypoint without location coordinates - skipping.")
 				}
 			}
 			return DJIWaypointMission(mission: mission)
 		} else {
-			print("=== iOS: waypointMission - No waypoints available - exiting.")
+			print("=== DjiPlugin iOS: waypointMission - No waypoints available - exiting.")
 			return nil
 		}
 	}
@@ -436,9 +436,9 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	public func appRegisteredWithError(_ error: Error?) {
 		if error != nil {
-			print("=== iOS: Error: Register app failed! Please enter your app key and check the network.")
+			print("=== DjiPlugin iOS: Error: Register app failed! Please enter your app key and check the network.")
 		} else {
-			print("=== iOS: Register App Successed!")
+			print("=== DjiPlugin iOS: Register App Successed!")
 			_fltSetStatus("Registered")
 		}
 	}
@@ -446,15 +446,15 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	public func productConnected(_ product: DJIBaseProduct?) {
 		// DJI Product is available only after registration and connection. So we initialize it here.
 		if let _ = product {
-			print("=== iOS: Product Connected successfuly")
+			print("=== DjiPlugin iOS: Product Connected successfuly")
 			_fltSetStatus("Connected")
 		} else {
-			print("=== iOS: Error Connecting Product - DJIBaseProduct does not exist")
+			print("=== DjiPlugin iOS: Error Connecting Product - DJIBaseProduct does not exist")
 		}
 	}
 
 	public func productDisconnected() {
-		print("=== iOS: Product Disconnected")
+		print("=== DjiPlugin iOS: Product Disconnected")
 		_fltSetStatus("Disconnected")
 	}
 
@@ -463,11 +463,11 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	public func battery(_: DJIBattery, didUpdate state: DJIBatteryState) {
 		// Updating Flutter
 		fltDrone.batteryPercent = Double(state.chargeRemainingInPercent) as NSNumber
-		// print("=== iOS: Battery Percent \(fltDrone.batteryPercent ?? 0)%")
+		// print("=== DjiPlugin iOS: Battery Percent \(fltDrone.batteryPercent ?? 0)%")
 
 		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
 			if let error = e {
-				print("=== iOS: Error: SetStatus Closure Error")
+				print("=== DjiPlugin iOS: Error: SetStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			}
 		}
@@ -530,7 +530,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
 			if let error = e {
-				print("=== iOS: Error: SetStatus Closure Error")
+				print("=== DjiPlugin iOS: Error: SetStatus Closure Error")
 				NSLog("error: %@", error.localizedDescription)
 			}
 		}

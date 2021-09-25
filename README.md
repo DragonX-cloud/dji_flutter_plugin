@@ -38,6 +38,12 @@ flutter pub run pigeon \
 ### Pigeon Swift Example
 https://github.com/DJI-Mobile-SDK-Tutorials/iOS-ImportAndActivateSDKInXcode-Swift
 
+### Pigeon Android Kotlin Example
+https://github.com/gaaclarke/pigeon_plugin_example
+
+Example how to use FlutterAPI (trigger a function from the native platform side):
+https://github.com/glassmonkey/flutter_wifi/blob/master/android/app/src/main/kotlin/nagano/shunsuke/flutter_wifi_sample/WifiApi.kt
+
 ## Configuring the iOS Xcode Project
 https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168
 
@@ -61,6 +67,12 @@ Don't forget to run `pod install` from the ./ios folder of your project, and ver
 
 ## Configuring the Android Studio Kotlin project
 https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio
+
+DJI Android Sample App:
+https://github.com/dji-sdk/Mobile-SDK-Android/tree/master/Sample%20Code
+
+Another useful demo app - Android Simulator Demo:
+https://github.com/DJI-Mobile-SDK-Tutorials/Android-SimulatorDemo/blob/master/DJISimulatorDemo/app/src/main/java/com/dji/simulatorDemo/MainActivity.java
 
 The DJI Tutorial can be found here below, but please note you must rely on the above Github Repo as reference, because many of the code examples inside this tutorial are outdated:
 https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#import-maven-dependency
