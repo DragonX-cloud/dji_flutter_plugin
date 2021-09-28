@@ -25,6 +25,7 @@
         android:name="android.hardware.usb.accessory"
         android:required="true" />
 
+    <!--        android:name="androidx.multidex.MultiDexApplication"-->
    <application
         android:label="example"
         android:icon="@mipmap/ic_launcher"

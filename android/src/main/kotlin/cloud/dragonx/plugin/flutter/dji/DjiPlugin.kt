@@ -1,10 +1,18 @@
 package cloud.dragonx.plugin.flutter.dji
 
 import android.Manifest
+import android.app.Activity
+import android.app.PendingIntent.getActivity
+import android.content.Context
+import android.app.Application
+import android.content.res.AssetManager
+import android.util.AttributeSet
 import android.util.Log
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 import androidx.annotation.NonNull
+import androidx.appcompat.app.AppCompatActivity
+import com.secneo.sdk.Helper
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
@@ -58,18 +66,29 @@ import dji.sdk.sdkmanager.DJISDKManager
 import dji.common.error.DJISDKError
 
 import dji.log.DJILog
+//import dji.midware.util.ContextUtil.getContext
 import dji.sdk.base.BaseProduct.ComponentKey
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
+import dji.thirdparty.afinal.core.AsyncTask
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.coroutineContext
 
 
 /** DjiPlugin */
 
-class DjiPlugin: FlutterPlugin, Messages.DjiHostApi {
+class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
   private lateinit var channel : MethodChannel
+
+  // How to get context and activity in Flutter Plugin for android:
+  // https://www.jianshu.com/p/eb7df49fdfb1
+  private lateinit var activity:Activity
+  private lateinit var context: Context
 
   var fltDjiFlutterApi: Messages.DjiFlutterApi? = null
   val fltDrone = Messages.Drone()
@@ -82,11 +101,24 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi {
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
     fltDjiFlutterApi = Messages.DjiFlutterApi(flutterPluginBinding.binaryMessenger)
+
+    this.context = flutterPluginBinding.applicationContext
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(binding.binaryMessenger, null)
   }
+
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    this.activity = binding.activity
+  }
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    onAttachedToActivity(binding)
+  }
+  override fun onDetachedFromActivityForConfigChanges() {}
+  override fun onDetachedFromActivity() {}
+
+  /* ## */
 
   private fun _fltSetStatus(status: String) {
     fltDrone.status = status
@@ -126,59 +158,62 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi {
       Manifest.permission.READ_PHONE_STATE
     )
     private const val REQUEST_PERMISSION_CODE = 12345
+//    private val isRegistrationInProgress: AtomicBoolean = AtomicBoolean(false)
   }
 
   override fun registerApp() {
-    Log.d(TAG, "Register App Started")
-    
-    DJISDKManager.getInstance().registerApp(null, object: SDKManagerCallback {
-      override fun onRegister(djiError: DJIError) {
-        if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
+//    if (isRegistrationInProgress.compareAndSet(false, true)) {
+//      AsyncTask.execute(Runnable {
+        Log.d(TAG, "Register App Started")
+
+        DJISDKManager.getInstance().registerApp(context, object: SDKManagerCallback {
+          override fun onRegister(djiError: DJIError) {
+            if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
 //          DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
-          Log.d(TAG, "Register Success")
-          print("Register Success")
-          _fltSetStatus("Registered")
-        } else {
-          Log.d(TAG, "Register Failed")
-          print("Register Failed")
-          Log.d(TAG, djiError.description)
-        }
-      }
-
-      override fun onProductConnect(baseProduct: BaseProduct) {
-        Log.d(TAG, String.format("Product Connected: %s", baseProduct))
-        _fltSetStatus("Connected")
-      }
-
-      override fun onProductDisconnect() {
-        Log.d(TAG, "Product Disconnected")
-        _fltSetStatus("Disconnected")
-      }
-
-      override fun onProductChanged(baseProduct: BaseProduct) {}
-
-      override fun onComponentChange(
-        componentKey: ComponentKey, oldComponent: BaseComponent,
-        newComponent: BaseComponent
-      ) {
-        if (newComponent != null) {
-          newComponent.setComponentListener { isConnected ->
-            Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
+              Log.d(TAG, "Register Success")
+              _fltSetStatus("Registered")
+            } else {
+              Log.d(TAG, "Register Failed")
+              Log.d(TAG, djiError.description)
+            }
           }
-        }
-        Log.d(
-          TAG, String.format(
-            "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
-            componentKey,
-            oldComponent,
-            newComponent
-          )
-        )
-      }
 
-      override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
-      override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
-    })
+          override fun onProductConnect(baseProduct: BaseProduct) {
+            Log.d(TAG, String.format("Product Connected: %s", baseProduct))
+            _fltSetStatus("Connected")
+          }
+
+          override fun onProductDisconnect() {
+            Log.d(TAG, "Product Disconnected")
+            _fltSetStatus("Disconnected")
+          }
+
+          override fun onProductChanged(baseProduct: BaseProduct) {}
+
+          override fun onComponentChange(
+            componentKey: ComponentKey, oldComponent: BaseComponent,
+            newComponent: BaseComponent
+          ) {
+            if (newComponent != null) {
+              newComponent.setComponentListener { isConnected ->
+                Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
+              }
+            }
+            Log.d(
+              TAG, String.format(
+                "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
+                componentKey,
+                oldComponent,
+                newComponent
+              )
+            )
+          }
+
+          override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
+          override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
+        })
+//      })
+//    }
   }
 
   override fun connectDrone() {
@@ -277,43 +312,3 @@ data class Vector(
   @SerialName("headingRelativeToPointOfInterest")
   val headingRelativeToPointOfInterest: Int?
 )
-
-//import androidx.annotation.NonNull
-//
-//import io.flutter.embedding.engine.plugins.FlutterPlugin
-//import io.flutter.plugin.common.MethodCall
-//import io.flutter.plugin.common.MethodChannel
-//import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-//import io.flutter.plugin.common.MethodChannel.Result
-//
-///** DjiPlugin */
-//class DjiPlugin: FlutterPlugin, MethodCallHandler {
-//  /// The MethodChannel that will the communication between Flutter and native Android
-//  ///
-//  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-//  /// when the Flutter Engine is detached from the Activity
-//  private lateinit var channel : MethodChannel
-//
-//  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-//    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "dji")
-//    channel.setMethodCallHandler(this)
-//  }
-//
-//  override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
-//    if (call.method == "getPlatformVersion") {
-//      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-//    } else {
-//      result.notImplemented()
-//    }
-//
-//    if (call.method == "getPlatformVersion") {
-//      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-//    } else {
-//      result.notImplemented()
-//    }
-//  }
-//
-//  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-//    channel.setMethodCallHandler(null)
-//  }
-//}
