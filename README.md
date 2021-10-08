@@ -77,12 +77,13 @@ https://github.com/DJI-Mobile-SDK-Tutorials/Android-SimulatorDemo/blob/master/DJ
 The DJI Tutorial can be found here below, but please note you must rely on the above Github Repo as reference, because many of the code examples inside this tutorial are outdated:
 https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#import-maven-dependency
 
-In MainActivity.kt:
+If you're trying to run the DJI sample, then note that in MainActivity.kt:
 - Need to remove "import android.R"
 
-In build.gradle(:app):
+In build.gradle:
 - Had to set the Target SDK to 30 (and not 31, as it caused issues with the Manifest merge)
-
+- [ ! ] IMPORTANT: For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).
+- Due to the minSDK 19 - MultiDex MUST be enabled.
 
 ## Notes in regards to DJI SDK
 - Decided not to implement the "Bridge App" support, because turned out that - for debugging / development purposes - it is much easier to simply connect to the drone's Wifi, and let it connect using it (instead of using the Remote Controller).
@@ -98,6 +99,22 @@ And only after it has been registered - connect your mobile device to the Drone'
 
 Hint was taken from this issue on Github:
 https://github.com/dji-sdk/Mobile-SDK-Android/issues/232
+
+[ ! ] Important Note
+Before using any DJI SDK methods - you must execute:
+```
+Helper.install(this)
+```
+Usually this should be placed in your main application .kt file:
+For example:
+```
+public class MyApplication : Application() {
+    override fun attachBaseContext(paramContext: Context?) {
+        super.attachBaseContext(paramContext)
+        Helper.install(this)
+    }
+}
+```
 
 ## DJI References
 Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios

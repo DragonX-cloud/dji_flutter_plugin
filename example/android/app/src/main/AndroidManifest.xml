@@ -1,6 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="cloud.dragonx.plugin.flutter.dji_example">
-
     <!-- Permissions and features -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -12,7 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-<!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+    <!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
@@ -25,28 +24,26 @@
         android:name="android.hardware.usb.accessory"
         android:required="true" />
 
-    <!--        android:name="androidx.multidex.MultiDexApplication"-->
-   <application
-        android:label="example"
-        android:icon="@mipmap/ic_launcher"
-        android:allowBackup="true"
-        android:fullBackupContent="true">
+    <!-- android:name="androidx.multidex.MultiDexApplication" -->
+    <!-- android:name="cloud.dragonx.plugin.flutter.dji_example.MainApplication" -->
+    <application
+        android:label="dji_example"
+        android:icon="@mipmap/ic_launcher">
 
-        <!-- DJI SDK -->
-        <uses-library android:name="com.android.future.usb.accessory" />
-        <uses-library android:name="org.apache.http.legacy" android:required="false" />
-        <meta-data
+       <!-- DJI SDK -->
+       <uses-library android:name="com.android.future.usb.accessory" />
+       <uses-library android:name="org.apache.http.legacy" android:required="false" />
+       <meta-data
            android:name="com.dji.sdk.API_KEY"
-           android:value="e6775a00cf003fca9680d32c" />
+           android:value="73eb82efba451d06f481481a" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="cloud.dragonx.plugin.flutter.dji_example.MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
-            android:screenOrientation="unspecified"
             android:exported="true">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user

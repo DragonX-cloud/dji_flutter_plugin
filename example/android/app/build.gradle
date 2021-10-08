@@ -44,30 +44,63 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "cloud.dragonx.plugin.flutter.dji_example"
-        minSdkVersion 28
+        minSdkVersion 19
         targetSdkVersion 30
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-//        multiDexEnabled true
+        multiDexEnabled true
+//        ndk {
+//            abiFilters 'x86', 'x86_64', 'armeabi', 'armeabi-v7a', 'mips', 'mips64', 'arm64-v8a'
+//        }
     }
 
-//    buildTypes {
-//        release {
-//            // TODO: Add your own signing config for the release build.
-//            // Signing with the debug keys for now, so `flutter run --release` works.
-//            signingConfig signingConfigs.debug
-//
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+
 //            minifyEnabled true
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//        }
-//        debug {
+        }
+        debug {
+//            shrinkResources false
+//            minifyEnabled false
 //            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-//        }
+        }
+    }
+
+//    dexOptions {
+//        javaMaxHeapSize "4g"
 //    }
 
     packagingOptions {
-        // Had to add "pickFirst" here to avoid a build error:
+//        doNotStrip "*/*/libdjivideo.so"
+//        doNotStrip "*/*/libSDKRelativeJNI.so"
+//        doNotStrip "*/*/libFlyForbid.so"
+//        doNotStrip "*/*/libduml_vision_bokeh.so"
+//        doNotStrip "*/*/libyuv2.so"
+//        doNotStrip "*/*/libGroudStation.so"
+//        doNotStrip "*/*/libFRCorkscrew.so"
+//        doNotStrip "*/*/libUpgradeVerify.so"
+//        doNotStrip "*/*/libFR.so"
+//        doNotStrip "*/*/libDJIFlySafeCore.so"
+//        doNotStrip "*/*/libdjifs_jni.so"
+//        doNotStrip "*/*/libsfjni.so"
+//        doNotStrip "*/*/libDJICommonJNI.so"
+//        doNotStrip "*/*/libDJICSDKCommon.so"
+//        doNotStrip "*/*/libDJIUpgradeCore.so"
+//        doNotStrip "*/*/libDJIUpgradeJNI.so"
+//        doNotStrip "*/*/libDJIWaypointV2Core.so"
+//        doNotStrip "*/*/libAMapSDK_MAP_v6_9_2.so"
+//        doNotStrip "*/*/libDJIMOP.so"
+//        doNotStrip "*/*/libDJISDKLOGJNI.so"
+//
+//        exclude 'assets/location_map_gps_locked.png'
+//        exclude 'assets/location_map_gps_3d.png'
+
+        // Had to add "pickFirst" or "exclude" here to avoid a build error:
         //Execution failed for task ':app:mergeDebugJavaResource'.
         //> A failure occurred while executing com.android.build.gradle.internal.tasks.MergeJavaResWorkAction
         //        > 2 files found with path 'META-INF/rxjava.properties' from inputs:
@@ -85,8 +118,31 @@ flutter {
 }
 
 dependencies {
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+//    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0'
 
-//    implementation 'androidx.multidex:multidex:2.0.1'
+//    implementation('com.dji:dji-sdk:4.15.1', {
+//        /**
+//         * Uncomment the "library-anti-distortion" if your app does not need Anti Distortion for Mavic 2 Pro and Mavic 2 Zoom.
+//         * Uncomment the "fly-safe-database" if you need database for release, or we will download it when DJISDKManager.getInstance().registerApp
+//         * is called.
+//         * Both will greatly reducing the size of the APK.
+//         */
+//        exclude module: 'library-anti-distortion'
+//        //exclude module: 'fly-safe-database'
+//    })
+//    compileOnly 'com.dji:dji-sdk-provided:4.15.1'
+//
+//    // https://stackoverflow.com/questions/58281124/layout-constraintbottom-totopof-not-found
+//    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
 }

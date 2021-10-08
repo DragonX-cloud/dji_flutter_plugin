@@ -1,6 +1,7 @@
 package cloud.dragonx.plugin.flutter.dji
 
 import android.Manifest
+import android.R.attr
 import android.app.Activity
 import android.app.PendingIntent.getActivity
 import android.content.Context
@@ -70,11 +71,13 @@ import dji.log.DJILog
 import dji.sdk.base.BaseProduct.ComponentKey
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
 import dji.thirdparty.afinal.core.AsyncTask
+import io.flutter.app.FlutterApplication
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.coroutineContext
 
+import androidx.multidex.MultiDex
 
 /** DjiPlugin */
 
@@ -87,8 +90,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
   // How to get context and activity in Flutter Plugin for android:
   // https://www.jianshu.com/p/eb7df49fdfb1
-  private lateinit var activity:Activity
-  private lateinit var context: Context
+  private lateinit var djiPluginActivity:Activity
+  private lateinit var djiPluginContext: Context
 
   var fltDjiFlutterApi: Messages.DjiFlutterApi? = null
   val fltDrone = Messages.Drone()
@@ -102,7 +105,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
     fltDjiFlutterApi = Messages.DjiFlutterApi(flutterPluginBinding.binaryMessenger)
 
-    this.context = flutterPluginBinding.applicationContext
+    this.djiPluginContext = flutterPluginBinding.applicationContext
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -110,7 +113,11 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    this.activity = binding.activity
+    this.djiPluginActivity = binding.activity
+
+    // [ ! ] DJI SDK Must be "installed" using this function, before any method of DJI SDK is used.
+    MultiDex.install(this.djiPluginContext)
+    Helper.install(this.djiPluginActivity.application)
   }
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     onAttachedToActivity(binding)
@@ -123,9 +130,11 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   private fun _fltSetStatus(status: String) {
     fltDrone.status = status
 
-    fltDjiFlutterApi?.setStatus(fltDrone) {
-      print("=== Android: setStatus Closure Success: $status")
-    }
+    djiPluginActivity.runOnUiThread(Runnable {
+      fltDjiFlutterApi?.setStatus(fltDrone) {
+        print("=== Android: setStatus Closure Success: $status")
+      }
+    })
   }
 
   override fun getPlatformVersion(): Messages.Version {
@@ -162,58 +171,58 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun registerApp() {
-//    if (isRegistrationInProgress.compareAndSet(false, true)) {
-//      AsyncTask.execute(Runnable {
         Log.d(TAG, "Register App Started")
 
-        DJISDKManager.getInstance().registerApp(context, object: SDKManagerCallback {
-          override fun onRegister(djiError: DJIError) {
-            if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
-//          DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
-              Log.d(TAG, "Register Success")
-              _fltSetStatus("Registered")
-            } else {
-              Log.d(TAG, "Register Failed")
-              Log.d(TAG, djiError.description)
-            }
-          }
-
-          override fun onProductConnect(baseProduct: BaseProduct) {
-            Log.d(TAG, String.format("Product Connected: %s", baseProduct))
-            _fltSetStatus("Connected")
-          }
-
-          override fun onProductDisconnect() {
-            Log.d(TAG, "Product Disconnected")
-            _fltSetStatus("Disconnected")
-          }
-
-          override fun onProductChanged(baseProduct: BaseProduct) {}
-
-          override fun onComponentChange(
-            componentKey: ComponentKey, oldComponent: BaseComponent,
-            newComponent: BaseComponent
-          ) {
-            if (newComponent != null) {
-              newComponent.setComponentListener { isConnected ->
-                Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
+        try {
+          DJISDKManager.getInstance().registerApp(djiPluginContext, object: SDKManagerCallback {
+            override fun onRegister(djiError: DJIError) {
+              if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
+                //DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
+                Log.d(TAG, "Register Success")
+                _fltSetStatus("Registered")
+              } else {
+                Log.d(TAG, "Register Failed")
+                Log.d(TAG, djiError.description)
               }
             }
-            Log.d(
-              TAG, String.format(
-                "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
-                componentKey,
-                oldComponent,
-                newComponent
-              )
-            )
-          }
 
-          override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
-          override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
-        })
-//      })
-//    }
+            override fun onProductConnect(baseProduct: BaseProduct) {
+              Log.d(TAG, String.format("Product Connected: %s", baseProduct))
+              _fltSetStatus("Connected")
+            }
+
+            override fun onProductDisconnect() {
+              Log.d(TAG, "Product Disconnected")
+              _fltSetStatus("Disconnected")
+            }
+
+            override fun onProductChanged(baseProduct: BaseProduct) {}
+
+            override fun onComponentChange(
+              componentKey: ComponentKey, oldComponent: BaseComponent,
+              newComponent: BaseComponent
+            ) {
+              if (newComponent != null) {
+                newComponent.setComponentListener { isConnected ->
+                  Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
+                }
+              }
+              Log.d(
+                TAG, String.format(
+                  "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
+                  componentKey,
+                  oldComponent,
+                  newComponent
+                )
+              )
+            }
+
+            override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
+            override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
+          })
+        } catch (e: Exception) {
+          print("=== Android: registerApp Error: $e")
+        }
   }
 
   override fun connectDrone() {
