@@ -78,6 +78,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.coroutineContext
 
 import androidx.multidex.MultiDex
+import dji.common.battery.BatteryState
+import java.lang.Exception
 
 /** DjiPlugin */
 
@@ -132,7 +134,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
     djiPluginActivity.runOnUiThread(Runnable {
       fltDjiFlutterApi?.setStatus(fltDrone) {
-        print("=== Android: setStatus Closure Success: $status")
+        Log.d(TAG, "setStatus Closure Success: $status")
       }
     })
   }
@@ -171,58 +173,53 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun registerApp() {
-        Log.d(TAG, "Register App Started")
-
-        try {
-          DJISDKManager.getInstance().registerApp(djiPluginContext, object: SDKManagerCallback {
-            override fun onRegister(djiError: DJIError) {
-              if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
-                //DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
-                Log.d(TAG, "Register Success")
-                _fltSetStatus("Registered")
-              } else {
-                Log.d(TAG, "Register Failed")
-                Log.d(TAG, djiError.description)
-              }
-            }
-
-            override fun onProductConnect(baseProduct: BaseProduct) {
-              Log.d(TAG, String.format("Product Connected: %s", baseProduct))
-              _fltSetStatus("Connected")
-            }
-
-            override fun onProductDisconnect() {
-              Log.d(TAG, "Product Disconnected")
-              _fltSetStatus("Disconnected")
-            }
-
-            override fun onProductChanged(baseProduct: BaseProduct) {}
-
-            override fun onComponentChange(
-              componentKey: ComponentKey, oldComponent: BaseComponent,
-              newComponent: BaseComponent
-            ) {
-              if (newComponent != null) {
-                newComponent.setComponentListener { isConnected ->
-                  Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
-                }
-              }
-              Log.d(
-                TAG, String.format(
-                  "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
-                  componentKey,
-                  oldComponent,
-                  newComponent
-                )
-              )
-            }
-
-            override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
-            override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
-          })
-        } catch (e: Exception) {
-          print("=== Android: registerApp Error: $e")
+    Log.d(TAG, "Register App Started")
+    DJISDKManager.getInstance().registerApp(djiPluginContext, object: SDKManagerCallback {
+      override fun onRegister(djiError: DJIError) {
+        if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
+          //DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
+          Log.d(TAG, "Register Success")
+          _fltSetStatus("Registered")
+        } else {
+          Log.d(TAG, "Register Failed")
+          Log.d(TAG, djiError.description)
         }
+      }
+
+      override fun onProductConnect(baseProduct: BaseProduct) {
+        Log.d(TAG, String.format("Product Connected: %s", baseProduct))
+        _fltSetStatus("Connected")
+      }
+
+      override fun onProductDisconnect() {
+        Log.d(TAG, "Product Disconnected")
+        _fltSetStatus("Disconnected")
+      }
+
+      override fun onProductChanged(baseProduct: BaseProduct) {}
+
+      override fun onComponentChange(
+        componentKey: ComponentKey, oldComponent: BaseComponent,
+        newComponent: BaseComponent
+      ) {
+        if (newComponent != null) {
+          newComponent.setComponentListener { isConnected ->
+            Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
+          }
+        }
+        Log.d(
+          TAG, String.format(
+            "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
+            componentKey,
+            oldComponent,
+            newComponent
+          )
+        )
+      }
+
+      override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
+      override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
+    })
   }
 
   override fun connectDrone() {
@@ -236,22 +233,64 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun delegateDrone() {
-    TODO("Not yet implemented")
+    Log.d(TAG, "Delegate Drone Started")
+    val product = DJISDKManager.getInstance().product
+    if (product != null) {
+      drone = (DJISDKManager.getInstance().product) as Aircraft?
+
+      if (drone != null && (drone is Aircraft)) {
+        if ((drone as Aircraft).flightController != null) {
+          Log.d(TAG, "Drone Flight Controller successfuly configured")
+          return
+        } else {
+          Log.d(TAG, "Drone Flight Controller Object does not exist")
+          _fltSetStatus("Error")
+        }
+
+        try {
+          (drone as Aircraft).getBattery()
+            .setStateCallback(BatteryState.Callback { djiBatteryState ->
+              // Updating Flutter
+              fltDrone.batteryPercent = djiBatteryState.chargeRemainingInPercent.toDouble()
+
+              djiPluginActivity.runOnUiThread(Runnable {
+                fltDjiFlutterApi?.setStatus(fltDrone) {}
+              })
+
+              Log.d(TAG, "Drone Battery Delegate successfuly configured")
+            })
+        } catch (ignored: Exception) {
+          Log.d(TAG, "Drone Battery Delegate Error - No Battery Object")
+          _fltSetStatus("Error")
+        }
+
+        Log.d(TAG, "Delegations completed")
+        _fltSetStatus("Delegated")
+      } else {
+        Log.d(TAG,"Error - Delegations - DJI Aircraft Object does not exist")
+      }
+    } else {
+      Log.d(TAG, "Error - Delegations - DJI Product Object does not exist")
+    }
   }
 
   override fun takeOff() {
+    Log.d(TAG, "Takeoff Started")
     TODO("Not yet implemented")
   }
 
   override fun land() {
+    Log.d(TAG, "Land Started")
     TODO("Not yet implemented")
   }
 
   override fun timeline() {
+    Log.d(TAG, "Timeline Started")
     TODO("Not yet implemented")
   }
 
   override fun start(flightJson: String?) {
+    Log.d(TAG, "Takeoff Started")
     TODO("Not yet implemented")
   }
 }
