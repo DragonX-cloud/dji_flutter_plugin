@@ -79,10 +79,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				drone = (DJISDKManager.product()! as! DJIAircraft)
 
 				if let _ = drone?.flightController {
-					print("=== DjiPlugin iOS: Drone Flight Controller Delegate successfuly configured")
+					print("=== DjiPlugin iOS: Drone Flight Controller successfuly configured")
 					drone!.flightController!.delegate = self
 				} else {
-					print("=== DjiPlugin iOS: Product Connect Error - No Flight Controller Object")
+					print("=== DjiPlugin iOS: Drone Flight Controller Object does not exist")
 					_fltSetStatus("Error")
 					return
 				}
@@ -91,7 +91,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 					print("=== DjiPlugin iOS: Drone Battery Delegate successfuly configured")
 					drone!.battery!.delegate = self
 				} else {
-					print("=== DjiPlugin iOS: Product Connect Error - No Battery Object")
+					print("=== DjiPlugin iOS: Drone Battery Delegate Error - No Battery Object")
 					_fltSetStatus("Error")
 					return
 				}
