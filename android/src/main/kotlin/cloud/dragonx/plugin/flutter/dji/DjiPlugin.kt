@@ -99,7 +99,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   val fltDrone = Messages.Drone()
 
   var drone: Aircraft? = null
-  var droneCurrentLocation: LocationCoordinate3D? = null
+  var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
 
   var flight: Flight? = null
 
@@ -240,11 +240,74 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
       if (drone != null && (drone is Aircraft)) {
         if ((drone as Aircraft).flightController != null) {
-          Log.d(TAG, "Drone Flight Controller successfuly configured")
-          return
+          Log.d(TAG, "Drone Flight Controller successfully configured")
+
+          // Configuring the Flight Controller State Callbacks
+          (drone as Aircraft).flightController.setStateCallback({ state ->
+            Log.d(TAG, "${state.attitude}")
+
+            var _droneLatitude: Double = 0
+            var _droneLongitude: Double = 0
+            var _droneAltitude: Double = 0
+            var _droneSpeed: Double = 0
+            var _droneRoll: Double = 0
+            var _dronePitch: Double = 0
+            var _droneYaw: Double = 0
+
+            var altitude = state.aircraftLocation?.altitude
+            if (altitude != null) {
+              _droneAltitude = altitude
+            }
+
+            // Updating the drone's current location coordinates variable
+            var droneLocation = state.aircraftLocation
+            if (droneLocation != null) {
+              droneCurrentLocation = droneLocation
+            }
+
+            var latitude = state.aircraftLocation?.latitude
+            if (latitude != null) {
+              _droneLatitude = latitude
+            }
+
+            var longitude = state.aircraftLocation?.longitude
+            if (longitude != null) {
+              _droneLongitude = longitude
+            }
+
+            var speed = state.aircraftLocation?.speed
+            if (speed != null) {
+              _droneSpeed = speed
+            }
+
+            _droneRoll = state.attitude.roll
+            _dronePitch = state.attitude.pitch
+            _droneYaw = state.attitude.yaw
+
+            // Confirm Landing
+            if (state.isLandingConfirmationNeeded == true) {
+              (drone as Aircraft).flightController.confirmLanding(null)
+            }
+
+            // Updating Flutter
+            fltDrone.latitude = _droneLatitude
+            fltDrone.longitude = _droneLongitude
+            fltDrone.altitude = _droneAltitude
+            fltDrone.speed = _droneSpeed
+            fltDrone.roll = _droneRoll
+            fltDrone.pitch = _dronePitch
+            fltDrone.yaw = _droneYaw
+
+            djiPluginActivity.runOnUiThread(Runnable {
+              fltDjiFlutterApi?.setStatus(fltDrone) {
+//                Log.d(TAG, "setStatus Closure Success")
+              }
+            })
+          })
         } else {
           Log.d(TAG, "Drone Flight Controller Object does not exist")
           _fltSetStatus("Error")
+          return
         }
 
         try {
@@ -286,7 +349,21 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
   override fun timeline() {
     Log.d(TAG, "Timeline Started")
-    TODO("Not yet implemented")
+    var _droneFlightController : FlightController = (drone as Aircraft).flightController
+    if (_droneFlightController != null) {
+      // First we check if a timeline is already running
+      var _missionControl = MissionControl.getInstance()
+      if (_missionControl.isTimelineRunning == true) {
+        Log.d(TAG, "Error - Timeline already running")
+        return
+      } else {
+        Log.d(TAG, "Timeline Started")
+      }
+
+      var droneCoordinates = droneCurrentLocation
+
+      // TODO...
+    }
   }
 
   override fun start(flightJson: String?) {
