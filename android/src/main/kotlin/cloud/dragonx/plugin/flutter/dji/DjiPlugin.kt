@@ -140,7 +140,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun getPlatformVersion(): Messages.Version {
-    var result = Messages.Version()
+    val result = Messages.Version()
     result.string = "Android ${android.os.Build.VERSION.RELEASE}"
     return result
   }
@@ -243,49 +243,47 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           Log.d(TAG, "Drone Flight Controller successfully configured")
 
           // Configuring the Flight Controller State Callbacks
-          (drone as Aircraft).flightController.setStateCallback({ state ->
+          (drone as Aircraft).flightController.setStateCallback { state ->
             Log.d(TAG, "${state.attitude}")
 
-            var _droneLatitude: Double = 0
-            var _droneLongitude: Double = 0
-            var _droneAltitude: Double = 0
-            var _droneSpeed: Double = 0
-            var _droneRoll: Double = 0
-            var _dronePitch: Double = 0
-            var _droneYaw: Double = 0
+            var _droneLatitude: Double = 0.00
+            var _droneLongitude: Double = 0.00
+            var _droneAltitude: Double = 0.00
+            var _droneSpeed: Double = 0.00
+            var _droneRoll: Double = 0.00
+            var _dronePitch: Double = 0.00
+            var _droneYaw: Double = 0.00
 
-            var altitude = state.aircraftLocation?.altitude
+            val altitude = state.aircraftLocation?.altitude
             if (altitude != null) {
-              _droneAltitude = altitude
+              _droneAltitude = altitude.toDouble()
             }
 
             // Updating the drone's current location coordinates variable
-            var droneLocation = state.aircraftLocation
+            val droneLocation = state.aircraftLocation
             if (droneLocation != null) {
               droneCurrentLocation = droneLocation
             }
 
-            var latitude = state.aircraftLocation?.latitude
+            val latitude = state.aircraftLocation?.latitude
             if (latitude != null) {
               _droneLatitude = latitude
             }
 
-            var longitude = state.aircraftLocation?.longitude
+            val longitude = state.aircraftLocation?.longitude
             if (longitude != null) {
               _droneLongitude = longitude
             }
 
-            var speed = state.aircraftLocation?.speed
-            if (speed != null) {
-              _droneSpeed = speed
-            }
+            val speed = Math.sqrt(Math.pow(state.velocityX.toDouble(), 2.00) + Math.pow(state.velocityX.toDouble(), 2.00))
+            _droneSpeed = speed
 
             _droneRoll = state.attitude.roll
             _dronePitch = state.attitude.pitch
             _droneYaw = state.attitude.yaw
 
             // Confirm Landing
-            if (state.isLandingConfirmationNeeded == true) {
+            if (state.isLandingConfirmationNeeded) {
               (drone as Aircraft).flightController.confirmLanding(null)
             }
 
@@ -303,7 +301,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 //                Log.d(TAG, "setStatus Closure Success")
               }
             })
-          })
+          }
         } else {
           Log.d(TAG, "Drone Flight Controller Object does not exist")
           _fltSetStatus("Error")
