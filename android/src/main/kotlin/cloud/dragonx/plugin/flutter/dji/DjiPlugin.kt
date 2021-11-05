@@ -28,14 +28,6 @@ import dji.common.gimbal.Rotation
 import dji.common.mission.hotpoint.HotpointHeading
 import dji.common.mission.hotpoint.HotpointMission
 import dji.common.mission.hotpoint.HotpointStartPoint
-import dji.common.mission.waypoint.Waypoint
-import dji.common.mission.waypoint.WaypointAction
-import dji.common.mission.waypoint.WaypointActionType
-import dji.common.mission.waypoint.WaypointMission
-import dji.common.mission.waypoint.WaypointMissionFinishedAction
-import dji.common.mission.waypoint.WaypointMissionFlightPathMode
-import dji.common.mission.waypoint.WaypointMissionGotoWaypointMode
-import dji.common.mission.waypoint.WaypointMissionHeadingMode
 import dji.common.model.LocationCoordinate2D
 import dji.common.util.CommonCallbacks
 import dji.sdk.base.BaseProduct
@@ -45,13 +37,6 @@ import dji.sdk.mission.Triggerable
 import dji.sdk.mission.timeline.TimelineElement
 import dji.sdk.mission.timeline.TimelineEvent
 import dji.sdk.mission.timeline.TimelineMission
-import dji.sdk.mission.timeline.actions.GimbalAttitudeAction
-import dji.sdk.mission.timeline.actions.GoHomeAction
-import dji.sdk.mission.timeline.actions.GoToAction
-import dji.sdk.mission.timeline.actions.HotpointAction
-import dji.sdk.mission.timeline.actions.RecordVideoAction
-import dji.sdk.mission.timeline.actions.ShootPhotoAction
-import dji.sdk.mission.timeline.actions.TakeOffAction
 import dji.sdk.mission.timeline.triggers.AircraftLandedTrigger
 import dji.sdk.mission.timeline.triggers.BatteryPowerLevelTrigger
 import dji.sdk.mission.timeline.triggers.Trigger
@@ -79,7 +64,14 @@ import kotlin.coroutines.coroutineContext
 
 import androidx.multidex.MultiDex
 import dji.common.battery.BatteryState
+import dji.common.mission.waypoint.*
+import dji.midware.data.model.P3.DataCameraInfoNotify
+import dji.sdk.mission.timeline.actions.*
+import dji.waypointv2.common.waypointv1.TurnMode
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import java.lang.Exception
+import java.util.ArrayList
 
 /** DjiPlugin */
 
@@ -112,6 +104,12 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(binding.binaryMessenger, null)
+
+    val _missionControl = MissionControl.getInstance()
+    if (_missionControl != null && _missionControl.scheduledCount() > 0) {
+      _missionControl.unscheduleEverything()
+      _missionControl.removeAllListeners()
+    }
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
@@ -346,27 +344,200 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun timeline() {
-    Log.d(TAG, "Timeline Started")
-    var _droneFlightController : FlightController = (drone as Aircraft).flightController
-    if (_droneFlightController != null) {
-      // First we check if a timeline is already running
-      var _missionControl = MissionControl.getInstance()
-      if (_missionControl.isTimelineRunning == true) {
-        Log.d(TAG, "Error - Timeline already running")
-        return
-      } else {
-        Log.d(TAG, "Timeline Started")
-      }
-
-      var droneCoordinates = droneCurrentLocation
-
-      // TODO...
-    }
+// DEPRECATED
+//    Log.d(TAG, "Timeline Started")
+//    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
+//    if (_droneFlightController != null) {
+//      // First we check if a timeline is already running
+//      val _missionControl = MissionControl.getInstance()
+//      if (_missionControl.isTimelineRunning == true) {
+//        Log.d(TAG, "Error - Timeline already running")
+//        return
+//      } else {
+//        Log.d(TAG, "Timeline Started")
+//      }
+//
+//      var droneCoordinates = droneCurrentLocation
+//      if (droneCoordinates == null) {
+//        Log.d(TAG, "Timeline Failed - No droneCurrentLocationCoordinates")
+//        return
+//      }
+//
+//      // Set Home Coordinates
+//      val droneHomeLocation = LocationCoordinate2D(droneCoordinates.latitude, droneCoordinates.longitude)
+//      _droneFlightController.setHomeLocation(droneHomeLocation, null)
+//
+//      val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
+//
+//      // Take Off
+//      scheduledElements.add(TakeOffAction())
+//    }
   }
 
   override fun start(flightJson: String?) {
-    Log.d(TAG, "Takeoff Started")
-    TODO("Not yet implemented")
+    Log.d(TAG, "Start Flight JSON: $flightJson")
+
+    if (flightJson != null) {
+      try {
+        val f: Flight = Json.decodeFromString<Flight>(flightJson)
+        Log.d(TAG, "Start Flight JSON parsed successfully: $f")
+
+        startFlightTimeline(f)
+      } catch (e: Error) {
+        Log.d(TAG, "Error - Failed to parse Flight JSON: $e")
+      }
+    }
+  }
+
+  private fun startFlightTimeline(flight: Flight) {
+    val timeline = flight.timeline
+    if (timeline == null || timeline.isEmpty()) {
+      Log.d(TAG, "startFlightTimeline - timeline List is empty")
+      return
+    }
+
+    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
+    if (_droneFlightController == null) {
+      Log.d(TAG, "startFlightTimeline - No Flight Controller")
+      return
+    }
+
+    val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
+
+    for (flightElement in flight.timeline) {
+      when (flightElement.type) {
+        "takeOff" -> {
+          // Take Off
+          scheduledElements.add(TakeOffAction())
+        }
+
+        "land" -> {
+          // Land
+          scheduledElements.add(LandAction())
+        }
+
+        "waypointMission" -> {
+          // Waypoint Mission
+          val wayPointMission = waypointMission(flightElement)
+          if (wayPointMission != null) {
+            val waypointMissionAsTimelineElement = TimelineMission.elementFromWaypointMission(wayPointMission)
+            scheduledElements.add(waypointMissionAsTimelineElement)
+          }
+        }
+
+        "hotpointAction" -> {
+          TODO("Hotpoint Action to be implemented...")
+        }
+
+        "singleShootPhoto" -> {
+          scheduledElements.add(ShootPhotoAction.newShootSinglePhotoAction())
+        }
+
+        "startRecordVideo" -> {
+          scheduledElements.add(RecordVideoAction.newStartRecordVideoAction())
+        }
+
+        "stopRecordVideo" -> {
+          scheduledElements.add(RecordVideoAction.newStopRecordVideoAction())
+        }
+      }
+    }
+
+    val _missionControl = MissionControl.getInstance()
+    if (_missionControl != null && _missionControl.scheduledCount() > 0) {
+      _missionControl.unscheduleEverything()
+      _missionControl.removeAllListeners()
+    } else {
+      Log.d(TAG, "startFlightTimeline - No Mission Control or Scheduled Elements")
+      return
+    }
+
+    _missionControl.scheduleElements(scheduledElements)
+
+    // Starting the Timeline Mission
+    _missionControl.startTimeline()
+  }
+
+  /** DJI Timeline Methods */
+  private fun waypointMission(flightElementWaypointMission: FlightElement): WaypointMission {
+
+    var _maxFlightSpeed: Float = 15.toFloat()
+    if (flightElementWaypointMission.maxFlightSpeed != null) {
+      _maxFlightSpeed = flightElementWaypointMission.maxFlightSpeed.toFloat()
+    }
+
+    var _autoFlightSpeed: Float = 8.toFloat()
+    if (flightElementWaypointMission.autoFlightSpeed != null) {
+      _autoFlightSpeed = flightElementWaypointMission.autoFlightSpeed.toFloat()
+    }
+
+    val _finishedAction: WaypointMissionFinishedAction = when (flightElementWaypointMission.finishedAction) {
+      "autoLand" -> WaypointMissionFinishedAction.AUTO_LAND
+      "continueUntilStop" -> WaypointMissionFinishedAction.CONTINUE_UNTIL_END
+      else -> WaypointMissionFinishedAction.NO_ACTION
+    }
+
+    val _headingMode: WaypointMissionHeadingMode = when (flightElementWaypointMission.headingMode) {
+      "auto" -> WaypointMissionHeadingMode.AUTO
+      "towardPointOfInterest" -> WaypointMissionHeadingMode.TOWARD_POINT_OF_INTEREST
+      else -> WaypointMissionHeadingMode.USING_WAYPOINT_HEADING
+    }
+
+    val _flightPathMode: WaypointMissionFlightPathMode = when (flightElementWaypointMission.flightPathMode) {
+      "normal" -> WaypointMissionFlightPathMode.NORMAL
+      else -> WaypointMissionFlightPathMode.CURVED
+    }
+
+    var _rotateGimbalPitch: Boolean = true
+    if (flightElementWaypointMission.rotateGimbalPitch != null) {
+      _rotateGimbalPitch = flightElementWaypointMission.rotateGimbalPitch
+    }
+
+    var _exitMissionOnRCSignalLost: Boolean = true
+    if (flightElementWaypointMission.exitMissionOnRCSignalLost != null) {
+      _exitMissionOnRCSignalLost = flightElementWaypointMission.exitMissionOnRCSignalLost
+    }
+
+    val missionBuilder: WaypointMission.Builder = WaypointMission.Builder()
+      .maxFlightSpeed(_maxFlightSpeed)
+      .autoFlightSpeed(_autoFlightSpeed)
+      .finishedAction(_finishedAction)
+      .headingMode(_headingMode)
+      .flightPathMode(_flightPathMode)
+      .setGimbalPitchRotationEnabled(_rotateGimbalPitch)
+      .setExitMissionOnRCSignalLostEnabled(_exitMissionOnRCSignalLost)
+      .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
+      .repeatTimes(1)
+
+    val flightWaypoints = flightElementWaypointMission.waypoints
+    if (flightWaypoints != null) {
+      for (flightWaypoint in flightWaypoints) {
+        val _latitude = flightWaypoint.location?.latitude
+        val _longitude = flightWaypoint.location?.longitude
+        val _altitude = flightWaypoint.location?.altitude
+
+        if (_latitude != null && _longitude != null && _altitude != null) {
+          val waypoint: Waypoint = Waypoint(_latitude, _longitude, _altitude.toFloat())
+          waypoint.heading = flightWaypoint.heading?.toInt() ?: 0
+          waypoint.cornerRadiusInMeters = flightWaypoint.cornerRadiusInMeters?.toFloat() ?: 5.toFloat()
+          waypoint.turnMode = when (flightWaypoint.turnMode) {
+            "counterClockwise" -> WaypointTurnMode.COUNTER_CLOCKWISE
+            else -> WaypointTurnMode.CLOCKWISE
+          }
+          waypoint.gimbalPitch = flightWaypoint.gimbalPitch?.toFloat() ?: 0.toFloat()
+          waypoint.actionTimeoutInSeconds = 30
+          waypoint.actionRepeatTimes = 1
+
+          missionBuilder.addWaypoint(waypoint)
+        } else {
+          Log.d(TAG,"waypointMission - waypoint without location coordinates - skipping")
+        }
+      }
+    } else {
+      Log.d(TAG,"waypointMission - No waypoints available - exiting.")
+    }
+
+    return missionBuilder.build()
   }
 }
 

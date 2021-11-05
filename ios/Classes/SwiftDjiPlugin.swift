@@ -63,7 +63,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	public func connectDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		print("=== DjiPlugin iOS: Connect Drone Started")
 
-//		DJISDKManager.enableBridgeMode(withBridgeAppIP: "192.168.1.105")
+		//DJISDKManager.enableBridgeMode(withBridgeAppIP: "192.168.1.105")
 		DJISDKManager.startConnectionToProduct()
 	}
 
@@ -168,7 +168,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			}
 
 			// Goto Home
-//			scheduledElements.append(DJIGoHomeAction())
+			//scheduledElements.append(DJIGoHomeAction())
 
 			// Goto Waypoint (Home)
 			if let gotoElement = DJIGoToAction(coordinate: droneHomeCoordinates, altitude: 15) {
@@ -215,12 +215,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	func startFlightTimeline(_ flight: Flight) {
 		guard let timeline = flight.timeline, timeline.count == 0 else {
-			print("=== DjiPlugin iOS: _convertFlightToTimeline - timeline Array is empty.")
+			print("=== DjiPlugin iOS: startFlightTimeline - timeline List is empty")
 			return
 		}
 
 		guard let _droneFlightController = drone?.flightController else {
-			print("=== DjiPlugin iOS: _convertFlightToTimeline - No Flight Controller")
+			print("=== DjiPlugin iOS: startFlightTimeline - No Flight Controller")
 			return
 		}
 
@@ -343,12 +343,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 					mission.add(waypoint)
 				} else {
-					print("=== DjiPlugin iOS: waypointMission - waypoint without location coordinates - skipping.")
+					print("=== DjiPlugin iOS: waypointMission - waypoint without location coordinates - skipping")
 				}
 			}
 			return DJIWaypointMission(mission: mission)
 		} else {
-			print("=== DjiPlugin iOS: waypointMission - No waypoints available - exiting.")
+			print("=== DjiPlugin iOS: waypointMission - No waypoints available - exiting")
 			return nil
 		}
 	}
