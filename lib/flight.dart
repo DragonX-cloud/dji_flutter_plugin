@@ -72,7 +72,7 @@ class CoordinatesConvertion {
     azimuthToDestination = 180 -
         vector.headingRelativeToPointOfInterest -
         (atan((droneLocation.latitude - pointOfInterest.latitude).abs() /
-                (pointOfInterest.longitude - pointOfInterest.longitude).abs()) *
+                (droneLocation.longitude - pointOfInterest.longitude).abs()) *
             180 /
             pi);
     // Latitude = North/South

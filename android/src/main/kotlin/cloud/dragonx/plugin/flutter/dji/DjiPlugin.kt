@@ -385,16 +385,19 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
 
-//    if (flightJson != null) {
-//      try {
-//        val f: Flight = Json.decodeFromString<Flight>(flightJson)
-//        Log.d(TAG, "Start Flight JSON parsed successfully: $f")
-//
-//        startFlightTimeline(f)
-//      } catch (e: Error) {
-//        Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
-//      }
-//    }
+    if (flightJson != null) {
+      try {
+        val json = Json {
+          ignoreUnknownKeys = true
+        }
+        val f: Flight = json.decodeFromString<Flight>(flightJson)
+        Log.d(TAG, "Start Flight JSON parsed successfully: $f")
+
+        startFlightTimeline(f)
+      } catch (e: Error) {
+        Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
+      }
+    }
   }
 
   private fun startFlightTimeline(flight: Flight) {
@@ -551,66 +554,73 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
 /** Flight Classes */
 
+/*
+Note:
+Apparently even though you mark something as nullable (optional) in the serializable object, its still considered required.
+For it to truly be optional you need to give it a default value.
+So, that's why we apply "= null" to each optional property here below.
+*/
+
 @Serializable
 data class Flight(
   @SerialName("timeline")
-  val timeline: List<FlightElement>?
+  val timeline: List<FlightElement>? = null
 )
 
 @Serializable
 data class FlightElement(
   @SerialName("type")
-  val type: String?,
+  val type: String? = null,
   @SerialName("pointOfInterest")
-  val pointOfInterest: FlightLocation?,
+  val pointOfInterest: FlightLocation? = null,
   @SerialName("maxFlightSpeed")
-  val maxFlightSpeed: Double?,
+  val maxFlightSpeed: Double? = null,
   @SerialName("autoFlightSpeed")
-  val autoFlightSpeed: Double?,
+  val autoFlightSpeed: Double? = null,
   @SerialName("finishedAction")
-  val finishedAction: String?,
+  val finishedAction: String? = null,
   @SerialName("headingMode")
-  val headingMode: String?,
+  val headingMode: String? = null,
   @SerialName("flightPathMode")
-  val flightPathMode: String?,
+  val flightPathMode: String? = null,
   @SerialName("rotateGimbalPitch")
-  val rotateGimbalPitch: Boolean?,
+  val rotateGimbalPitch: Boolean? = null,
   @SerialName("exitMissionOnRCSignalLost")
-  val exitMissionOnRCSignalLost: Boolean?,
+  val exitMissionOnRCSignalLost: Boolean? = null,
   @SerialName("waypoints")
-  val waypoints: List<FlightWaypoint>?
+  val waypoints: List<FlightWaypoint>? = null
 )
 
 @Serializable
 data class FlightWaypoint(
   @SerialName("location")
-  val location: FlightLocation?,
+  val location: FlightLocation? = null,
   @SerialName("heading")
-  val heading: Int?,
+  val heading: Int? = null,
   @SerialName("cornerRadiusInMeters")
-  val cornerRadiusInMeters: Double?,
+  val cornerRadiusInMeters: Double? = null,
   @SerialName("turnMode")
-  val turnMode: String?,
+  val turnMode: String? = null,
   @SerialName("gimbalPitch")
-  val gimbalPitch: Double?
+  val gimbalPitch: Double? = null
 )
 
 @Serializable
 data class FlightLocation(
   @SerialName("altitude")
-  val altitude: Double?,
+  val altitude: Double? = null,
   @SerialName("latitude")
-  val latitude: Double?,
+  val latitude: Double? = null,
   @SerialName("longitude")
-  val longitude: Double?
+  val longitude: Double? = null
 )
 
 @Serializable
 data class Vector(
   @SerialName("destinationAltitude")
-  val destinationAltitude: Int?,
+  val destinationAltitude: Int? = null,
   @SerialName("distanceFromPointOfInterest")
-  val distanceFromPointOfInterest: Int?,
+  val distanceFromPointOfInterest: Int? = null,
   @SerialName("headingRelativeToPointOfInterest")
-  val headingRelativeToPointOfInterest: Int?
+  val headingRelativeToPointOfInterest: Int? = null
 )

@@ -309,8 +309,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
         ],
       });
 
-      droneHomeLocation =
-          FlightLocation(latitude: 0.0, longitude: 0.0, altitude: 0);
+      droneHomeLocation = FlightLocation(
+          latitude: 0.00000898311, longitude: 0.00000898311, altitude: 0);
 
       if (droneHomeLocation == null) {
         developer.log(
