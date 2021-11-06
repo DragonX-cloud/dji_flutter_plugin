@@ -118,3 +118,10 @@ public class MyApplication : Application() {
 
 ## DJI References
 Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios
+
+## Debugging Android over Wifi
+Find your device IP Address through the Android > Settings > wifi, and then run the following from your Desktop terminal:
+```
+adb tcpip 4455
+adb connect {{your-android-ip}}:4455
+```

@@ -197,8 +197,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       override fun onProductChanged(baseProduct: BaseProduct) {}
 
       override fun onComponentChange(
-        componentKey: ComponentKey, oldComponent: BaseComponent,
-        newComponent: BaseComponent
+        componentKey: ComponentKey, oldComponent: BaseComponent?,
+        newComponent: BaseComponent?
       ) {
         if (newComponent != null) {
           newComponent.setComponentListener { isConnected ->
@@ -242,8 +242,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
           // Configuring the Flight Controller State Callbacks
           (drone as Aircraft).flightController.setStateCallback { state ->
-            Log.d(TAG, "${state.attitude}")
-
             var _droneLatitude: Double = 0.00
             var _droneLongitude: Double = 0.00
             var _droneAltitude: Double = 0.00
@@ -316,7 +314,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
                 fltDjiFlutterApi?.setStatus(fltDrone) {}
               })
 
-              Log.d(TAG, "Drone Battery Delegate successfuly configured")
+              //Log.d(TAG, "Drone Battery Delegate successfuly configured")
             })
         } catch (ignored: Exception) {
           Log.d(TAG, "Drone Battery Delegate Error - No Battery Object")
@@ -335,12 +333,22 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
   override fun takeOff() {
     Log.d(TAG, "Takeoff Started")
-    TODO("Not yet implemented")
+    if ((drone as Aircraft).flightController != null) {
+      Log.d(TAG,"Takeoff Started")
+      (drone as Aircraft).flightController.startTakeoff(null)
+    } else {
+      Log.d(TAG,"Takeoff Failed - No Flight Controller")
+    }
   }
 
   override fun land() {
     Log.d(TAG, "Land Started")
-    TODO("Not yet implemented")
+    if ((drone as Aircraft).flightController != null) {
+      Log.d(TAG,"Landing Started")
+      (drone as Aircraft).flightController.startLanding(null)
+    } else {
+      Log.d(TAG,"Landing Failed - No Flight Controller")
+    }
   }
 
   override fun timeline() {
@@ -374,19 +382,19 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 //    }
   }
 
-  override fun start(flightJson: String?) {
+  override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
 
-    if (flightJson != null) {
-      try {
-        val f: Flight = Json.decodeFromString<Flight>(flightJson)
-        Log.d(TAG, "Start Flight JSON parsed successfully: $f")
-
-        startFlightTimeline(f)
-      } catch (e: Error) {
-        Log.d(TAG, "Error - Failed to parse Flight JSON: $e")
-      }
-    }
+//    if (flightJson != null) {
+//      try {
+//        val f: Flight = Json.decodeFromString<Flight>(flightJson)
+//        Log.d(TAG, "Start Flight JSON parsed successfully: $f")
+//
+//        startFlightTimeline(f)
+//      } catch (e: Error) {
+//        Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
+//      }
+//    }
   }
 
   private fun startFlightTimeline(flight: Flight) {
@@ -459,7 +467,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   /** DJI Timeline Methods */
-  private fun waypointMission(flightElementWaypointMission: FlightElement): WaypointMission {
+  private fun waypointMission(flightElementWaypointMission: FlightElement): WaypointMission? {
 
     var _maxFlightSpeed: Float = 15.toFloat()
     if (flightElementWaypointMission.maxFlightSpeed != null) {
