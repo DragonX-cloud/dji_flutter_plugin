@@ -456,17 +456,19 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
     val _missionControl = MissionControl.getInstance()
     if (_missionControl != null && _missionControl.scheduledCount() > 0) {
-      _missionControl.unscheduleEverything()
-      _missionControl.removeAllListeners()
+        // Cleaning any previous scheduled elements
+        _missionControl.unscheduleEverything()
+        _missionControl.removeAllListeners()
+
+        // Adding the scheduled elements
+        _missionControl.scheduleElements(scheduledElements)
+
+        // Starting the Timeline Mission
+        _missionControl.startTimeline()
     } else {
       Log.d(TAG, "startFlightTimeline - No Mission Control or Scheduled Elements")
       return
     }
-
-    _missionControl.scheduleElements(scheduledElements)
-
-    // Starting the Timeline Mission
-    _missionControl.startTimeline()
   }
 
   /** DJI Timeline Methods */

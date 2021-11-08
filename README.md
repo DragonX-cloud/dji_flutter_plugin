@@ -120,8 +120,12 @@ public class MyApplication : Application() {
 Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios
 
 ## Debugging Android over Wifi
-Find your device IP Address through the Android > Settings > wifi, and then run the following from your Desktop terminal:
+Find your device IP Address through the Android > Settings > wifi.
+Connect it via USB cable and then run the following from your Desktop terminal:
 ```
 adb tcpip 4455
+```
+Then disconnect the USB cable, and run the following:
+```
 adb connect {{your-android-ip}}:4455
 ```
