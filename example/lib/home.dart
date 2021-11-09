@@ -254,8 +254,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
           {
             'type': 'waypointMission',
             'pointOfInterest': {
-              'longitude': 0.0,
-              'latitude': 0.0,
+              'longitude': 32.2181125,
+              'latitude': 34.8674920,
               'altitude': 0.0,
             },
             'maxFlightSpeed': 25.0,
@@ -267,32 +267,32 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
             'exitMissionOnRCSignalLost': true,
             'waypoints': [
               {
-                // 'location': {
-                //   'longitude': 1.0,
-                //   'latitude': 1.0,
-                //   'altitude': 1.0,
-                // },
-                'vector': {
-                  'distanceFromPointOfInterest': 100,
-                  'headingRelativeToPointOfInterest': 45,
-                  'destinationAltitude': 20,
+                'location': {
+                  'latitude': 32.2182693,
+                  'longitude': 34.8676414,
+                  'altitude': 20.0,
                 },
+                // 'vector': {
+                //   'distanceFromPointOfInterest': 100,
+                //   'headingRelativeToPointOfInterest': 45,
+                //   'destinationAltitude': 20,
+                // },
                 //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
                 // 'gimbalPitch': 0,
               },
               {
-                // 'location': {
-                //   'longitude': 2.0,
-                //   'latitude': 2.0,
-                //   'altitude': 2.0,
-                // },
-                'vector': {
-                  'distanceFromPointOfInterest': 10,
-                  'headingRelativeToPointOfInterest': -45,
-                  'destinationAltitude': 5,
+                'location': {
+                  'latitude': 32.2184348,
+                  'longitude': 34.8675183,
+                  'altitude': 5.0,
                 },
+                // 'vector': {
+                //   'distanceFromPointOfInterest': 10,
+                //   'headingRelativeToPointOfInterest': -45,
+                //   'destinationAltitude': 5,
+                // },
                 //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
@@ -310,7 +310,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
       });
 
       droneHomeLocation = FlightLocation(
-          latitude: 0.00000898311, longitude: 0.00000898311, altitude: 0);
+          latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
 
       if (droneHomeLocation == null) {
         developer.log(

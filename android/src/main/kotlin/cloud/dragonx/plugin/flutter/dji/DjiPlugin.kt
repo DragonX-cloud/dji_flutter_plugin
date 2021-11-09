@@ -455,10 +455,12 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     }
 
     val _missionControl = MissionControl.getInstance()
-    if (_missionControl != null && _missionControl.scheduledCount() > 0) {
+    if (_missionControl != null) {
         // Cleaning any previous scheduled elements
-        _missionControl.unscheduleEverything()
-        _missionControl.removeAllListeners()
+        if (_missionControl.scheduledCount() > 0) {
+          _missionControl.unscheduleEverything()
+          _missionControl.removeAllListeners()
+        }
 
         // Adding the scheduled elements
         _missionControl.scheduleElements(scheduledElements)
@@ -546,6 +548,9 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           Log.d(TAG,"waypointMission - waypoint without location coordinates - skipping")
         }
       }
+
+      missionBuilder.waypointCount(flightWaypoints.size)
+
     } else {
       Log.d(TAG,"waypointMission - No waypoints available - exiting.")
     }
