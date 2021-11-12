@@ -12,12 +12,13 @@ import 'package:dji/dji.dart';
 
 import 'constants.dart';
 
-class HomeWidget extends StatefulWidget {
+class ExampleWidget extends StatefulWidget {
   @override
-  _HomeWidgetState createState() => _HomeWidgetState();
+  _ExampleWidgetState createState() => _ExampleWidgetState();
 }
 
-class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
+class _ExampleWidgetState extends State<ExampleWidget>
+    implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   String _droneStatus = 'Disconnected';
   String _droneBatteryPercent = '0';
@@ -34,8 +35,10 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   @override
   void initState() {
     super.initState();
-    _initDroneState();
+
     DjiFlutterApi.setup(this);
+
+    _getPlatformVersion();
   }
 
   // This function is triggered by the Native Host side whenever the Drone Status is changed.
@@ -66,7 +69,7 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> _initDroneState() async {
+  Future<void> _getPlatformVersion() async {
     String platformVersion;
 
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -248,17 +251,17 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
           {
             'type': 'takeOff',
           },
-          {
-            'type': 'startRecordVideo',
-          },
+          // {
+          //   'type': 'startRecordVideo',
+          // },
           {
             'type': 'waypointMission',
             'pointOfInterest': {
-              'longitude': 32.2181125,
-              'latitude': 34.8674920,
+              'latitude': 32.2181125,
+              'longitude': 34.8674920,
               'altitude': 0.0,
             },
-            'maxFlightSpeed': 25.0,
+            'maxFlightSpeed': 15.0, // Max Flight Speed is 15
             'autoFlightSpeed': 10.0,
             'finishedAction': 'noAction',
             'headingMode': 'towardPointOfInterest',
@@ -268,8 +271,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
             'waypoints': [
               {
                 'location': {
-                  'latitude': 32.2182693,
-                  'longitude': 34.8676414,
+                  'latitude': 32.2181125,
+                  'longitude': 34.8674920,
                   'altitude': 20.0,
                 },
                 // 'vector': {
@@ -284,8 +287,8 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
               },
               {
                 'location': {
-                  'latitude': 32.2184348,
-                  'longitude': 34.8675183,
+                  'latitude': 32.2181125,
+                  'longitude': 34.8674920,
                   'altitude': 5.0,
                 },
                 // 'vector': {
@@ -300,9 +303,9 @@ class _HomeWidgetState extends State<HomeWidget> implements DjiFlutterApi {
               },
             ],
           },
-          {
-            'type': 'stopRecordVideo',
-          },
+          // {
+          //   'type': 'stopRecordVideo',
+          // },
           {
             'type': 'land',
           },

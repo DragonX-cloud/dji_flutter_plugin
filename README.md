@@ -1,10 +1,45 @@
 # dji
-## A Flutter plugin for DJI SDK.
+## A FLUTTER PLUGIN FOR DJI SDK
 This open source project intends to bring the DJI SDK functionalities into Flutter.
 
 **// WORK IN PROGRESS**
 
-## Plugin Creation
+## USAGE
+
+### Extend your Widget with DjiFlutterApi
+First, extend your Widget with DjiFlutterApi, define the drone properties, and override your initState() method with the `_initDroneState()` and `DjiFlutterApi.setup()` methods.
+```
+class _ExampleWidgetState extends State<ExampleWidget>
+    implements DjiFlutterApi {
+  String _platformVersion = 'Unknown';
+  String _droneStatus = 'Disconnected';
+  String _droneBatteryPercent = '0';
+  String _droneAltitude = '0.0';
+  String _droneLatitude = '0.0';
+  String _droneLongitude = '0.0';
+  String _droneSpeed = '0.0';
+  String _droneRoll = '0.0';
+  String _dronePitch = '0.0';
+  String _droneYaw = '0.0';
+
+  FlightLocation? droneHomeLocation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    DjiFlutterApi.setup(this);
+
+    ...
+  }
+  ...
+```
+
+The DjiFlutterApi 
+
+## TECH NOTES
+
+### Plugin Creation Notes
 This project was created by the Flutter plugin template using:
 ```
 flutter create --org cloud.dragonx.plugin.flutter --template=plugin --platforms=ios -i swift dji
@@ -21,7 +56,7 @@ We're using iOS Swift and Android Kotlin (The Android project is Kotlin, althoug
 Make sure you `cd example` and run `flutter build ios --no-codesign` before starting to change anything in Xcode or Flutter.
 Otherwise, the plugin might not get built properly later on (I don't know why though).
 
-## Pigeon
+### Pigeon
 This plugin uses Pigeon:
 https://pub.dev/packages/pigeon
 
@@ -35,16 +70,16 @@ flutter pub run pigeon \
   --java_out android/src/main/java/cloud/dragonx/plugin/flutter/dji/Messages.java \
   --java_package "cloud.dragonx.plugin.flutter.dji"
 
-### Pigeon Swift Example
+#### Pigeon Swift Example
 https://github.com/DJI-Mobile-SDK-Tutorials/iOS-ImportAndActivateSDKInXcode-Swift
 
-### Pigeon Android Kotlin Example
+#### Pigeon Android Kotlin Example
 https://github.com/gaaclarke/pigeon_plugin_example
 
 Example how to use FlutterAPI (trigger a function from the native platform side):
 https://github.com/glassmonkey/flutter_wifi/blob/master/android/app/src/main/kotlin/nagano/shunsuke/flutter_wifi_sample/WifiApi.kt
 
-## Configuring the iOS Xcode Project
+### Configuring the iOS Xcode Project
 https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168
 
 Click the "info" tab (in between the Resource Tags and the Build Settings).
@@ -65,7 +100,7 @@ Add the key `NSBluetoothAlwaysUsageDescription` to the Info.plist with a descrip
 Note:
 Don't forget to run `pod install` from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).
 
-## Configuring the Android Studio Kotlin project
+### Configuring the Android Studio Kotlin project
 https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio
 
 DJI Android Sample App:
@@ -85,7 +120,7 @@ In build.gradle:
 - [ ! ] IMPORTANT: For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).
 - Due to the minSDK 19 - MultiDex MUST be enabled.
 
-## Notes in regards to DJI SDK
+### Notes in regards to DJI SDK
 - Decided not to implement the "Bridge App" support, because turned out that - for debugging / development purposes - it is much easier to simply connect to the drone's Wifi, and let it connect using it (instead of using the Remote Controller).
 
 [ ! ] Important Note
@@ -116,10 +151,10 @@ public class MyApplication : Application() {
 }
 ```
 
-## DJI References
+### DJI References
 Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios
 
-## Debugging Android over Wifi
+### Debugging Android over Wifi
 Find your device IP Address through the Android > Settings > wifi.
 Connect it via USB cable and then run the following from your Desktop terminal:
 ```

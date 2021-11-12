@@ -71,7 +71,7 @@ import dji.waypointv2.common.waypointv1.TurnMode
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.lang.Exception
-import java.util.ArrayList
+import java.util.*
 
 /** DjiPlugin */
 
@@ -352,34 +352,63 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun timeline() {
-// DEPRECATED
-//    Log.d(TAG, "Timeline Started")
-//    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
-//    if (_droneFlightController != null) {
-//      // First we check if a timeline is already running
-//      val _missionControl = MissionControl.getInstance()
-//      if (_missionControl.isTimelineRunning == true) {
-//        Log.d(TAG, "Error - Timeline already running")
-//        return
-//      } else {
-//        Log.d(TAG, "Timeline Started")
-//      }
-//
-//      var droneCoordinates = droneCurrentLocation
-//      if (droneCoordinates == null) {
-//        Log.d(TAG, "Timeline Failed - No droneCurrentLocationCoordinates")
-//        return
-//      }
-//
-//      // Set Home Coordinates
-//      val droneHomeLocation = LocationCoordinate2D(droneCoordinates.latitude, droneCoordinates.longitude)
-//      _droneFlightController.setHomeLocation(droneHomeLocation, null)
-//
-//      val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
-//
-//      // Take Off
-//      scheduledElements.add(TakeOffAction())
-//    }
+    Log.d(TAG, "Timeline Started")
+    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
+    if (_droneFlightController != null) {
+      // First we check if a timeline is already running
+      val _missionControl = MissionControl.getInstance()
+      if (_missionControl.isTimelineRunning == true) {
+        Log.d(TAG, "Error - Timeline already running")
+        return
+      }
+
+      var droneCoordinates = droneCurrentLocation
+      if (droneCoordinates == null) {
+        Log.d(TAG, "Timeline Failed - No droneCurrentLocationCoordinates")
+        return
+      }
+
+      // Set Home Coordinates
+      val droneHomeLocation = LocationCoordinate2D(droneCoordinates.latitude, droneCoordinates.longitude)
+      _droneFlightController.setHomeLocation(droneHomeLocation, null)
+
+      val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
+      val oneMeterOffset: Double = 0.00000899322
+
+      // Take Off
+      scheduledElements.add(TakeOffAction())
+
+      // Waypoint Mission
+      val waypointMissionBuilder = WaypointMission.Builder().autoFlightSpeed(5f)
+        .maxFlightSpeed(15f)
+        .setExitMissionOnRCSignalLostEnabled(true)
+        .finishedAction(WaypointMissionFinishedAction.NO_ACTION)
+        .flightPathMode(WaypointMissionFlightPathMode.CURVED)
+        .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
+        .headingMode(WaypointMissionHeadingMode.AUTO)
+        .repeatTimes(1)
+
+      val waypoints: MutableList<Waypoint> = LinkedList()
+
+      val firstPoint = Waypoint(droneHomeLocation.latitude + 10 * oneMeterOffset, droneHomeLocation.longitude, 2f)
+      val secondPoint = Waypoint(droneHomeLocation.latitude, droneHomeLocation.longitude + 10 * oneMeterOffset, 5f)
+
+      waypoints.add(firstPoint)
+      waypoints.add(secondPoint)
+
+      waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
+
+      val waypointMission = TimelineMission.elementFromWaypointMission(waypointMissionBuilder.build())
+      scheduledElements.add(waypointMission)
+
+      if (_missionControl.scheduledCount() > 0) {
+        _missionControl.unscheduleEverything()
+        _missionControl.removeAllListeners()
+      }
+
+      _missionControl.scheduleElements(scheduledElements)
+      _missionControl.startTimeline()
+    }
   }
 
   override fun start(flightJson: String) {
@@ -465,6 +494,20 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         // Adding the scheduled elements
         _missionControl.scheduleElements(scheduledElements)
 
+        // Adding a listener to monitor the timeline and output errors
+        _missionControl.addListener(MissionControl.Listener {
+            element, event, error ->
+              if (element != null) {
+                if (element is TimelineMission) {
+                  Log.d(TAG, (element as TimelineMission).missionObject.javaClass.simpleName + " event is " + event.toString() + " " + if (error == null) "" else error.description)
+                } else {
+                  Log.d(TAG, element.javaClass.simpleName + " event is " + event.toString() + " " + if (error == null) "" else error.description)
+                }
+              } else {
+                Log.d(TAG, "Timeline Event is $event " + if (error == null) "" else "Failed:" + error.description)
+              }
+        })
+
         // Starting the Timeline Mission
         _missionControl.startTimeline()
     } else {
@@ -524,8 +567,14 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
       .repeatTimes(1)
 
+    if (flightElementWaypointMission.pointOfInterest != null && flightElementWaypointMission.pointOfInterest.latitude != null && flightElementWaypointMission.pointOfInterest.longitude != null) {
+      missionBuilder.pointOfInterest = LocationCoordinate2D(flightElementWaypointMission.pointOfInterest.latitude, flightElementWaypointMission.pointOfInterest.longitude)
+    }
+
     val flightWaypoints = flightElementWaypointMission.waypoints
     if (flightWaypoints != null) {
+      var waypoints : MutableList<Waypoint> = ArrayList<Waypoint>()
+
       for (flightWaypoint in flightWaypoints) {
         val _latitude = flightWaypoint.location?.latitude
         val _longitude = flightWaypoint.location?.longitude
@@ -543,13 +592,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           waypoint.actionTimeoutInSeconds = 30
           waypoint.actionRepeatTimes = 1
 
-          missionBuilder.addWaypoint(waypoint)
+          waypoints.add(waypoint)
         } else {
           Log.d(TAG,"waypointMission - waypoint without location coordinates - skipping")
         }
       }
 
-      missionBuilder.waypointCount(flightWaypoints.size)
+      missionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
 
     } else {
       Log.d(TAG,"waypointMission - No waypoints available - exiting.")
