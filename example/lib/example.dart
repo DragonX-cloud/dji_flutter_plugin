@@ -246,6 +246,16 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _start() async {
     try {
+      droneHomeLocation = FlightLocation(
+          latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
+
+      if (droneHomeLocation == null) {
+        developer.log(
+            'No drone home location exist - unable to start the flight',
+            name: kLogKindDjiFlutterPlugin);
+        return;
+      }
+
       Flight flight = Flight.fromJson({
         'timeline': [
           {
@@ -257,11 +267,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
           {
             'type': 'waypointMission',
             'pointOfInterest': {
-              'latitude': 32.2181125,
-              'longitude': 34.8674920,
-              'altitude': 0.0,
+              'latitude': droneHomeLocation!.latitude + (5 * 0.00000899322),
+              'longitude': droneHomeLocation!.longitude + (5 * 0.00000899322),
+              'altitude': droneHomeLocation!.altitude,
             },
-            'maxFlightSpeed': 15.0, // Max Flight Speed is 15
+            'maxFlightSpeed':
+                15.0, // Max Flight Speed is 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
             'autoFlightSpeed': 10.0,
             'finishedAction': 'noAction',
             'headingMode': 'towardPointOfInterest',
@@ -270,32 +281,32 @@ class _ExampleWidgetState extends State<ExampleWidget>
             'exitMissionOnRCSignalLost': true,
             'waypoints': [
               {
-                'location': {
-                  'latitude': 32.2181125,
-                  'longitude': 34.8674920,
-                  'altitude': 20.0,
-                },
-                // 'vector': {
-                //   'distanceFromPointOfInterest': 100,
-                //   'headingRelativeToPointOfInterest': 45,
-                //   'destinationAltitude': 20,
+                // 'location': {
+                //   'latitude': 32.2181125,
+                //   'longitude': 34.8674920,
+                //   'altitude': 20.0,
                 // },
+                'vector': {
+                  'distanceFromPointOfInterest': 20,
+                  'headingRelativeToPointOfInterest': 45,
+                  'destinationAltitude': 5,
+                },
                 //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
                 // 'gimbalPitch': 0,
               },
               {
-                'location': {
-                  'latitude': 32.2181125,
-                  'longitude': 34.8674920,
-                  'altitude': 5.0,
-                },
-                // 'vector': {
-                //   'distanceFromPointOfInterest': 10,
-                //   'headingRelativeToPointOfInterest': -45,
-                //   'destinationAltitude': 5,
+                // 'location': {
+                //   'latitude': 32.2181125,
+                //   'longitude': 34.8674920,
+                //   'altitude': 5.0,
                 // },
+                'vector': {
+                  'distanceFromPointOfInterest': 10,
+                  'headingRelativeToPointOfInterest': -45,
+                  'destinationAltitude': 3,
+                },
                 //'heading': 0,
                 'cornerRadiusInMeters': 5,
                 'turnMode': 'clockwise',
@@ -311,16 +322,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
           },
         ],
       });
-
-      droneHomeLocation = FlightLocation(
-          latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
-
-      if (droneHomeLocation == null) {
-        developer.log(
-            'No drone home location exist - unable to start the flight',
-            name: kLogKindDjiFlutterPlugin);
-        return;
-      }
 
       // Converting any vector definitions in waypoint-mission to locations
       for (dynamic element in flight.timeline) {

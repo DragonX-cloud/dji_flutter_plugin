@@ -40,7 +40,7 @@ class EnumConvertion {
 }
 
 class CoordinatesConvertion {
-  static const meterToDecimalDegree = 0.00000898311;
+  static const meterToDecimalDegree = 0.00000899322; //0.00000898311;
 
   // Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
   // Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
@@ -61,13 +61,22 @@ class CoordinatesConvertion {
   //       |/
   // pointOfInterest (x1, y1)
   //
-  static FlightLocation vectorToLocation(
+  static FlightLocation? vectorToLocation(
       {required FlightLocation droneLocation,
       required FlightLocation pointOfInterest,
       required FlightVector vector}) {
     final double azimuthToDestination;
     final double destinationLatitude;
     final double destinationLongitude;
+
+    if (droneLocation.latitude == pointOfInterest.latitude &&
+        droneLocation.longitude == pointOfInterest.longitude) {
+      developer.log(
+        'vectorToLocation - Waypoint Mission Point of Interest cannot be identical to the drone (home) location',
+        name: kLogKindDjiFlutterPlugin,
+      );
+      return null;
+    }
 
     azimuthToDestination = 180 -
         vector.headingRelativeToPointOfInterest -
@@ -132,6 +141,8 @@ class CoordinatesConvertion {
       return null;
     }
 
+    int unableToComputeLocationBasedOnVector = -1;
+    int count = 0;
     for (FlightWaypoint waypoint in flightElementWaypointMission.waypoints) {
       // Compute Location per Vector definition
       if (waypoint.vector != null && waypoint.location == null) {
@@ -139,6 +150,11 @@ class CoordinatesConvertion {
             droneLocation: droneHomeLocation,
             pointOfInterest: flightElementWaypointMission.pointOfInterest!,
             vector: waypoint.vector!);
+
+        // If we weren't able to compute the location - we mark the failure and the parent method will return null
+        if (waypoint.location == null) {
+          unableToComputeLocationBasedOnVector = count;
+        }
       } else {
         // Location already exists - Keeping the existing waypoint
       }
@@ -148,6 +164,16 @@ class CoordinatesConvertion {
         waypoint.gimbalPitch = CoordinatesConvertion.computeGimbalAngle(
             flightElementWaypointMission.pointOfInterest!, waypoint.location!);
       }
+
+      count++;
+    }
+
+    if (unableToComputeLocationBasedOnVector > -1) {
+      developer.log(
+        'convertWaypointMissionVectorsToLocations - Unable to compute Waypoint Location based on Waypoint Vector #$unableToComputeLocationBasedOnVector inputs',
+        name: kLogKindDjiFlutterPlugin,
+      );
+      return null;
     }
 
     developer.log(
