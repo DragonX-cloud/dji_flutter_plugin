@@ -23,7 +23,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>DJISDKAppKey</key>
-	<string>e6775a00cf003fca9680d32c</string>
+	<string>b5245cf16f4b43ed90d436ba</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

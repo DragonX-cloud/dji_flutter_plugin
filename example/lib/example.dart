@@ -261,11 +261,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
           {
             'type': 'takeOff',
           },
-          // {
-          //   'type': 'startRecordVideo',
-          // },
+          {
+            'type': 'startRecordVideo',
+          },
           {
             'type': 'waypointMission',
+            // For example purposes, we set our Point of Interest a few meters away, relative to the Drone's Home Location
             'pointOfInterest': {
               'latitude': droneHomeLocation!.latitude + (5 * 0.00000899322),
               'longitude': droneHomeLocation!.longitude + (5 * 0.00000899322),
@@ -314,9 +315,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
               },
             ],
           },
-          // {
-          //   'type': 'stopRecordVideo',
-          // },
+          {
+            'type': 'stopRecordVideo',
+          },
+          {
+            'type': 'singleShootPhoto',
+          },
           {
             'type': 'land',
           },
