@@ -10,4 +10,8 @@
 
 * Updated Example Tab in pub.dev.
 
+# 1.0.0-dev.4
+
+* Updated description and corrected messages.dart code formatting.
+
 
