@@ -48,7 +48,7 @@ flutter create --org com.yourdomain yourAppName
 ```
 https://flutteragency.com/create-a-new-project-in-flutter/
 
-**For a tip in regards to package names - please [read this](https://github.com/DragonX-cloud/dji_flutter_plugin#tip-in-regards-to-package-names).**
+**For a tip in regards to package names - please [read this](#a-tip-in-regards-to-package-names).**
 
 ### Adding the DJI SDK to your Flutter iOS Project
 Follow this tutotial:  
@@ -107,7 +107,7 @@ If you're trying to run the DJI sample, then note that in MainActivity.kt - Need
 - The remote control should be connected by cable to your development mobile device.
 - The mobile device should be connected to the same Wifi as your computer.
 	- For iOS Xcode - this should be sufficient to allow Xcode to install and debug your app on the mobile device.
-	- For Android - use [these instructions](https://github.com/DragonX-cloud/dji_flutter_plugin#debugging-android-over-wifi) to allow Wifi installation and debugging.
+	- For Android - use [these instructions](#debugging-android-over-wifi) to allow Wifi installation and debugging.
 
 ## USAGE
 Once you have completed the above setup, you are ready to start using the DJI Flutter plugin in your Flutter code.
