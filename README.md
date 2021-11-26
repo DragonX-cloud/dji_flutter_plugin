@@ -50,32 +50,35 @@ https://flutteragency.com/create-a-new-project-in-flutter/
 
 **For a tip in regards to package names - please [read this](#a-tip-in-regards-to-package-names).**
 
-### Adding the DJI SDK to your Flutter iOS Project
-Follow this tutotial:  
+### Configuring the DJI SDK on your Flutter iOS Project
+The DJI SDK is automatically added by the plugin.  
+However, we still need to configure a few parameters directly on the iOS project via Xcode.
+##### 1. Configure Build Settings
+- Open your Flutter iOS Workspace in Xcode.  
+- Click the "Runner" label on the top-left of the left Sidebar.
+- Then, make sure you are on Targets > Runner (middle Sidebar).
+- Click the "info" tab (in between the Resource Tags and the Build Settings).  
+- Under the "Custom iOS Target Properties" section - right click on the last row and choose "Add Row" and add the following:
+  - Add "Supported external accessory protocols" with 3 items:
+    - Item0 = com.dji.common
+    - Item1 = com.dji.protocol
+    - Item2 = com.dji.video
+  - Add the "App Transport Security Settings" key > click the "+" and choose "Allow Arbitrary Loads" and change the value to "YES".
+
+##### 2. Update the info.plist
+- **Create a `DJISDKAppKey` key in the info.plist file and paste the App Key string into its string value (right click on any of the existing rows or below them and add a new row).**
+- Add the key `NSBluetoothAlwaysUsageDescription` to the Info.plist with a description explaining that the DJI Drone requires bluetooth connection.
+
+##### 3. Sign your App and run it first from within Xcode
+- Before you try to run your app from Flutter, you better try to build it from within Xcode.
+- You also need to first make sure that you sign your app via Xcode:
+- Click the "Runner" label on the top-left of the left Sidebar and then click the tab "Signing & Capabilities".
+- Choose your Team (per your Apple developer account team) and choose your signing certificates (or simply check the Automatically manage signing checkbox).
+
+##### Note
+Full details of setting up the DJI SDK for iOS can be found here:  
 https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168  
-
-##### Important Notes
-Open your Flutter iOS Workspace in Xcode, and click the "info" tab (in between the Resource Tags and the Build Settings).
-Under the "Custom iOS Target Properties" section - right click on the last row and choose "Add Row" and add the following:
-
-Add "Supported external accessory protocols" with 3 items:
-- Item0 = com.dji.common
-- Item1 = com.dji.protocol
-- Item2 = com.dji.video
-
-Add the "App Transport Security Settings" key, with "Allow Arbitrary Loads" of values YES.
-
-**Create a `DJISDKAppKey` key in the info.plist file and paste the App Key string into its string value (right click on any of the existing rows or below them and add a new row).**
-
-Add the key `NSBluetoothAlwaysUsageDescription` to the Info.plist with a description explaining that the DJI Drone requires bluetooth connection.
-
-Note:
-Don't forget to run `pod install` from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).
-
-### Adding the DJI SDK to your Flutter Android (Kotlin) Project
-Follow this tutotial:   
-https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio
-
+### Configuring the DJI SDK on your Flutter Android (Kotlin) Project
 **Make sure your add your DJI Android App Key in the /androind/app/src/main/AndroidManifest.xml file like so:**
 ```
 <meta-data android:name="com.dji.sdk.API_KEY" android:value="23acf68f822be3f065e6f538" />
@@ -87,7 +90,10 @@ In build.gradle:
 - **[ ! ] IMPORTANT** For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).
 - Due to the minSDK 19 - MultiDex MUST be enabled.
 
-##### DJI Android Samples and Tutorials
+##### Note
+Full details of setting up the DJI SDK for Android can be found here:  
+https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio
+
 If you wish to learn and experiment with the DJI SDK on Android - here are some useful links and tips.
 
 DJI Android Sample App:  

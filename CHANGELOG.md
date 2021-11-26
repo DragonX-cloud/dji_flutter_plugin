@@ -14,4 +14,9 @@
 
 * Updated description and corrected messages.dart code formatting.
 
+# 1.0.0-dev.5
+
+* Enhanced iOS setup Readme.
+* Fixed a type mismatch bug in the iOS native part.
+
 

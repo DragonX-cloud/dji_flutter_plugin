@@ -289,10 +289,13 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		// Waypoint Mission Initialization
 		let mission = DJIMutableWaypointMission()
 
-		if CLLocationCoordinate2DIsValid(flightElementWaypointMission.pointOfInterest) {
-			mission.pointOfInterest = flightElementWaypointMission.pointOfInterest
+		if let latitude = flightElementWaypointMission.pointOfInterest?.latitude, let longitude = flightElementWaypointMission.pointOfInterest?.longitude, let altitude = flightElementWaypointMission.pointOfInterest?.altitude {
+			let pointOfInteresetCoordinate = CLLocationCoordinate2DMake(latitude, longitude)
+			if CLLocationCoordinate2DIsValid(pointOfInteresetCoordinate) {
+				mission.pointOfInterest = pointOfInteresetCoordinate
+			}
 		}
-
+		
 		mission.maxFlightSpeed = Float(flightElementWaypointMission.maxFlightSpeed ?? 15)
 		mission.autoFlightSpeed = Float(flightElementWaypointMission.autoFlightSpeed ?? 8)
 

@@ -13,6 +13,8 @@ import 'package:dji/dji.dart';
 import 'constants.dart';
 
 class ExampleWidget extends StatefulWidget {
+  const ExampleWidget({Key? key}) : super(key: key);
+
   @override
   _ExampleWidgetState createState() => _ExampleWidgetState();
 }
@@ -374,7 +376,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: EdgeInsets.all(kSpacer),
+              padding: const EdgeInsets.all(kSpacer),
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
             ),
@@ -394,57 +396,57 @@ class _ExampleWidgetState extends State<ExampleWidget>
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             ElevatedButton(
-                              key: Key('registerAppButton'),
-                              child: Text('Register App'),
+                              key: const Key('registerAppButton'),
+                              child: const Text('Register App'),
                               onPressed: () async {
                                 await _registerApp();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('connectDroneButton'),
-                              child: Text('Connect'),
+                              key: const Key('connectDroneButton'),
+                              child: const Text('Connect'),
                               onPressed: () async {
                                 await _connectDrone();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('disconnectDroneButton'),
-                              child: Text('Disconnect'),
+                              key: const Key('disconnectDroneButton'),
+                              child: const Text('Disconnect'),
                               onPressed: () async {
                                 await _disconnectDrone();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('delegateButton'),
-                              child: Text('Delegate'),
+                              key: const Key('delegateButton'),
+                              child: const Text('Delegate'),
                               onPressed: () async {
                                 await _delegateDrone();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('takeOffDroneButton'),
-                              child: Text('Take Off'),
+                              key: const Key('takeOffDroneButton'),
+                              child: const Text('Take Off'),
                               onPressed: () async {
                                 await _takeOff();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('landDroneButton'),
-                              child: Text('Land'),
+                              key: const Key('landDroneButton'),
+                              child: const Text('Land'),
                               onPressed: () async {
                                 await _land();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('timelineDroneButton'),
-                              child: Text('Timeline'),
+                              key: const Key('timelineDroneButton'),
+                              child: const Text('Timeline'),
                               onPressed: () async {
                                 await _timeline();
                               },
                             ),
                             ElevatedButton(
-                              key: Key('start'),
-                              child: Text('Start'),
+                              key: const Key('start'),
+                              child: const Text('Start'),
                               onPressed: () async {
                                 await _start();
                               },
@@ -461,43 +463,43 @@ class _ExampleWidgetState extends State<ExampleWidget>
                         padding: const EdgeInsets.all(kSpacer),
                         child: Column(
                           children: [
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Running on',
                               value: _platformVersion,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Drone Status',
                               value: _droneStatus,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Drone Battery',
                               value: _droneBatteryPercent + '%',
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Altitude',
                               value: _droneAltitude,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Latitude',
                               value: _droneLatitude,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Longitude',
                               value: _droneLongitude,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Speed',
                               value: _droneSpeed,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Roll',
                               value: _droneRoll,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Pitch',
                               value: _dronePitch,
                             ),
-                            dronePropertyRow(
+                            DronePropertyRow(
                               label: 'Yaw',
                               value: _droneYaw,
                             ),
@@ -516,11 +518,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
   }
 }
 
-class dronePropertyRow extends StatelessWidget {
-  const dronePropertyRow({
+class DronePropertyRow extends StatelessWidget {
+  const DronePropertyRow({
+    Key? key,
     required this.label,
     required this.value,
-  });
+  }) : super(key: key);
 
   final String label;
   final String value;
