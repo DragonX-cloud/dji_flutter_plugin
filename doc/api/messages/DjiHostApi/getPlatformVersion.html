@@ -66,7 +66,8 @@
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">Future&lt;Version&gt; getPlatformVersion() async {
   final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-      &#39;dev.flutter.pigeon.DjiHostApi.getPlatformVersion&#39;, codec, binaryMessenger: _binaryMessenger);
+      &#39;dev.flutter.pigeon.DjiHostApi.getPlatformVersion&#39;, codec,
+      binaryMessenger: _binaryMessenger);
   final Map&lt;Object?, Object?&gt;? replyMap =
       await channel.send(null) as Map&lt;Object?, Object?&gt;?;
   if (replyMap == null) {
@@ -76,7 +77,8 @@
       details: null,
     );
   } else if (replyMap[&#39;error&#39;] != null) {
-    final Map&lt;Object?, Object?&gt; error = (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
+    final Map&lt;Object?, Object?&gt; error =
+        (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
     throw PlatformException(
       code: (error[&#39;code&#39;] as String?)!,
       message: error[&#39;message&#39;] as String?,
@@ -153,7 +155,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.1
+      1.0.0-dev.4
   </span>
 
   

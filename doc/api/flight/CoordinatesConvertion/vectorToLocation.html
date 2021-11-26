@@ -52,7 +52,7 @@
     <section class="multi-line-signature">
       
 
-<span class="returntype"><a href="../../flight/FlightLocation-class.html">FlightLocation</a></span>
+<span class="returntype"><a href="../../flight/FlightLocation-class.html">FlightLocation</a>?</span>
 <span class="name ">vectorToLocation</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="vectorToLocation-param-droneLocation">{<span>required</span> <span class="type-annotation"><a href="../../flight/FlightLocation-class.html">FlightLocation</a></span> <span class="parameter-name">droneLocation</span>, </span></li>
 <li><span class="parameter" id="vectorToLocation-param-pointOfInterest"><span>required</span> <span class="type-annotation"><a href="../../flight/FlightLocation-class.html">FlightLocation</a></span> <span class="parameter-name">pointOfInterest</span>, </span></li>
 <li><span class="parameter" id="vectorToLocation-param-vector"><span>required</span> <span class="type-annotation"><a href="../../flight/FlightVector-class.html">FlightVector</a></span> <span class="parameter-name">vector</span>}</span></li>
@@ -67,13 +67,22 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static FlightLocation vectorToLocation(
+  <pre class="language-dart"><code class="language-dart">static FlightLocation? vectorToLocation(
     {required FlightLocation droneLocation,
     required FlightLocation pointOfInterest,
     required FlightVector vector}) {
   final double azimuthToDestination;
   final double destinationLatitude;
   final double destinationLongitude;
+
+  if (droneLocation.latitude == pointOfInterest.latitude &amp;&amp;
+      droneLocation.longitude == pointOfInterest.longitude) {
+    developer.log(
+      &#39;vectorToLocation - Waypoint Mission Point of Interest cannot be identical to the drone (home) location&#39;,
+      name: kLogKindDjiFlutterPlugin,
+    );
+    return null;
+  }
 
   azimuthToDestination = 180 -
       vector.headingRelativeToPointOfInterest -
@@ -158,7 +167,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.1
+      1.0.0-dev.4
   </span>
 
   

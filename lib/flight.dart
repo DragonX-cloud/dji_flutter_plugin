@@ -1,12 +1,10 @@
-/*
-* Note:
-* Did not want to use any packages, for minimal dependencies, and therefore instead of using json_serialization package or string_to_enum, manually implemented the convertion from Enum to String, inspired by the enum_to_string package.
-* Enum to String: https://pub.dev/packages/enum_to_string
-* JSON Serializable: https://pub.dev/packages/json_serializable
-*
-* Dart playground of the code below:
-* https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b
-*/
+/// Note:
+/// Did not want to use any packages, for minimal dependencies, and therefore instead of using json_serialization package or string_to_enum, manually implemented the convertion from Enum to String, inspired by the enum_to_string package.
+/// Enum to String: https://pub.dev/packages/enum_to_string
+/// JSON Serializable: https://pub.dev/packages/json_serializable
+///
+/// Dart playground of the code below:
+/// https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b
 
 import 'dart:convert';
 import 'dart:developer' as developer;
@@ -39,28 +37,29 @@ class EnumConvertion {
   }
 }
 
+/// Coordinates Convertion Methods
+///
+/// Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
+/// Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
+/// 1 degree = 111,319.9 m
+/// 0.00000898311 degrees = 1m
+///
+/// Example:
+///          Destination (x3, y3)
+///                 /
+///     Drone      /
+///    (x2,y2)    /
+///       |      /
+///       |     / a
+///       |    /
+///       |   /
+///       |  /
+///       | /
+///       |/
+/// pointOfInterest (x1, y1)
 class CoordinatesConvertion {
   static const meterToDecimalDegree = 0.00000899322; //0.00000898311;
 
-  // Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
-  // Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
-  // 1 degree = 111,319.9 m
-  // 0.00000898311 degrees = 1m
-  //
-  // Example:
-  //          Destination (x3, y3)
-  //                 /
-  //     Drone      /
-  //    (x2,y2)    /
-  //       |      /
-  //       |     / a
-  //       |    /
-  //       |   /
-  //       |  /
-  //       | /
-  //       |/
-  // pointOfInterest (x1, y1)
-  //
   static FlightLocation? vectorToLocation(
       {required FlightLocation droneLocation,
       required FlightLocation pointOfInterest,
@@ -103,29 +102,24 @@ class CoordinatesConvertion {
 
   static double computeGimbalAngle(
       FlightLocation pointOfInterest, FlightLocation droneLocation) {
-    // Calculating the distance between the drone and the point-of-interest (inclduing height)
+    /// Calculating the distance between the drone and the point-of-interest (inclduing height)
     final double latitudeDeltaInMeters =
         (droneLocation.latitude / meterToDecimalDegree) -
             (pointOfInterest.latitude / meterToDecimalDegree);
-
     final double longitudeDeltaInMeters =
         (droneLocation.longitude / meterToDecimalDegree) -
             (pointOfInterest.longitude / meterToDecimalDegree);
-
     final double altitudeDeltaInMeters =
         droneLocation.altitude - pointOfInterest.altitude;
 
-    // The ground distance (in meters) between the drone and the point-of-interest (without altitude)
+    /// The ground distance (in meters) between the drone and the point-of-interest (without altitude)
     final double groundDistanceInMeters =
         sqrt(pow(longitudeDeltaInMeters, 2) + pow(latitudeDeltaInMeters, 2));
-
-    // The distance between the drone and the point-of-interest (with altitude)
-    //final double distance = sqrt(pow(groundDistanceInMeters, 2) + pow(altitudeDeltaInMeters, 2));
 
     final double gimbalAngleInDegrees =
         atan(groundDistanceInMeters / altitudeDeltaInMeters) * 180 / pi;
 
-    // We return the gimbal angle as a "minus" to match the DJI SDK gimbalPitch definition.
+    /// We return the gimbal angle as a "minus" to match the DJI SDK gimbalPitch definition.
     return gimbalAngleInDegrees.abs() * -1;
   }
 
@@ -151,15 +145,15 @@ class CoordinatesConvertion {
             pointOfInterest: flightElementWaypointMission.pointOfInterest!,
             vector: waypoint.vector!);
 
-        // If we weren't able to compute the location - we mark the failure and the parent method will return null
+        /// If we weren't able to compute the location - we mark the failure and the parent method will return null
         if (waypoint.location == null) {
           unableToComputeLocationBasedOnVector = count;
         }
       } else {
-        // Location already exists - Keeping the existing waypoint
+        /// Location already exists - Keeping the existing waypoint
       }
 
-      // Compute Gimbal Angle, but only if it doesn't exist
+      /// Compute Gimbal Angle, but only if it doesn't exist
       if (waypoint.gimbalPitch == null && waypoint.location != null) {
         waypoint.gimbalPitch = CoordinatesConvertion.computeGimbalAngle(
             flightElementWaypointMission.pointOfInterest!, waypoint.location!);
@@ -183,7 +177,7 @@ class CoordinatesConvertion {
   }
 }
 
-// Flight (Timeline)
+/// Flight (Timeline)
 class Flight {
   final List<FlightElement> timeline;
 
@@ -222,7 +216,7 @@ enum FlightElementType {
   stopRecordVideo,
 }
 
-// Flight Element
+/// Flight Element
 
 class FlightElement {
   final FlightElementType? type;
@@ -238,9 +232,11 @@ class FlightElement {
       };
 }
 
-// Location (3D Coordinates = 2D Coordinates and Altitude)
-// In the DJI SDK, 2D Coordinates (Longitude, Latitude) are defined by Class CLLocationCoordinate2D
-// While 3D Coordinates (Longitude, Latitude, Altitude) are defined by Class CLLocation
+/// Flight Location
+///
+/// Location (3D Coordinates = 2D Coordinates and Altitude)
+/// In the DJI SDK, 2D Coordinates (Longitude, Latitude) are defined by Class CLLocationCoordinate2D
+/// While 3D Coordinates (Longitude, Latitude, Altitude) are defined by Class CLLocation
 class FlightLocation {
   final double latitude;
   final double longitude;
@@ -264,10 +260,12 @@ class FlightLocation {
       };
 }
 
-// The Flight Vector defines the distance and heading towards the destination in relation to the point-of-interest.
-// Including the altitude at the destination.
-// The destination is the waypoint.
-// The heading is the angle between the point-of-interest (of the Waypoint Mission) and the destination waypoint.
+/// Flight Vector
+///
+/// The Flight Vector defines the distance and heading towards the destination in relation to the point-of-interest.
+/// Including the altitude at the destination.
+/// The destination is the waypoint.
+/// The heading is the angle between the point-of-interest (of the Waypoint Mission) and the destination waypoint.
 class FlightVector {
   final double distanceFromPointOfInterest; // Distance in Meters
   final double headingRelativeToPointOfInterest; // Angle in Degrees
@@ -293,7 +291,7 @@ class FlightVector {
       };
 }
 
-// Waypoint
+/// Waypoint
 
 enum FlightWaypointTurnMode {
   clockwise,
@@ -349,7 +347,7 @@ class FlightWaypoint {
       };
 }
 
-// Waypoint Mission
+/// Waypoint Mission
 
 enum FlightWaypointMissionHeadingMode {
   auto,

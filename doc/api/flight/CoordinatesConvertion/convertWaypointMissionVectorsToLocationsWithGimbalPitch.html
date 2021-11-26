@@ -78,6 +78,8 @@
     return null;
   }
 
+  int unableToComputeLocationBasedOnVector = -1;
+  int count = 0;
   for (FlightWaypoint waypoint in flightElementWaypointMission.waypoints) {
     &#47;&#47; Compute Location per Vector definition
     if (waypoint.vector != null &amp;&amp; waypoint.location == null) {
@@ -85,15 +87,30 @@
           droneLocation: droneHomeLocation,
           pointOfInterest: flightElementWaypointMission.pointOfInterest!,
           vector: waypoint.vector!);
+
+      &#47;&#47;&#47; If we weren&#39;t able to compute the location - we mark the failure and the parent method will return null
+      if (waypoint.location == null) {
+        unableToComputeLocationBasedOnVector = count;
+      }
     } else {
-      &#47;&#47; Location already exists - Keeping the existing waypoint
+      &#47;&#47;&#47; Location already exists - Keeping the existing waypoint
     }
 
-    &#47;&#47; Compute Gimbal Angle, but only if it doesn&#39;t exist
+    &#47;&#47;&#47; Compute Gimbal Angle, but only if it doesn&#39;t exist
     if (waypoint.gimbalPitch == null &amp;&amp; waypoint.location != null) {
       waypoint.gimbalPitch = CoordinatesConvertion.computeGimbalAngle(
           flightElementWaypointMission.pointOfInterest!, waypoint.location!);
     }
+
+    count++;
+  }
+
+  if (unableToComputeLocationBasedOnVector &gt; -1) {
+    developer.log(
+      &#39;convertWaypointMissionVectorsToLocations - Unable to compute Waypoint Location based on Waypoint Vector #$unableToComputeLocationBasedOnVector inputs&#39;,
+      name: kLogKindDjiFlutterPlugin,
+    );
+    return null;
   }
 
   developer.log(
@@ -162,7 +179,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.1
+      1.0.0-dev.4
   </span>
 
   

@@ -68,29 +68,24 @@
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">static double computeGimbalAngle(
     FlightLocation pointOfInterest, FlightLocation droneLocation) {
-  &#47;&#47; Calculating the distance between the drone and the point-of-interest (inclduing height)
+  &#47;&#47;&#47; Calculating the distance between the drone and the point-of-interest (inclduing height)
   final double latitudeDeltaInMeters =
       (droneLocation.latitude &#47; meterToDecimalDegree) -
           (pointOfInterest.latitude &#47; meterToDecimalDegree);
-
   final double longitudeDeltaInMeters =
       (droneLocation.longitude &#47; meterToDecimalDegree) -
           (pointOfInterest.longitude &#47; meterToDecimalDegree);
-
   final double altitudeDeltaInMeters =
       droneLocation.altitude - pointOfInterest.altitude;
 
-  &#47;&#47; The ground distance (in meters) between the drone and the point-of-interest (without altitude)
+  &#47;&#47;&#47; The ground distance (in meters) between the drone and the point-of-interest (without altitude)
   final double groundDistanceInMeters =
       sqrt(pow(longitudeDeltaInMeters, 2) + pow(latitudeDeltaInMeters, 2));
-
-  &#47;&#47; The distance between the drone and the point-of-interest (with altitude)
-  &#47;&#47;final double distance = sqrt(pow(groundDistanceInMeters, 2) + pow(altitudeDeltaInMeters, 2));
 
   final double gimbalAngleInDegrees =
       atan(groundDistanceInMeters &#47; altitudeDeltaInMeters) * 180 &#47; pi;
 
-  &#47;&#47; We return the gimbal angle as a &quot;minus&quot; to match the DJI SDK gimbalPitch definition.
+  &#47;&#47;&#47; We return the gimbal angle as a &quot;minus&quot; to match the DJI SDK gimbalPitch definition.
   return gimbalAngleInDegrees.abs() * -1;
 }</code></pre>
 </section>
@@ -154,7 +149,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.1
+      1.0.0-dev.4
   </span>
 
   
