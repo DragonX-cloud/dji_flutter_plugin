@@ -1,4 +1,5 @@
 # dji
+[![Codemagic build status](https://api.codemagic.io/apps/61a1e99d95aace19d105564c/61a1e99d95aace19d105564b/status_badge.svg)](https://codemagic.io/apps/61a1e99d95aace19d105564c/61a1e99d95aace19d105564b/latest_build)
 ## A FLUTTER PLUGIN FOR DJI SDK
 This open source project intends to bring the DJI SDK functionalities into Flutter.
 

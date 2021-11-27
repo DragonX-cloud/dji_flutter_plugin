@@ -19,4 +19,9 @@
 * Enhanced iOS setup Readme.
 * Fixed a type mismatch bug in the iOS native part.
 
+# 1.0.0-dev.6
+
+* Improved readme.
+* Added CodeMagic CI/CD badge.
+
 
