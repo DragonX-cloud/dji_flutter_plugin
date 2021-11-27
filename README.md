@@ -75,6 +75,15 @@ However, we still need to configure a few parameters directly on the iOS project
 - Click the "Runner" label on the top-left of the left Sidebar and then click the tab "Signing & Capabilities".
 - Choose your Team (per your Apple developer account team) and choose your signing certificates (or simply check the Automatically manage signing checkbox).
 
+**[ ! ] Important Note**
+If you try to archive / build your App from Xcode or Flutter, and receive an error saying:
+```
+While building module 'DJISDK' imported from...
+Encountered error while building for device.
+```
+It's most probably because the Architecture it was trying to build for was not arm64.
+You can fix this by openining Xcode > and under the Build Settings tab > search for "Architectures", and change the value there to `arm64` (instead of the "Standard Architectures" that is the default there).
+
 ##### Note
 Full details of setting up the DJI SDK for iOS can be found here:  
 https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168  
