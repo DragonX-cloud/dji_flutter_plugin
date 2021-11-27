@@ -97,7 +97,32 @@ However, we still need to configure a few parameters directly on the Android pro
 > If you try to run it on the Android Emulator - it will launch and immediately crash.
 > This is due to a DJI SDK limitation.
 > In any case, in order to truly develop while being connected to the Drone, you must run the app on an actual device (for both iOS and Android).
-##### 1. Updated the Android Manifest XML
+##### 1. Upgrade to Kotlin 
+Edit the `android/grade/wrapper/gradle-wrapper.properties` file, and update the last line to:
+```
+distributionUrl=https\://services.gradle.org/distributions/gradle-7.0.2-all.zip
+```
+
+Then, update the `buildScript` in the `android/build.gradle` file to:
+```
+buildscript {
+    ext.kotlin_version = '1.5.31'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+```
+
+Lastly, open the Project in Android Studio and let the Gradle sync.
+Please note this "sync" might take several long minutes.
+
+##### 2. Updated the Android Manifest XML
 Below the `<application>` tag and above the `<activity>` tag, add the following and fill-in your Android DJI App Key:
 ```
 <application ...>
@@ -111,18 +136,18 @@ Below the `<application>` tag and above the `<activity>` tag, add the following 
   <activity...
 ```
 
-##### 2. Update android/app/build.gradle
+##### 3. Update android/app/build.gradle
 Open the android/app/build.grade file and update the following:
-- Set defaultConfig parameters with minSdkVersion 19 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge). Also, make sure multiDexEnabled is TRUE:
+- Set defaultConfig parameters with minSdkVersion 19 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).  
+Also, **add and make sure multiDexEnabled is set to TRUE**:
 ```
 android {
     ...
     defaultConfig {
-        applicationId "{{your-application-id}}"
+        ...
         minSdkVersion 19
         targetSdkVersion 30
-        versionCode flutterVersionCode.toInteger()
-        versionName flutterVersionName
+        ...
 
         multiDexEnabled true
     }
@@ -150,7 +175,7 @@ dependencies {
 }
 ```
 
-##### Validate gradle.properties
+##### 4. Validate gradle.properties
 Open android/gradle.properties and validate that you have both these lines with value TRUE:
 ```
 android.useAndroidX=true
