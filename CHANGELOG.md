@@ -24,4 +24,8 @@
 * Improved readme.
 * Added CodeMagic CI/CD badge.
 
+# 1.0.0-dev.7
+
+* Improved readme in regards to Android configuration.
+
 
