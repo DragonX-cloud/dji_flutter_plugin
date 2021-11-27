@@ -1,4 +1,4 @@
-package cloud.dragonx.plugin.flutter.dji_example
+package cloud.dragonx.plugin.flutter.djiExample
 
 //import android.content.Context
 //import com.secneo.sdk.Helper

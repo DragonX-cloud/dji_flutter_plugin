@@ -1,5 +1,5 @@
 PODS:
-  - dji (0.0.1):
+  - dji (1.0.0):
     - DJI-SDK-iOS (~> 4.14)
     - Flutter
   - DJI-SDK-iOS (4.15)
@@ -20,7 +20,7 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  dji: bc72feaae00fc9dc19a65acacd0daea7573838f0
+  dji: d148c7427775a7a0aed8cc37f23ffb887ba24580
   DJI-SDK-iOS: ec65a1c913116bc2fd3f93d03ab29a865cc48205
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
 

@@ -79,20 +79,76 @@ However, we still need to configure a few parameters directly on the iOS project
 Full details of setting up the DJI SDK for iOS can be found here:  
 https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168  
 ### Configuring the DJI SDK on your Flutter Android (Kotlin) Project
-**Make sure your add your DJI Android App Key in the /androind/app/src/main/AndroidManifest.xml file like so:**
+The DJI SDK is automatically added by the plugin.  
+However, we still need to configure a few parameters directly on the Android project via Android Studio.
+
+> **[ ! ] Important Note**
+> On Android - the DJI SDK cannot run the Simulator. 
+> If you try to run it on the Android Emulator - it will launch and immediately crash.
+> This is due to a DJI SDK limitation.
+> In any case, in order to truly develop while being connected to the Drone, you must run the app on an actual device (for both iOS and Android).
+##### 1. Updated the Android Manifest XML
+Below the `<application>` tag and above the `<activity>` tag, add the following and fill-in your Android DJI App Key:
 ```
-<meta-data android:name="com.dji.sdk.API_KEY" android:value="23acf68f822be3f065e6f538" />
+<application ...>
+  ...
+  <!-- Start of DJI SDK -->
+  <uses-library android:name="com.android.future.usb.accessory" />
+  <uses-library android:name="org.apache.http.legacy" android:required="false" />
+  <meta-data android:name="com.dji.sdk.API_KEY" android:value="{{your-dji-app-key}}" />
+  <!-- End of DJI SDK -->
+  
+  <activity...
 ```
 
-##### Important Notes
-In build.gradle:
-- Set the Target SDK to 30 (and not 31, as it caused issues with the Manifest merge)
-- **[ ! ] IMPORTANT** For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).
-- Due to the minSDK 19 - MultiDex MUST be enabled.
+##### 2. Update android/app/build.gradle
+Open the android/app/build.grade file and update the following:
+- Set defaultConfig parameters with minSdkVersion 19 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge). Also, make sure multiDexEnabled is TRUE:
+```
+android {
+    ...
+    defaultConfig {
+        applicationId "{{your-application-id}}"
+        minSdkVersion 19
+        targetSdkVersion 30
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
 
+        multiDexEnabled true
+    }
+}
+```
+**[ ! ] IMPORTANT** For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).  
+And because the minSDK 19 - MultiDex MUST also be enabled.
+
+- Below the `buildTypes` add the `packagingOptions` section to exclude the `rxjava.properties`:
+```
+packagingOptions {
+  exclude 'META-INF/rxjava.properties'
+}
+```
+- Under the dependencies section - include the following dependencies:
+```
+dependencies {
+    ...
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0'
+}
+```
+
+##### Validate gradle.properties
+Open android/gradle.properties and validate that you have both these lines with value TRUE:
+```
+android.useAndroidX=true
+android.enableJetifier=true
+```
 ##### Note
 Full details of setting up the DJI SDK for Android can be found here:  
-https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio
+https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#android-studio-project-integration
 
 If you wish to learn and experiment with the DJI SDK on Android - here are some useful links and tips.
 

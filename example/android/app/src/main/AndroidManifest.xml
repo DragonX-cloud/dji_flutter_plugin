@@ -30,12 +30,13 @@
         android:label="dji_example"
         android:icon="@mipmap/ic_launcher">
 
-       <!-- DJI SDK -->
+       <!-- Start of DJI SDK -->
        <uses-library android:name="com.android.future.usb.accessory" />
        <uses-library android:name="org.apache.http.legacy" android:required="false" />
        <meta-data
            android:name="com.dji.sdk.API_KEY"
            android:value="23acf68f822be3f065e6f538" />
+        <!-- End of DJI SDK -->
 
         <activity
             android:name="cloud.dragonx.plugin.flutter.djiExample.MainActivity"
