@@ -3,6 +3,7 @@ import Flutter
 import UIKit
 
 public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate {
+	
 	static var fltDjiFlutterApi: FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
 
@@ -438,7 +439,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Playback Manager Methods
 	
-	public func downloadAllMedia() {
+	public func downloadAllMediaWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if let _dronePlayBackManager = drone?.camera?.playbackManager {
 			print("=== DjiPlugin iOS: Download all media started")
 			_fltSetStatus("Download Started")
@@ -464,7 +465,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
-	public func deleteAllMedia() {
+	public func deleteAllMediaWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if let _dronePlayBackManager = drone?.camera?.playbackManager {
 			_fltSetStatus("Delete Started")
 			
