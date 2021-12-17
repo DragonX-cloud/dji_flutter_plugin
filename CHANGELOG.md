@@ -29,4 +29,8 @@
 
 - Improved readme in regards to Android configuration.
 
+## 1.0.0-dev.8
+
+- Added Download & Delete media files methods for both iOS and Android.
+
 
