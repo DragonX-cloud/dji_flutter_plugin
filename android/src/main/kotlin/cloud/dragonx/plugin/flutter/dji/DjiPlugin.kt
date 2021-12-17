@@ -615,7 +615,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
   /** Playback Manager Methods */
   override fun downloadAllMedia() {
-    val _dronePlayBackManager = drone.camera?.playbackManager
+    val _dronePlayBackManager = drone?.camera?.playbackManager
 
     if (_dronePlayBackManager != null) {
       _dronePlayBackManager.selectAllFiles()
@@ -643,13 +643,23 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       Log.d(TAG,"Download all media failed - no Playback Manager")
       _fltSetStatus("Download Failed")
     }
+  }
 
-//    if ((drone as Aircraft).playbackManager != null) {
-//      Log.d(TAG,"Landing Started")
-//      (drone as Aircraft).flightController.startLanding(null)
-//    } else {
-//      Log.d(TAG,"Landing Failed - No Flight Controller")
-//    }
+  override fun deleteAllMedia() {
+    val _dronePlayBackManager = drone?.camera?.playbackManager
+
+    if (_dronePlayBackManager != null) {
+      _fltSetStatus("Delete Started")
+
+      _dronePlayBackManager.selectAllFiles()
+      _dronePlayBackManager.deleteAllSelectedFiles()
+
+      Log.d(TAG,"Delete all media completed")
+      _fltSetStatus("Deleted")
+    } else {
+      Log.d(TAG,"Delete all media failed - no Playback Manager")
+      _fltSetStatus("Delete Failed")
+    }
   }
 
 }
