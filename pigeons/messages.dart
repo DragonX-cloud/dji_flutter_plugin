@@ -32,6 +32,8 @@ abstract class DjiHostApi {
   void land();
   void timeline();
   void start(String flightJson);
+  void downloadAllMedia();
+  void deleteAllMedia();
 }
 
 @FlutterApi()

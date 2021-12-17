@@ -72,6 +72,12 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.lang.Exception
 import java.util.*
+import android.os.Environment
+
+import java.io.File
+import dji.sdk.camera.PlaybackManager
+import dji.sdk.camera.PlaybackManager.FileDownloadCallback
+
 
 /** DjiPlugin */
 
@@ -606,6 +612,46 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
     return missionBuilder.build()
   }
+
+  /** Playback Manager Methods */
+  override fun downloadAllMedia() {
+    val _dronePlayBackManager = drone.camera?.playbackManager
+
+    if (_dronePlayBackManager != null) {
+      _dronePlayBackManager.selectAllFiles()
+      _dronePlayBackManager.downloadSelectedFiles(File(Environment.DIRECTORY_DOWNLOADS), object : FileDownloadCallback {
+        override fun onStart() {
+          Log.d(TAG, "Download all media started")
+          _fltSetStatus("Download Started")
+        }
+
+        override fun onEnd() {
+          Log.d(TAG, "Download all media completed successfully")
+          _fltSetStatus("Downloaded")
+        }
+
+        override fun onError(e: Exception) {
+          Log.d(TAG, "Download all media failed")
+          _fltSetStatus("Download Failed")
+        }
+
+//        override fun onProgressUpdate(progress: Int) {
+//        }
+      })
+
+    } else {
+      Log.d(TAG,"Download all media failed - no Playback Manager")
+      _fltSetStatus("Download Failed")
+    }
+
+//    if ((drone as Aircraft).playbackManager != null) {
+//      Log.d(TAG,"Landing Started")
+//      (drone as Aircraft).flightController.startLanding(null)
+//    } else {
+//      Log.d(TAG,"Landing Failed - No Flight Controller")
+//    }
+  }
+
 }
 
 /** Flight Classes */

@@ -115,7 +115,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			print("=== DjiPlugin iOS: Takeoff Failed - No Flight Controller")
 		}
 	}
-
+	
 	public func landWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if let _droneFlightController = drone?.flightController {
 			print("=== DjiPlugin iOS: Landing Started")
@@ -434,6 +434,50 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		mission.heading = .towardHotpoint
 
 		return DJIHotpointAction(mission: mission, surroundingAngle: 180)
+	}
+	
+	// MARK: - Playback Manager Methods
+	
+	public func downloadAllMedia() {
+		if let _dronePlayBackManager = drone?.camera?.playbackManager {
+			print("=== DjiPlugin iOS: Download all media started")
+			_fltSetStatus("Download Started")
+			
+			_dronePlayBackManager.selectAllFiles()
+			_dronePlayBackManager.downloadSelectedFiles(
+				preparation: nil,
+				process: nil,
+				fileCompletion: nil,
+				overallCompletion: { (error: Error?) -> Void in
+					if (error != nil) {
+						print("=== DjiPlugin iOS: Download all media failed with error - \(String(describing: error?.localizedDescription))")
+						self._fltSetStatus("Download Failed")
+					} else {
+						print("=== DjiPlugin iOS: Download all media completed successfully")
+						self._fltSetStatus("Downloaded")
+					}
+				}
+			)
+		} else {
+			print("=== DjiPlugin iOS: Download all media failed - no Playback Manager")
+			_fltSetStatus("Download Failed")
+		}
+	}
+	
+	public func deleteAllMedia() {
+		if let _dronePlayBackManager = drone?.camera?.playbackManager {
+			_fltSetStatus("Delete Started")
+			
+			_dronePlayBackManager.selectAllFiles()
+			_dronePlayBackManager.deleteAllSelectedFiles()
+			
+			print("=== DjiPlugin iOS: Delete all media completed")
+			
+			_fltSetStatus("Deleted")
+		} else {
+			print("=== DjiPlugin iOS: Delete all media failed - no Playback Manager")
+			_fltSetStatus("Delete Failed")
+		}
 	}
 
 	// MARK: - DJISDKManager Delegate Methods
