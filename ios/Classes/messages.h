@@ -46,6 +46,8 @@ NSObject<FlutterMessageCodec> *FLTDjiHostApiGetCodec(void);
 - (void)landWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)timelineWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)startFlightJson:(NSString *)flightJson error:(FlutterError *_Nullable *_Nonnull)error;
+- (void)downloadAllMediaWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (void)deleteAllMediaWithError:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLTDjiHostApi> *_Nullable api);

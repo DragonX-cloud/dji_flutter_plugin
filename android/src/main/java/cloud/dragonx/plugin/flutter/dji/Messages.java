@@ -176,6 +176,8 @@ public class Messages {
     void land();
     void timeline();
     void start(String flightJson);
+    void downloadAllMedia();
+    void deleteAllMedia();
 
     /** The codec used by DjiHostApi. */
     static MessageCodec<Object> getCodec() {
@@ -368,6 +370,44 @@ public class Messages {
                 throw new NullPointerException("flightJsonArg unexpectedly null.");
               }
               api.start(flightJsonArg);
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.downloadAllMedia", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              api.downloadAllMedia();
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.deleteAllMedia", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              api.deleteAllMedia();
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {

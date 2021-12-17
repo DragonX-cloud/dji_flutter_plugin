@@ -352,6 +352,42 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
       [channel setMessageHandler:nil];
     }
   }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.downloadAllMedia"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(downloadAllMediaWithError:)], @"FLTDjiHostApi api doesn't respond to @selector(downloadAllMediaWithError:)");
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api downloadAllMediaWithError:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.deleteAllMedia"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(deleteAllMediaWithError:)], @"FLTDjiHostApi api doesn't respond to @selector(deleteAllMediaWithError:)");
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        [api deleteAllMediaWithError:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
 @interface FLTDjiFlutterApiCodecReader : FlutterStandardReader
 @end

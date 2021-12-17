@@ -619,7 +619,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
     if (_dronePlayBackManager != null) {
       _dronePlayBackManager.selectAllFiles()
-      _dronePlayBackManager.downloadSelectedFiles(File(Environment.DIRECTORY_DOWNLOADS), object : FileDownloadCallback {
+      _dronePlayBackManager.downloadSelectedFiles(File(Environment.DIRECTORY_DOWNLOADS), object: FileDownloadCallback {
         override fun onStart() {
           Log.d(TAG, "Download all media started")
           _fltSetStatus("Download Started")
@@ -635,8 +635,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           _fltSetStatus("Download Failed")
         }
 
-//        override fun onProgressUpdate(progress: Int) {
-//        }
+        override fun onProgressUpdate(progress: Int) {
+        }
       })
 
     } else {
