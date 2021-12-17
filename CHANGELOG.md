@@ -1,31 +1,32 @@
-# 1.0.0-dev.1
+# Changelog
+## 1.0.0-dev.1
 
-* Initial in-development release.
+- Initial in-development release.
 
-# 1.0.0-dev.2
+## 1.0.0-dev.2
 
-* Updated /example README.md
+- Updated /example README.md
 
-# 1.0.0-dev.3
+## 1.0.0-dev.3
 
-* Updated Example Tab in pub.dev.
+- Updated Example Tab in pub.dev.
 
-# 1.0.0-dev.4
+## 1.0.0-dev.4
 
-* Updated description and corrected messages.dart code formatting.
+- Updated description and corrected messages.dart code formatting.
 
-# 1.0.0-dev.5
+## 1.0.0-dev.5
 
-* Enhanced iOS setup Readme.
-* Fixed a type mismatch bug in the iOS native part.
+- Enhanced iOS setup Readme.
+- Fixed a type mismatch bug in the iOS native part.
 
-# 1.0.0-dev.6
+## 1.0.0-dev.6
 
-* Improved readme.
-* Added CodeMagic CI/CD badge.
+- Improved readme.
+- Added CodeMagic CI/CD badge.
 
-# 1.0.0-dev.7
+## 1.0.0-dev.7
 
-* Improved readme in regards to Android configuration.
+- Improved readme in regards to Android configuration.
 
 
