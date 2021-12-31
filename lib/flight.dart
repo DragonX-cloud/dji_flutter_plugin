@@ -1,17 +1,18 @@
-/// Note:
-/// Did not want to use any packages, for minimal dependencies, and therefore instead of using json_serialization package or string_to_enum, manually implemented the convertion from Enum to String, inspired by the enum_to_string package.
-/// Enum to String: https://pub.dev/packages/enum_to_string
-/// JSON Serializable: https://pub.dev/packages/json_serializable
-///
-/// Dart playground of the code below:
-/// https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b
-
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:math';
 
-import 'package:dji/constants.dart';
+const String kLogKindDjiFlutterPlugin = 'dji.flutter';
 
+/// Enum Convertion Methods
+///
+/// Did not want to use any packages, for minimal dependencies, and therefore instead of using json_serialization package or string_to_enum, manually implemented the convertion from Enum to String, inspired by the enum_to_string package.
+///
+/// Enum to String: https://pub.dev/packages/enum_to_string
+///
+/// JSON Serializable: https://pub.dev/packages/json_serializable
+///
+/// Dart playground of the code below: https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b
 class EnumConvertion {
   static bool _isEnumItem(enumItem) {
     final splitEnum = enumItem.toString().split('.');
@@ -37,14 +38,19 @@ class EnumConvertion {
   }
 }
 
-/// Coordinates Convertion Methods
+/// Coordinates Convertion Methods.
 ///
 /// Decimal Degrees: http://wiki.gis.com/wiki/index.php/Decimal_degrees
+///
 /// Coordinates Convertor: https://www.pgc.umn.edu/apps/convert/
-/// 1 degree = 111,319.9 m
+///
+/// ```
+/// 1 degree = 111,319.9m
 /// 0.00000898311 degrees = 1m
+/// ```
 ///
 /// Example:
+/// ```
 ///          Destination (x3, y3)
 ///                 /
 ///     Drone      /
@@ -57,6 +63,7 @@ class EnumConvertion {
 ///       | /
 ///       |/
 /// pointOfInterest (x1, y1)
+/// ```
 class CoordinatesConvertion {
   static const meterToDecimalDegree = 0.00000899322; //0.00000898311;
 
@@ -177,7 +184,7 @@ class CoordinatesConvertion {
   }
 }
 
-/// Flight (Timeline)
+/// Flight (Timeline).
 class Flight {
   final List<FlightElement> timeline;
 
@@ -204,6 +211,8 @@ class Flight {
   }
 }
 
+/// Flight Element Types.
+
 enum FlightElementType {
   takeOff,
   land,
@@ -216,7 +225,7 @@ enum FlightElementType {
   stopRecordVideo,
 }
 
-/// Flight Element
+/// Flight Element.
 
 class FlightElement {
   final FlightElementType? type;
@@ -232,10 +241,12 @@ class FlightElement {
       };
 }
 
-/// Flight Location
+/// Flight Location.
 ///
 /// Location (3D Coordinates = 2D Coordinates and Altitude)
+///
 /// In the DJI SDK, 2D Coordinates (Longitude, Latitude) are defined by Class CLLocationCoordinate2D
+///
 /// While 3D Coordinates (Longitude, Latitude, Altitude) are defined by Class CLLocation
 class FlightLocation {
   final double latitude;
@@ -260,11 +271,14 @@ class FlightLocation {
       };
 }
 
-/// Flight Vector
+/// Flight Vector.
 ///
 /// The Flight Vector defines the distance and heading towards the destination in relation to the point-of-interest.
+///
 /// Including the altitude at the destination.
+///
 /// The destination is the waypoint.
+///
 /// The heading is the angle between the point-of-interest (of the Waypoint Mission) and the destination waypoint.
 class FlightVector {
   final double distanceFromPointOfInterest; // Distance in Meters
@@ -291,13 +305,14 @@ class FlightVector {
       };
 }
 
-/// Waypoint
+/// Waypoint Turn Modes.
 
 enum FlightWaypointTurnMode {
   clockwise,
   counterClockwise,
 }
 
+/// Waypoint.
 class FlightWaypoint {
   FlightLocation?
       location; // location is mutatable because if we have a vector instead of location - we convert the vector to a location before using the waypoint.
@@ -347,7 +362,7 @@ class FlightWaypoint {
       };
 }
 
-/// Waypoint Mission
+/// Waypoint Mission Heading Modes.
 
 enum FlightWaypointMissionHeadingMode {
   auto,
@@ -355,10 +370,14 @@ enum FlightWaypointMissionHeadingMode {
   usingWaypointHeading,
 }
 
+/// Waypoint Mission Path Modes.
+
 enum FlightWaypointMissionPathMode {
   normal,
   curved,
 }
+
+/// Waypoint Mission Finish Actions options.
 
 enum FlightWaypointMissionFinishedAction {
   noAction,
@@ -367,6 +386,8 @@ enum FlightWaypointMissionFinishedAction {
   goFirstWaypoint,
   goHome,
 }
+
+/// Waypoint Mission.
 
 class FlightElementWaypointMission extends FlightElement {
   final FlightLocation? pointOfInterest;

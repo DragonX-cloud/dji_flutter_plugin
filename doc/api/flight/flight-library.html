@@ -49,14 +49,6 @@
 </h1></div>
 
     
-<section class="desc markdown">
-  <p>Note:
-Did not want to use any packages, for minimal dependencies, and therefore instead of using json_serialization package or string_to_enum, manually implemented the convertion from Enum to String, inspired by the enum_to_string package.
-Enum to String: <a href="https://pub.dev/packages/enum_to_string">https://pub.dev/packages/enum_to_string</a>
-JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://pub.dev/packages/json_serializable</a></p>
-<p>Dart playground of the code below:
-<a href="https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b">https://dartpad.dev/624647f30ece6b443e8b4a5708f5a87b</a></p>
-</section>
 
 
     <section class="summary offset-anchor" id="classes">
@@ -68,7 +60,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Coordinates Convertion Methods <a href="../flight/CoordinatesConvertion-class.html">[...]</a>
+  Coordinates Convertion Methods. <a href="../flight/CoordinatesConvertion-class.html">[...]</a>
 </dd>
 
         <dt id="EnumConvertion">
@@ -76,7 +68,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-   
+  Enum Convertion Methods <a href="../flight/EnumConvertion-class.html">[...]</a>
 </dd>
 
         <dt id="Flight">
@@ -84,7 +76,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Flight (Timeline) 
+  Flight (Timeline). 
 </dd>
 
         <dt id="FlightElement">
@@ -92,7 +84,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Flight Element 
+  Flight Element. 
 </dd>
 
         <dt id="FlightElementWaypointMission">
@@ -100,7 +92,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-   
+  Waypoint Mission. 
 </dd>
 
         <dt id="FlightLocation">
@@ -108,7 +100,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Flight Location <a href="../flight/FlightLocation-class.html">[...]</a>
+  Flight Location. <a href="../flight/FlightLocation-class.html">[...]</a>
 </dd>
 
         <dt id="FlightVector">
@@ -116,7 +108,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Flight Vector <a href="../flight/FlightVector-class.html">[...]</a>
+  Flight Vector. <a href="../flight/FlightVector-class.html">[...]</a>
 </dd>
 
         <dt id="FlightWaypoint">
@@ -124,7 +116,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-   
+  Waypoint. 
 </dd>
 
       </dl>
@@ -132,6 +124,27 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 
 
+    <section class="summary offset-anchor" id="constants">
+      <h2>Constants</h2>
+
+      <dl class="properties">
+        <dt id="kLogKindDjiFlutterPlugin" class="constant">
+  <span class="name "><a href="../flight/kLogKindDjiFlutterPlugin-constant.html">kLogKindDjiFlutterPlugin</a></span>
+  <span class="signature">&#8594; const <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+   
+  
+
+  <div>
+    <span class="signature"><code>&#39;dji.flutter&#39;</code></span>
+  </div>
+</dd>
+
+      </dl>
+    </section>
 
 
 
@@ -144,7 +157,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-   
+  Flight Element Types. 
 </dd>
 
         <dt id="FlightWaypointMissionFinishedAction">
@@ -152,7 +165,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-   
+  Waypoint Mission Finish Actions options. 
 </dd>
 
         <dt id="FlightWaypointMissionHeadingMode">
@@ -160,7 +173,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Waypoint Mission 
+  Waypoint Mission Heading Modes. 
 </dd>
 
         <dt id="FlightWaypointMissionPathMode">
@@ -168,7 +181,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-   
+  Waypoint Mission Path Modes. 
 </dd>
 
         <dt id="FlightWaypointTurnMode">
@@ -176,7 +189,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 </dt>
 <dd>
-  Waypoint 
+  Waypoint Turn Modes. 
 </dd>
 
       </dl>
@@ -202,10 +215,8 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
     <h5><span class="package-name">dji</span> <span class="package-kind">package</span></h5>
     <ol>
       <li class="section-title">Libraries</li>
-      <li><a href="../constants/constants-library.html">constants</a></li>
       <li><a href="../dji/dji-library.html">dji</a></li>
       <li><a href="../flight/flight-library.html">flight</a></li>
-      <li><a href="../messages/messages-library.html">messages</a></li>
 </ol>
 
   </div>
@@ -225,6 +236,8 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 
 
 
+  <li class="section-title"><a href="../flight/flight-library.html#constants">Constants</a></li>
+  <li><a href="../flight/kLogKindDjiFlutterPlugin-constant.html">kLogKindDjiFlutterPlugin</a></li>
 
 
 
@@ -245,7 +258,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.4
+      1.0.0-dev.9
   </span>
 
   

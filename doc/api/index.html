@@ -45,6 +45,7 @@
       
 <section class="desc markdown">
   <h1 id="dji">dji</h1>
+<p><a href="https://codemagic.io/apps/61a1e99d95aace19d105564c/61a1e99d95aace19d105564b/latest_build"><img src="https://api.codemagic.io/apps/61a1e99d95aace19d105564c/61a1e99d95aace19d105564b/status_badge.svg" alt="Codemagic build status"></a></p>
 <h2 id="a-flutter-plugin-for-dji-sdk">A FLUTTER PLUGIN FOR DJI SDK</h2>
 <p>This open source project intends to bring the DJI SDK functionalities into Flutter.</p>
 <p>We strongly advice to first read at least the DJI Hardware Introduction:<br>
@@ -89,37 +90,140 @@ This App Key should be included in your Android Manifest XML and iOS info.plist 
 </code></pre>
 <p><a href="https://flutteragency.com/create-a-new-project-in-flutter/">https://flutteragency.com/create-a-new-project-in-flutter/</a></p>
 <p><strong>For a tip in regards to package names - please <a href="#a-tip-in-regards-to-package-names">read this</a>.</strong></p>
-<h3 id="adding-the-dji-sdk-to-your-flutter-ios-project">Adding the DJI SDK to your Flutter iOS Project</h3>
-<p>Follow this tutotial:<br>
-<a href="https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168">https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168</a></p>
-<h5 id="important-notes">Important Notes</h5>
-<p>Open your Flutter iOS Workspace in Xcode, and click the "info" tab (in between the Resource Tags and the Build Settings).
-Under the "Custom iOS Target Properties" section - right click on the last row and choose "Add Row" and add the following:</p>
-<p>Add "Supported external accessory protocols" with 3 items:</p>
+<h3 id="configuring-the-dji-sdk-on-your-flutter-ios-project">Configuring the DJI SDK on your Flutter iOS Project</h3>
+<p>The DJI SDK is automatically added by the plugin.<br>
+However, we still need to configure a few parameters directly on the iOS project via Xcode.</p>
+<h5 id="1-configure-build-settings">1. Configure Build Settings</h5>
+<ul>
+<li>Open your Flutter iOS Workspace in Xcode.</li>
+<li>Click the "Runner" label on the top-left of the left Sidebar.</li>
+<li>Then, make sure you are on Targets &gt; Runner (middle Sidebar).</li>
+<li>Click the "info" tab (in between the Resource Tags and the Build Settings).</li>
+<li>Under the "Custom iOS Target Properties" section - right click on the last row and choose "Add Row" and add the following:
+<ul>
+<li>Add "Supported external accessory protocols" with 3 items:
 <ul>
 <li>Item0 = com.dji.common</li>
 <li>Item1 = com.dji.protocol</li>
 <li>Item2 = com.dji.video</li>
 </ul>
-<p>Add the "App Transport Security Settings" key, with "Allow Arbitrary Loads" of values YES.</p>
-<p><strong>Create a <code>DJISDKAppKey</code> key in the info.plist file and paste the App Key string into its string value (right click on any of the existing rows or below them and add a new row).</strong></p>
-<p>Add the key <code>NSBluetoothAlwaysUsageDescription</code> to the Info.plist with a description explaining that the DJI Drone requires bluetooth connection.</p>
-<p>Note:
-Don't forget to run <code>pod install</code> from the ./ios folder of your project, and verify that you're able to compile your project via Xcode (before compiling via Flutter).</p>
-<h3 id="adding-the-dji-sdk-to-your-flutter-android-kotlin-project">Adding the DJI SDK to your Flutter Android (Kotlin) Project</h3>
-<p>Follow this tutotial:<br>
-<a href="https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio">https://github.com/DJI-Mobile-SDK-Tutorials/Android-ImportAndActivateSDKInAndroidStudio</a></p>
-<p><strong>Make sure your add your DJI Android App Key in the /androind/app/src/main/AndroidManifest.xml file like so:</strong></p>
-<pre class="language-dart"><code>&lt;meta-data android:name="com.dji.sdk.API_KEY" android:value="23acf68f822be3f065e6f538" /&gt;
-</code></pre>
-<h5 id="important-notes-2">Important Notes</h5>
-<p>In build.gradle:</p>
-<ul>
-<li>Set the Target SDK to 30 (and not 31, as it caused issues with the Manifest merge)</li>
-<li><strong><code> ! </code> IMPORTANT</strong> For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).</li>
-<li>Due to the minSDK 19 - MultiDex MUST be enabled.</li>
+</li>
+<li>Add the "App Transport Security Settings" key &gt; click the "+" and choose "Allow Arbitrary Loads" and change the value to "YES".</li>
 </ul>
-<h5 id="dji-android-samples-and-tutorials">DJI Android Samples and Tutorials</h5>
+</li>
+</ul>
+<h5 id="2-update-the-infoplist">2. Update the info.plist</h5>
+<ul>
+<li><strong>Create a <code>DJISDKAppKey</code> key in the info.plist file and paste the App Key string into its string value (right click on any of the existing rows or below them and add a new row).</strong></li>
+<li>Add the key <code>NSBluetoothAlwaysUsageDescription</code> to the Info.plist with a description explaining that the DJI Drone requires bluetooth connection.</li>
+</ul>
+<h5 id="3-sign-your-app-and-run-it-first-from-within-xcode">3. Sign your App and run it first from within Xcode</h5>
+<ul>
+<li>Before you try to run your app from Flutter, you better try to build it from within Xcode.</li>
+<li>You also need to first make sure that you sign your app via Xcode:</li>
+<li>Click the "Runner" label on the top-left of the left Sidebar and then click the tab "Signing &amp; Capabilities".</li>
+<li>Choose your Team (per your Apple developer account team) and choose your signing certificates (or simply check the Automatically manage signing checkbox).</li>
+</ul>
+<p><strong><code> ! </code> Important Note</strong>
+If you try to archive / build your App from Xcode or Flutter, and receive an error saying:</p>
+<pre class="language-dart"><code>While building module 'DJISDK' imported from...
+Encountered error while building for device.
+</code></pre>
+<p>It's most probably because the Architecture it was trying to build for was not arm64.
+You can fix this by openining Xcode &gt; and under the Build Settings tab &gt; search for "Architectures", and change the value there to <code>arm64</code> (instead of the "Standard Architectures" that is the default there).</p>
+<h5 id="note-2">Note</h5>
+<p>Full details of setting up the DJI SDK for iOS can be found here:<br>
+<a href="https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168">https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168</a></p>
+<h3 id="configuring-the-dji-sdk-on-your-flutter-android-kotlin-project">Configuring the DJI SDK on your Flutter Android (Kotlin) Project</h3>
+<p>The DJI SDK is automatically added by the plugin.<br>
+However, we still need to configure a few parameters directly on the Android project via Android Studio.</p>
+<blockquote>
+<p><strong><code> ! </code> Important Note</strong>
+On Android - the DJI SDK cannot run the Simulator. 
+If you try to run it on the Android Emulator - it will launch and immediately crash.
+This is due to a DJI SDK limitation.
+In any case, in order to truly develop while being connected to the Drone, you must run the app on an actual device (for both iOS and Android).</p>
+</blockquote>
+<h5 id="1-upgrade-to-kotlin">1. Upgrade to Kotlin</h5>
+<p>Edit the <code>android/grade/wrapper/gradle-wrapper.properties</code> file, and update the last line to:</p>
+<pre class="language-dart"><code>distributionUrl=https\://services.gradle.org/distributions/gradle-7.0.2-all.zip
+</code></pre>
+<p>Then, update the <code>buildScript</code> in the <code>android/build.gradle</code> file to:</p>
+<pre class="language-dart"><code>buildscript {
+    ext.kotlin_version = '1.5.31'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+</code></pre>
+<p>Lastly, open the Project in Android Studio and let the Gradle sync.
+Please note this "sync" might take several long minutes.</p>
+<h5 id="2-updated-the-android-manifest-xml">2. Updated the Android Manifest XML</h5>
+<p>Below the <code>&lt;application&gt;</code> tag and above the <code>&lt;activity&gt;</code> tag, add the following and fill-in your Android DJI App Key:</p>
+<pre class="language-dart"><code>&lt;application ...&gt;
+  ...
+  &lt;!-- Start of DJI SDK --&gt;
+  &lt;uses-library android:name="com.android.future.usb.accessory" /&gt;
+  &lt;uses-library android:name="org.apache.http.legacy" android:required="false" /&gt;
+  &lt;meta-data android:name="com.dji.sdk.API_KEY" android:value="{{your-dji-app-key}}" /&gt;
+  &lt;!-- End of DJI SDK --&gt;
+  
+  &lt;activity...
+</code></pre>
+<h5 id="3-update-androidappbuildgradle">3. Update android/app/build.gradle</h5>
+<p>Open the android/app/build.grade file and update the following:</p>
+<ul>
+<li>Set defaultConfig parameters with minSdkVersion 19 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).<br>
+Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
+</ul>
+<pre class="language-dart"><code>android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 19
+        targetSdkVersion 30
+        ...
+
+        multiDexEnabled true
+    }
+}
+</code></pre>
+<p><strong><code> ! </code> IMPORTANT</strong> For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).<br>
+And because the minSDK 19 - MultiDex MUST also be enabled.</p>
+<ul>
+<li>Below the <code>buildTypes</code> add the <code>packagingOptions</code> section to exclude the <code>rxjava.properties</code>:</li>
+</ul>
+<pre class="language-dart"><code>packagingOptions {
+  exclude 'META-INF/rxjava.properties'
+}
+</code></pre>
+<ul>
+<li>Under the dependencies section - include the following dependencies:</li>
+</ul>
+<pre class="language-dart"><code>dependencies {
+    ...
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.core:core-ktx:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.3.1'
+    implementation 'com.google.android.material:material:1.4.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0'
+}
+</code></pre>
+<h5 id="4-validate-gradleproperties">4. Validate gradle.properties</h5>
+<p>Open android/gradle.properties and validate that you have both these lines with value TRUE:</p>
+<pre class="language-dart"><code>android.useAndroidX=true
+android.enableJetifier=true
+</code></pre>
+<h5 id="note-3">Note</h5>
+<p>Full details of setting up the DJI SDK for Android can be found here:<br>
+<a href="https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#android-studio-project-integration">https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#android-studio-project-integration</a></p>
 <p>If you wish to learn and experiment with the DJI SDK on Android - here are some useful links and tips.</p>
 <p>DJI Android Sample App:<br>
 <a href="https://github.com/dji-sdk/Mobile-SDK-Android/tree/master/Sample%2520Code">https://github.com/dji-sdk/Mobile-SDK-Android/tree/master/Sample%20Code</a></p>
@@ -211,6 +315,7 @@ This is simply useful for other parts of the Example project.</p>
 <p>The <code>Dji</code> class provides us with methods to connect and operate the Drone.</p>
 <h4 id="djiplatformversion">Dji.platformVersion</h4>
 <p>The <code>Dji.platformVersion</code> gets the host (native platform) version (e.g. The iOS or Android version).</p>
+<p>Example:</p>
 <pre class="language-dart"><code>// Platform messages are asynchronous, so we initialize in an async method.
 Future&lt;void&gt; _getPlatformVersion() async {
   String platformVersion;
@@ -236,6 +341,7 @@ Future&lt;void&gt; _getPlatformVersion() async {
 <h4 id="djiregisterapp">Dji.registerApp</h4>
 <p>The <code>Dji.registerApp</code> triggers the DJI SDK registration method.<br>
 This is a required action, everytime we launch our app, and before we attempt to connect to the Drone.</p>
+<p>Example:</p>
 <pre class="language-dart"><code>Future&lt;void&gt; _registerApp() async {
   try {
     await Dji.registerApp;
@@ -260,6 +366,10 @@ This is a required action, everytime we launch our app, and before we attempt to
 </code></pre>
 <h4 id="djiconnectdrone">Dji.connectDrone</h4>
 <p>The <code>Dji.connectDrone</code> method triggers the process of connecting to the Drone.</p>
+<p>The Remote Controller and the DJI Drone need to be turned on.
+The Remote Controller needs to be connected by USB cable to the mobile device running the app.
+Once connected, the <code>DjiFlutterApi.setStatus()</code> method is triggered and the status is changed to "Connected".</p>
+<p>Example:</p>
 <pre class="language-dart"><code>Future&lt;void&gt; _connectDrone() async {
   try {
     await Dji.connectDrone;
@@ -284,6 +394,8 @@ This is a required action, everytime we launch our app, and before we attempt to
 </code></pre>
 <h4 id="djidisconnectdrone">Dji.disconnectDrone</h4>
 <p>The <code>Dji.disconnectDrone</code> method triggers the process of disconnecting from the Drone.</p>
+<p>Once disconnected, the DjiFlutterApi.setStatus() method is triggered and the status is changed to "Disconnected".</p>
+<p>Example:</p>
 <pre class="language-dart"><code>Future&lt;void&gt; _disconnectDrone() async {
   try {
     await Dji.disconnectDrone;
@@ -309,6 +421,7 @@ This is a required action, everytime we launch our app, and before we attempt to
 <h4 id="djidelegatedrone">Dji.delegateDrone</h4>
 <p>The <code>Dji.delegateDrone</code> method triggers the "listeners" to the Drone's statuses.
 Upon any change to the Drone status properties - the SetState() method is triggerred (on the Flutter side).</p>
+<p>Example:</p>
 <pre class="language-dart"><code>Future&lt;void&gt; _delegateDrone() async {
   try {
     await Dji.delegateDrone;
@@ -630,13 +743,6 @@ So our tip here is to use package names without "-" or underscore, and that's wh
       <section class="summary">
           <h2>Libraries</h2>
         <dl>
-          <dt id="constants">
-  <span class="name"><a href="constants/constants-library.html">constants</a></span> 
-
-</dt>
-<dd> 
-</dd>
-
           <dt id="dji">
   <span class="name"><a href="dji/dji-library.html">dji</a></span> 
 
@@ -646,16 +752,6 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 
           <dt id="flight">
   <span class="name"><a href="flight/flight-library.html">flight</a></span> 
-
-</dt>
-<dd>Note:
-Did not want to use any packages, for minimal dependencies, and therefore instead of using json_serialization package or string_to_enum, manually implemented the convertion from Enum to String, inspired by the enum_to_string package.
-Enum to String: <a href="https://pub.dev/packages/enum_to_string">https://pub.dev/packages/enum_to_string</a>
-JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://pub.dev/packages/json_serializable</a> <a href="flight/flight-library.html">[...]</a>
-</dd>
-
-          <dt id="messages">
-  <span class="name"><a href="messages/messages-library.html">messages</a></span> 
 
 </dt>
 <dd> 
@@ -681,10 +777,8 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
     <h5 class="hidden-xs"><span class="package-name">dji</span> <span class="package-kind">package</span></h5>
     <ol>
       <li class="section-title">Libraries</li>
-      <li><a href="constants/constants-library.html">constants</a></li>
       <li><a href="dji/dji-library.html">dji</a></li>
       <li><a href="flight/flight-library.html">flight</a></li>
-      <li><a href="messages/messages-library.html">messages</a></li>
 </ol>
 
   </div>
@@ -697,7 +791,7 @@ JSON Serializable: <a href="https://pub.dev/packages/json_serializable">https://
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.4
+      1.0.0-dev.9
   </span>
 
   

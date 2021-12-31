@@ -285,6 +285,8 @@ The `Dji` class provides us with methods to connect and operate the Drone.
 
 #### Dji.platformVersion
 The `Dji.platformVersion` gets the host (native platform) version (e.g. The iOS or Android version).
+
+Example:
 ```
 // Platform messages are asynchronous, so we initialize in an async method.
 Future<void> _getPlatformVersion() async {
@@ -312,6 +314,8 @@ Future<void> _getPlatformVersion() async {
 #### Dji.registerApp
 The `Dji.registerApp` triggers the DJI SDK registration method.  
 This is a required action, everytime we launch our app, and before we attempt to connect to the Drone.
+
+Example:
 ```
 Future<void> _registerApp() async {
   try {
@@ -338,6 +342,12 @@ Future<void> _registerApp() async {
 
 #### Dji.connectDrone
 The `Dji.connectDrone` method triggers the process of connecting to the Drone.
+
+The Remote Controller and the DJI Drone need to be turned on.
+The Remote Controller needs to be connected by USB cable to the mobile device running the app.
+Once connected, the `DjiFlutterApi.setStatus()` method is triggered and the status is changed to "Connected".
+
+Example:
 ```
 Future<void> _connectDrone() async {
   try {
@@ -364,6 +374,10 @@ Future<void> _connectDrone() async {
 
 #### Dji.disconnectDrone
 The `Dji.disconnectDrone` method triggers the process of disconnecting from the Drone.
+
+Once disconnected, the DjiFlutterApi.setStatus() method is triggered and the status is changed to "Disconnected".
+
+Example:
 ```
 Future<void> _disconnectDrone() async {
   try {
@@ -391,6 +405,8 @@ Future<void> _disconnectDrone() async {
 #### Dji.delegateDrone
 The `Dji.delegateDrone` method triggers the "listeners" to the Drone's statuses.
 Upon any change to the Drone status properties - the SetState() method is triggerred (on the Flutter side).
+
+Example:
 ```
 Future<void> _delegateDrone() async {
   try {

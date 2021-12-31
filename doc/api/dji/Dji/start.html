@@ -60,6 +60,175 @@
 
     </section>
     
+<section class="desc markdown">
+  <p>Starts the DJI Drone Flight Timeline.</p>
+<p>The <code>Dji.start</code> method receives a Flight Timeline object and commands the Drone to start executing it.</p>
+<p>The <code>Flight</code> class defines the different flight properties (e.g. location, waypoint, etc.) and provides tools to convert from and to JSON.</p>
+<p>In the example below, the we first validate that the <code>DroneHomeLocation</code> exists and then we define our Flight object, which includes several Flight Elements.</p>
+<p>A Flight Element has several types:</p>
+<ul>
+<li>takeOff</li>
+<li>land</li>
+<li>waypointMission</li>
+<li>singleShootPhoto</li>
+<li>startRecordVideo</li>
+<li>stopRecordVideo</li>
+</ul>
+<p>The <code>waypointMission</code> consists of a list of waypoints.
+Each waypoint can be defined in two ways: <code>location</code> or <code>vector</code>.</p>
+<p><strong>Location</strong> defines a waypoint by Latitude, Longitude and Altitude.</p>
+<p><strong>Vector</strong> defines a waypoint in relation to the "point of interest".
+It's defined by 3 properties as follows:</p>
+<ul>
+<li><code>distanceFromPointOfInterest</code>
+<ul>
+<li>The distance in meters between the "point of interest" and the Drone.</li>
+</ul>
+</li>
+<li><code>headingRelativeToPointOfInterest</code>
+<ul>
+<li>If you imagine a line between the "point of interest" (e.g. where you stand) and the Drone's Home Location - this is heading "0".</li>
+<li>So the value of <code>headingRelativeToPointOfInterest</code> is the angle between heading "0" and where you want the Drone to be.</li>
+<li>A positive heading angle is to your right. While a negative angle is to your left.</li>
+</ul>
+</li>
+<li><code>destinationAltitude</code>
+<ul>
+<li>This is the Drone's altitude at the waypoint.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Explanation by example:</strong>
+Imagine you are the "point of interest", holding a "laser pointer".
+Everything is relative to the "line" between you and the Drone.
+If you point the laser to the Drone itself - that's "heading 0".
+If you want the first waypoint to be 30 degrees to your right, at a distance of 100 meters and altitude of 10 meters, you should set:</p>
+<pre class="language-dart"><code>'vector': {
+  'distanceFromPointOfInterest': 100,
+  'headingRelativeToPointOfInterest': 30,
+  'destinationAltitude': 10,
+},
+</code></pre>
+<p>A full example showing how to use the Flight object and use the <code>Dji.start</code> method:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _start() async {
+  try {
+    droneHomeLocation = FlightLocation(
+        latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
+
+    if (droneHomeLocation == null) {
+      developer.log(
+          'No drone home location exist - unable to start the flight',
+          name: kLogKindDjiFlutterPlugin);
+      return;
+    }
+
+    Flight flight = Flight.fromJson({
+      'timeline': [
+        {
+          'type': 'takeOff',
+        },
+        {
+          'type': 'startRecordVideo',
+        },
+        {
+          'type': 'waypointMission',
+          /// For example purposes, we set our Point of Interest a few meters away, relative to the Drone's Home Location
+          'pointOfInterest': {
+            'latitude': droneHomeLocation!.latitude + (5 * 0.00000899322),
+            'longitude': droneHomeLocation!.longitude + (5 * 0.00000899322),
+            'altitude': droneHomeLocation!.altitude,
+          },
+          'maxFlightSpeed':
+              15.0, /// Max Flight Speed is 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
+          'autoFlightSpeed': 10.0,
+          'finishedAction': 'noAction',
+          'headingMode': 'towardPointOfInterest',
+          'flightPathMode': 'curved',
+          'rotateGimbalPitch': true,
+          'exitMissionOnRCSignalLost': true,
+          'waypoints': [
+            {
+              // 'location': {
+              //   'latitude': 32.2181125,
+              //   'longitude': 34.8674920,
+              //   'altitude': 20.0,
+              // },
+              'vector': {
+                'distanceFromPointOfInterest': 20,
+                'headingRelativeToPointOfInterest': 45,
+                'destinationAltitude': 5,
+              },
+              // 'heading': 0,
+              'cornerRadiusInMeters': 5,
+              'turnMode': 'clockwise',
+              // 'gimbalPitch': 0,
+            },
+            {
+              // 'location': {
+              //   'latitude': 32.2181125,
+              //   'longitude': 34.8674920,
+              //   'altitude': 5.0,
+              // },
+              'vector': {
+                'distanceFromPointOfInterest': 10,
+                'headingRelativeToPointOfInterest': -45,
+                'destinationAltitude': 3,
+              },
+              // 'heading': 0,
+              'cornerRadiusInMeters': 5,
+              'turnMode': 'clockwise',
+              // 'gimbalPitch': 0,
+            },
+          ],
+        },
+        {
+          'type': 'stopRecordVideo',
+        },
+        {
+          'type': 'singleShootPhoto',
+        },
+        {
+          'type': 'land',
+        },
+      ],
+    });
+
+    // Converting any vector definitions in waypoint-mission to locations
+    for (dynamic element in flight.timeline) {
+      if (element.type == FlightElementType.waypointMission) {
+        CoordinatesConvertion
+            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+                flightElementWaypointMission: element,
+                droneHomeLocation: droneHomeLocation!);
+      }
+    }
+
+    developer.log(
+      'Flight Object: ${jsonEncode(flight)}',
+      name: kLogKindDjiFlutterPlugin,
+    );
+
+    await Dji.start(flight: flight);
+    developer.log(
+      'Start Flight succeeded',
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } on PlatformException catch (e) {
+    developer.log(
+      'Start Flight PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Start Flight Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+}
+</code></pre>
+</section>
 
 
     
@@ -113,17 +282,19 @@
 
     <li class="section-title"><a href="../../dji/Dji-class.html#static-properties">Static properties</a></li>
     <li><a href="../../dji/Dji/batteryLevel.html">batteryLevel</a></li>
-    <li><a href="../../dji/Dji/connectDrone.html">connectDrone</a></li>
-    <li><a href="../../dji/Dji/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../../dji/Dji/land.html">land</a></li>
     <li><a href="../../dji/Dji/platformVersion.html">platformVersion</a></li>
-    <li><a href="../../dji/Dji/registerApp.html">registerApp</a></li>
-    <li><a href="../../dji/Dji/takeOff.html">takeOff</a></li>
-    <li><a href="../../dji/Dji/timeline.html">timeline</a></li>
 
     <li class="section-title"><a href="../../dji/Dji-class.html#static-methods">Static methods</a></li>
+    <li><a href="../../dji/Dji/connectDrone.html">connectDrone</a></li>
+    <li><a href="../../dji/Dji/delegateDrone.html">delegateDrone</a></li>
+    <li><a href="../../dji/Dji/deleteAllMedia.html">deleteAllMedia</a></li>
+    <li><a href="../../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
+    <li><a href="../../dji/Dji/downloadAllMedia.html">downloadAllMedia</a></li>
+    <li><a href="../../dji/Dji/land.html">land</a></li>
+    <li><a href="../../dji/Dji/registerApp.html">registerApp</a></li>
     <li><a href="../../dji/Dji/start.html">start</a></li>
+    <li><a href="../../dji/Dji/takeOff.html">takeOff</a></li>
+    <li><a class="deprecated" href="../../dji/Dji/timeline.html">timeline</a></li>
 
 </ol>
 
@@ -137,7 +308,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.4
+      1.0.0-dev.9
   </span>
 
   

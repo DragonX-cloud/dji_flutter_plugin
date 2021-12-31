@@ -108,7 +108,7 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Connects with the DJI Drone. <a href="../messages/DjiHostApi/connectDrone.html">[...]</a>
   
 
 </dd>
@@ -121,7 +121,20 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Starts Listening to DJI Drone status changes. <a href="../messages/DjiHostApi/delegateDrone.html">[...]</a>
+  
+
+</dd>
+
+        <dt id="deleteAllMedia" class="callable">
+  <span class="name"><a href="../messages/DjiHostApi/deleteAllMedia.html">deleteAllMedia</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Deletes all media files from the Drone. <a href="../messages/DjiHostApi/deleteAllMedia.html">[...]</a>
   
 
 </dd>
@@ -134,7 +147,20 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Disconnects from the DJI Drone. <a href="../messages/DjiHostApi/disconnectDrone.html">[...]</a>
+  
+
+</dd>
+
+        <dt id="downloadAllMedia" class="callable">
+  <span class="name"><a href="../messages/DjiHostApi/downloadAllMedia.html">downloadAllMedia</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Downloads all media files from the Drone. <a href="../messages/DjiHostApi/downloadAllMedia.html">[...]</a>
   
 
 </dd>
@@ -147,7 +173,7 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Gets the battery level. <a href="../messages/DjiHostApi/getBatteryLevel.html">[...]</a>
   
 
 </dd>
@@ -160,7 +186,7 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Gets the platform version. <a href="../messages/DjiHostApi/getPlatformVersion.html">[...]</a>
   
 
 </dd>
@@ -173,7 +199,7 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Triggers the DJI Drone Land action. <a href="../messages/DjiHostApi/land.html">[...]</a>
   
 
 </dd>
@@ -199,7 +225,7 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Registers the app at DJI. <a href="../messages/DjiHostApi/registerApp.html">[...]</a>
   
 
 </dd>
@@ -212,7 +238,7 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Starts the DJI Drone Flight Timeline. <a href="../messages/DjiHostApi/start.html">[...]</a>
   
 
 </dd>
@@ -225,21 +251,21 @@ BinaryMessenger will be used which routes to the host platform.
 
 </dt>
 <dd>
-   
+  Triggers the DJI Drone Land action. <a href="../messages/DjiHostApi/takeOff.html">[...]</a>
   
 
 </dd>
 
         <dt id="timeline" class="callable">
-  <span class="name"><a href="../messages/DjiHostApi/timeline.html">timeline</a></span><span class="signature">(<wbr>)
+  <span class="name deprecated"><a class="deprecated" href="../messages/DjiHostApi/timeline.html">timeline</a></span><span class="signature">(<wbr>)
     <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
-   
-  
+  Triggers the DJI Drone pre-defined Timeline. 
+  <div class="features">@<a href="https://api.flutter.dev/flutter/dart-core/Deprecated-class.html">Deprecated</a>(&#39;Use [start] instead.&#39;)</div>
 
 </dd>
 
@@ -354,7 +380,9 @@ BinaryMessenger will be used which routes to the host platform.
     <li class="section-title"><a href="../messages/DjiHostApi-class.html#instance-methods">Methods</a></li>
     <li><a href="../messages/DjiHostApi/connectDrone.html">connectDrone</a></li>
     <li><a href="../messages/DjiHostApi/delegateDrone.html">delegateDrone</a></li>
+    <li><a href="../messages/DjiHostApi/deleteAllMedia.html">deleteAllMedia</a></li>
     <li><a href="../messages/DjiHostApi/disconnectDrone.html">disconnectDrone</a></li>
+    <li><a href="../messages/DjiHostApi/downloadAllMedia.html">downloadAllMedia</a></li>
     <li><a href="../messages/DjiHostApi/getBatteryLevel.html">getBatteryLevel</a></li>
     <li><a href="../messages/DjiHostApi/getPlatformVersion.html">getPlatformVersion</a></li>
     <li><a href="../messages/DjiHostApi/land.html">land</a></li>
@@ -362,7 +390,7 @@ BinaryMessenger will be used which routes to the host platform.
     <li><a href="../messages/DjiHostApi/registerApp.html">registerApp</a></li>
     <li><a href="../messages/DjiHostApi/start.html">start</a></li>
     <li><a href="../messages/DjiHostApi/takeOff.html">takeOff</a></li>
-    <li><a href="../messages/DjiHostApi/timeline.html">timeline</a></li>
+    <li><a class="deprecated" href="../messages/DjiHostApi/timeline.html">timeline</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
 
     <li class="section-title inherited"><a href="../messages/DjiHostApi-class.html#operators">Operators</a></li>
@@ -382,7 +410,7 @@ BinaryMessenger will be used which routes to the host platform.
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.4
+      1.0.0-dev.8
   </span>
 
   

@@ -182,7 +182,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _takeOff() async {
     try {
-      await Dji.takeOff;
+      await Dji.takeOff();
       developer.log(
         'Takeoff succeeded',
         name: kLogKindDjiFlutterPlugin,
@@ -204,7 +204,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _land() async {
     try {
-      await Dji.land;
+      await Dji.land();
       developer.log(
         'Land succeeded',
         name: kLogKindDjiFlutterPlugin,
@@ -224,27 +224,27 @@ class _ExampleWidgetState extends State<ExampleWidget>
     }
   }
 
-  Future<void> _timeline() async {
-    try {
-      await Dji.timeline;
-      developer.log(
-        'Timeline succeeded',
-        name: kLogKindDjiFlutterPlugin,
-      );
-    } on PlatformException catch (e) {
-      developer.log(
-        'Timeline PlatformException Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
-    } catch (e) {
-      developer.log(
-        'Timeline Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
-    }
-  }
+  // Future<void> _timeline() async {
+  //   try {
+  //     await Dji.timeline();
+  //     developer.log(
+  //       'Timeline succeeded',
+  //       name: kLogKindDjiFlutterPlugin,
+  //     );
+  //   } on PlatformException catch (e) {
+  //     developer.log(
+  //       'Timeline PlatformException Error',
+  //       error: e,
+  //       name: kLogKindDjiFlutterPlugin,
+  //     );
+  //   } catch (e) {
+  //     developer.log(
+  //       'Timeline Error',
+  //       error: e,
+  //       name: kLogKindDjiFlutterPlugin,
+  //     );
+  //   }
+  // }
 
   Future<void> _start() async {
     try {
@@ -437,13 +437,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
                                 await _land();
                               },
                             ),
-                            ElevatedButton(
-                              key: const Key('timelineDroneButton'),
-                              child: const Text('Timeline'),
-                              onPressed: () async {
-                                await _timeline();
-                              },
-                            ),
+                            // ElevatedButton(
+                            //   key: const Key('timelineDroneButton'),
+                            //   child: const Text('Timeline'),
+                            //   onPressed: () async {
+                            //     await _timeline();
+                            //   },
+                            // ),
                             ElevatedButton(
                               key: const Key('start'),
                               child: const Text('Start'),

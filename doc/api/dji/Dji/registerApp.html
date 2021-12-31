@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="description" content="API docs for the registerApp property from the Dji class, for the Dart programming language.">
-  <title>registerApp property - Dji class - dji library - Dart API</title>
+  <meta name="description" content="API docs for the registerApp method from the Dji class, for the Dart programming language.">
+  <title>registerApp method - Dji class - dji library - Dart API</title>
 
 
   
@@ -32,7 +32,7 @@
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../dji/dji-library.html">dji</a></li>
     <li><a href="../../dji/Dji-class.html">Dji</a></li>
-    <li class="self-crumb">registerApp property</li>
+    <li class="self-crumb">registerApp method</li>
   </ol>
   <div class="self-name">registerApp</div>
   <form class="search navbar-right" role="search">
@@ -45,31 +45,57 @@
 
   <div id="dartdoc-main-content" class="main-content">
       <div>
-<h1><span class="kind-property">registerApp</span> property 
+<h1><span class="kind-method">registerApp</span> method 
     <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
 </h1></div>
 
+    <section class="multi-line-signature">
+      
 
-        
-<section id="getter">
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+<span class="name ">registerApp</span>(<wbr>)
 
-<section class="multi-line-signature">
-  <span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
-  <span class="name ">registerApp</span>
-  
+      
 
+    </section>
+    
+<section class="desc markdown">
+  <p>Registers the app at DJI.</p>
+<p>The <code>Dji.registerApp</code> triggers the DJI SDK registration method.
+This is a required action, everytime we launch our app, and before we attempt to connect to the Drone.</p>
+<p>Once connected, the <code>DjiFlutterApi.setStatus()</code> method is triggered and the status is changed to "Registered".</p>
+<p>Example:</p>
+<pre class="language-dart"><code class="language-dart">Future&lt;void&gt; _registerApp() async {
+  try {
+    await Dji.registerApp;
+    developer.log(
+      'registerApp succeeded',
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } on PlatformException catch (e) {
+    developer.log(
+      'registerApp PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'registerApp Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+}
+</code></pre>
 </section>
 
 
-
-
+    
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; get registerApp async {
+  <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; registerApp() async {
   await _api?.registerApp();
 }</code></pre>
-</section>
-
 </section>
 
 
@@ -86,7 +112,7 @@
   <li><a href="../../index.html">dji</a></li>
   <li><a href="../../dji/dji-library.html">dji</a></li>
   <li><a href="../../dji/Dji-class.html">Dji</a></li>
-  <li class="self-crumb">registerApp property</li>
+  <li class="self-crumb">registerApp method</li>
 </ol>
 
 
@@ -113,17 +139,19 @@
 
     <li class="section-title"><a href="../../dji/Dji-class.html#static-properties">Static properties</a></li>
     <li><a href="../../dji/Dji/batteryLevel.html">batteryLevel</a></li>
-    <li><a href="../../dji/Dji/connectDrone.html">connectDrone</a></li>
-    <li><a href="../../dji/Dji/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../../dji/Dji/land.html">land</a></li>
     <li><a href="../../dji/Dji/platformVersion.html">platformVersion</a></li>
-    <li><a href="../../dji/Dji/registerApp.html">registerApp</a></li>
-    <li><a href="../../dji/Dji/takeOff.html">takeOff</a></li>
-    <li><a href="../../dji/Dji/timeline.html">timeline</a></li>
 
     <li class="section-title"><a href="../../dji/Dji-class.html#static-methods">Static methods</a></li>
+    <li><a href="../../dji/Dji/connectDrone.html">connectDrone</a></li>
+    <li><a href="../../dji/Dji/delegateDrone.html">delegateDrone</a></li>
+    <li><a href="../../dji/Dji/deleteAllMedia.html">deleteAllMedia</a></li>
+    <li><a href="../../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
+    <li><a href="../../dji/Dji/downloadAllMedia.html">downloadAllMedia</a></li>
+    <li><a href="../../dji/Dji/land.html">land</a></li>
+    <li><a href="../../dji/Dji/registerApp.html">registerApp</a></li>
     <li><a href="../../dji/Dji/start.html">start</a></li>
+    <li><a href="../../dji/Dji/takeOff.html">takeOff</a></li>
+    <li><a class="deprecated" href="../../dji/Dji/timeline.html">timeline</a></li>
 
 </ol>
 
@@ -137,7 +165,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.4
+      1.0.0-dev.9
   </span>
 
   
