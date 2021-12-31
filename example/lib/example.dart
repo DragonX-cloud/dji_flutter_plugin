@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:async';
 
-import 'package:dji/constants.dart';
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
 import 'package:flutter/material.dart';
