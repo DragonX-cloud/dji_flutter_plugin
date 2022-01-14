@@ -93,7 +93,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _registerApp() async {
     try {
-      await Dji.registerApp;
+      await Dji.registerApp();
       developer.log(
         'registerApp succeeded',
         name: kLogKindDjiFlutterPlugin,
@@ -115,7 +115,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _connectDrone() async {
     try {
-      await Dji.connectDrone;
+      await Dji.connectDrone();
       developer.log(
         'connectDrone succeeded',
         name: kLogKindDjiFlutterPlugin,
@@ -137,7 +137,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _disconnectDrone() async {
     try {
-      await Dji.disconnectDrone;
+      await Dji.disconnectDrone();
       developer.log(
         'disconnectDrone succeeded',
         name: kLogKindDjiFlutterPlugin,
@@ -159,7 +159,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _delegateDrone() async {
     try {
-      await Dji.delegateDrone;
+      await Dji.delegateDrone();
       developer.log(
         'delegateDrone succeeded',
         name: kLogKindDjiFlutterPlugin,
@@ -363,6 +363,50 @@ class _ExampleWidgetState extends State<ExampleWidget>
     }
   }
 
+  Future<void> _download() async {
+    try {
+      await Dji.downloadAllMedia();
+      developer.log(
+        'Download succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } on PlatformException catch (e) {
+      developer.log(
+        'Download PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } catch (e) {
+      developer.log(
+        'Download Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+  }
+
+  Future<void> _delete() async {
+    try {
+      await Dji.deleteAllMedia();
+      developer.log(
+        'Delete succeeded',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } on PlatformException catch (e) {
+      developer.log(
+        'Delete PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } catch (e) {
+      developer.log(
+        'Delete Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -450,6 +494,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
                                 await _start();
                               },
                             ),
+                            ElevatedButton(
+                              key: const Key('download'),
+                              child: const Text('Download'),
+                              onPressed: () async {
+                                await _download();
+                              },
+                            ),
+                            ElevatedButton(
+                              key: const Key('delete'),
+                              child: const Text('Delete'),
+                              onPressed: () async {
+                                await _delete();
+                              },
+                            ),
                           ],
                         ),
                       ),
@@ -467,7 +525,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
                               value: _platformVersion,
                             ),
                             DronePropertyRow(
-                              label: 'Drone Status',
+                              label: 'Status',
                               value: _droneStatus,
                             ),
                             DronePropertyRow(

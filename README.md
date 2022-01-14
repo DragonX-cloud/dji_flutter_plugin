@@ -740,6 +740,15 @@ Then disconnect the USB cable, and run the following:
 adb connect {{your-android-ip}}:4455
 ```
 
+### Debugging iOS over Wifi
+On iOS 14+, local network broadcast in apps need to be declared in the app's Info.plist.
+
+Debug and profile Flutter apps and modules host VM services on the local network to support debugging features such as hot reload and DevTools.
+
+To make your Flutter app or module attachable and debuggable, add a '_dartobservatory._tcp' value to the 'NSBonjourServices' key in your Info.plist for the Debug/Profile configurations.
+
+For more information, see https://flutter.dev/docs/development/add-to-app/ios/project-setup#local-network-privacy-permissions
+
 ### A Tip in regards to Package Names
 Due to inconsistencies between Google Play and Apple Appstore, there are differences in the "rules" that define what is a valid package-name.
 For example, the "-" character cannot be used for Android, but is valid for iOS.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-dev.10
+
+- Bug fixes.
+
 ## 1.0.0-dev.9
 
 - Updated documentation.

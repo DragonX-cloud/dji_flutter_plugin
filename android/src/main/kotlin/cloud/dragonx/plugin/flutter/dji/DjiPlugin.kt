@@ -615,7 +615,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
   /** Playback Manager Methods */
   override fun downloadAllMedia() {
-    val _dronePlayBackManager = drone?.camera?.playbackManager
+    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
 
     if (_dronePlayBackManager != null) {
       _dronePlayBackManager.selectAllFiles()
@@ -646,7 +646,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun deleteAllMedia() {
-    val _dronePlayBackManager = drone?.camera?.playbackManager
+    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
 
     if (_dronePlayBackManager != null) {
       _fltSetStatus("Delete Started")

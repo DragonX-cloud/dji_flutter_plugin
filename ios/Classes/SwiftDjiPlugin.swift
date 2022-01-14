@@ -215,7 +215,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 
 	func startFlightTimeline(_ flight: Flight) {
-		guard let timeline = flight.timeline, timeline.count == 0 else {
+		guard let timeline = flight.timeline, timeline.count > 0 else {
 			print("=== DjiPlugin iOS: startFlightTimeline - timeline List is empty")
 			return
 		}
@@ -232,37 +232,40 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			case "takeOff":
 				// Take Off
 				scheduledElements.append(DJITakeOffAction())
-
+				break
+			
 			case "land":
 				// Land
 				scheduledElements.append(DJILandAction())
-
+				break
+			
 			case "waypointMission":
 				// Waypoint Mission
 				if let wayPointMission = waypointMission(flightElement) {
 					scheduledElements.append(wayPointMission)
 				}
-
+				break
+			
 			case "hotpointAction":
 				// Hot Point
 				// TBD...
-				return
-
+				break
+			
 			case "singleShootPhoto":
 				scheduledElements.append(DJIShootPhotoAction(singleShootPhoto: ())!)
-				return
-
+				break
+				
 			case "startRecordVideo":
 				scheduledElements.append(DJIRecordVideoAction(startRecordVideo: ())!)
-				return
-
+				break
+				
 			case "stopRecordVideo":
 				scheduledElements.append(DJIRecordVideoAction(stopRecordVideo: ())!)
-				return
-
+				break
+				
 			default:
 				// Do Nothing
-				return
+				break
 			}
 		}
 
@@ -440,43 +443,68 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	// MARK: - Playback Manager Methods
 	
 	public func downloadAllMediaWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		if let _dronePlayBackManager = drone?.camera?.playbackManager {
-			print("=== DjiPlugin iOS: Download all media started")
-			_fltSetStatus("Download Started")
-			
-			_dronePlayBackManager.selectAllFiles()
-			_dronePlayBackManager.downloadSelectedFiles(
-				preparation: nil,
-				process: nil,
-				fileCompletion: nil,
-				overallCompletion: { (error: Error?) -> Void in
-					if (error != nil) {
-						print("=== DjiPlugin iOS: Download all media failed with error - \(String(describing: error?.localizedDescription))")
-						self._fltSetStatus("Download Failed")
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Download all media failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Download Failed")
+				} else {
+					print("=== DjiPlugin iOS: Download all media started")
+					self._fltSetStatus("Download Started")
+					
+					if let _dronePlayBackManager = _droneCamera.playbackManager {
+						_dronePlayBackManager.selectAllFiles()
+						_dronePlayBackManager.downloadSelectedFiles(
+							preparation: nil,
+							process: nil,
+							fileCompletion: nil,
+							overallCompletion: { (error: Error?) -> Void in
+								if (error != nil) {
+									print("=== DjiPlugin iOS: Download all media failed with error - \(String(describing: error?.localizedDescription))")
+									self._fltSetStatus("Download Failed")
+								} else {
+									print("=== DjiPlugin iOS: Download all media completed successfully")
+									self._fltSetStatus("Downloaded")
+								}
+							}
+						)
 					} else {
-						print("=== DjiPlugin iOS: Download all media completed successfully")
-						self._fltSetStatus("Downloaded")
+						print("=== DjiPlugin iOS: Download all media failed - no Playback Manager")
+						self._fltSetStatus("Download Failed")
 					}
 				}
-			)
+			})
 		} else {
-			print("=== DjiPlugin iOS: Download all media failed - no Playback Manager")
+			print("=== DjiPlugin iOS: Download all media failed - no Camera object")
 			_fltSetStatus("Download Failed")
 		}
 	}
 	
 	public func deleteAllMediaWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		if let _dronePlayBackManager = drone?.camera?.playbackManager {
-			_fltSetStatus("Delete Started")
-			
-			_dronePlayBackManager.selectAllFiles()
-			_dronePlayBackManager.deleteAllSelectedFiles()
-			
-			print("=== DjiPlugin iOS: Delete all media completed")
-			
-			_fltSetStatus("Deleted")
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Delete all media failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Delete Failed")
+				} else {
+					print("=== DjiPlugin iOS: Delete all media started")
+					self._fltSetStatus("Delete Started")
+					
+					if let _dronePlayBackManager = _droneCamera.playbackManager {
+						_dronePlayBackManager.selectAllFiles()
+						_dronePlayBackManager.deleteAllSelectedFiles()
+						
+						print("=== DjiPlugin iOS: Delete all media completed")
+						
+						self._fltSetStatus("Deleted")
+					} else {
+						print("=== DjiPlugin iOS: Delete all media failed - no Playback Manager")
+						self._fltSetStatus("Delete Failed")
+					}
+				}
+			})
 		} else {
-			print("=== DjiPlugin iOS: Delete all media failed - no Playback Manager")
+			print("=== DjiPlugin iOS: Delete all media failed - no Camera object")
 			_fltSetStatus("Delete Failed")
 		}
 	}
