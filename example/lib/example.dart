@@ -93,11 +93,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _registerApp() async {
     try {
-      await Dji.registerApp();
       developer.log(
-        'registerApp succeeded',
+        'registerApp requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.registerApp();
     } on PlatformException catch (e) {
       developer.log(
         'registerApp PlatformException Error',
@@ -115,11 +115,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _connectDrone() async {
     try {
-      await Dji.connectDrone();
       developer.log(
-        'connectDrone succeeded',
+        'connectDrone requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.connectDrone();
     } on PlatformException catch (e) {
       developer.log(
         'connectDrone PlatformException Error',
@@ -137,11 +137,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _disconnectDrone() async {
     try {
-      await Dji.disconnectDrone();
       developer.log(
-        'disconnectDrone succeeded',
+        'disconnectDrone requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.disconnectDrone();
     } on PlatformException catch (e) {
       developer.log(
         'disconnectDrone PlatformException Error',
@@ -159,11 +159,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _delegateDrone() async {
     try {
-      await Dji.delegateDrone();
       developer.log(
-        'delegateDrone succeeded',
+        'delegateDrone requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.delegateDrone();
     } on PlatformException catch (e) {
       developer.log(
         'delegateDrone PlatformException Error',
@@ -181,11 +181,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _takeOff() async {
     try {
-      await Dji.takeOff();
       developer.log(
-        'Takeoff succeeded',
+        'Takeoff requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.takeOff();
     } on PlatformException catch (e) {
       developer.log(
         'Takeoff PlatformException Error',
@@ -203,11 +203,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _land() async {
     try {
-      await Dji.land();
       developer.log(
-        'Land succeeded',
+        'Land requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.land();
     } on PlatformException catch (e) {
       developer.log(
         'Land PlatformException Error',
@@ -225,11 +225,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   // Future<void> _timeline() async {
   //   try {
-  //     await Dji.timeline();
   //     developer.log(
-  //       'Timeline succeeded',
+  //       'Timeline requested',
   //       name: kLogKindDjiFlutterPlugin,
   //     );
+  //     await Dji.timeline();
   //   } on PlatformException catch (e) {
   //     developer.log(
   //       'Timeline PlatformException Error',
@@ -343,11 +343,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
         name: kLogKindDjiFlutterPlugin,
       );
 
-      await Dji.start(flight: flight);
       developer.log(
-        'Start Flight succeeded',
+        'Start Flight requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.start(flight: flight);
     } on PlatformException catch (e) {
       developer.log(
         'Start Flight PlatformException Error',
@@ -365,11 +365,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _download() async {
     try {
-      await Dji.downloadAllMedia();
       developer.log(
-        'Download succeeded',
+        'Download requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.downloadAllMedia();
     } on PlatformException catch (e) {
       developer.log(
         'Download PlatformException Error',
@@ -387,11 +387,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _delete() async {
     try {
-      await Dji.deleteAllMedia();
       developer.log(
-        'Delete succeeded',
+        'Delete requested',
         name: kLogKindDjiFlutterPlugin,
       );
+      await Dji.deleteAllMedia();
     } on PlatformException catch (e) {
       developer.log(
         'Delete PlatformException Error',
