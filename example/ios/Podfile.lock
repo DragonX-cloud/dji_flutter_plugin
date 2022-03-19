@@ -1,8 +1,8 @@
 PODS:
   - dji (1.0.0):
-    - DJI-SDK-iOS (~> 4.14)
+    - DJI-SDK-iOS (~> 4.16)
     - Flutter
-  - DJI-SDK-iOS (4.15)
+  - DJI-SDK-iOS (4.16)
   - Flutter (1.0.0)
 
 DEPENDENCIES:
@@ -20,8 +20,8 @@ EXTERNAL SOURCES:
     :path: Flutter
 
 SPEC CHECKSUMS:
-  dji: d148c7427775a7a0aed8cc37f23ffb887ba24580
-  DJI-SDK-iOS: ec65a1c913116bc2fd3f93d03ab29a865cc48205
+  dji: 6d5ac4b8c6b1688f86e6721236bc5b4b4bf6fe52
+  DJI-SDK-iOS: 1eea401c947433562e268f9cce25f1ea5c132875
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
 
 PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
