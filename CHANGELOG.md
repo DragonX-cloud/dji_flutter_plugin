@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0-dev.11
+
+- Upgraded to DJI Mobile SDK IOS 4.16 and DJI Mobile SDK Android 4.16.1.
 ## 1.0.0-dev.10
 
 - Bug fixes.

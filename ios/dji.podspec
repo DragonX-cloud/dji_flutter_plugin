@@ -15,7 +15,7 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'DJI-SDK-iOS', '~> 4.14'
+  s.dependency 'DJI-SDK-iOS', '~> 4.16'
   s.platform = :ios, '9.0'
 
   # Flutter.framework does not contain a i386 or arm64 slice.

@@ -45,8 +45,11 @@ You may search the Github /example folder to locate the App Keys that were used 
 ##### Note
 The best way to create a Flutter project with your desired package-name is by command line and the --org argument:  
 ```
-flutter create --org com.yourdomain yourAppName  
+mkdir yourAppNAme
+cd ./yourAppName
+flutter create --org com.yourdomain --project-name yourAppName .
 ```
+(notice the "." at the end)  
 https://flutteragency.com/create-a-new-project-in-flutter/
 
 **For a tip in regards to package names - please [read this](#a-tip-in-regards-to-package-names).**

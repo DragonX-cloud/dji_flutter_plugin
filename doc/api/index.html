@@ -86,9 +86,12 @@ This App Key should be included in your Android Manifest XML and iOS info.plist 
 <code>cloud.dragonx.plugin.flutter.djiExample</code> on Android is using <code>23acf68f822be3f065e6f538</code></p>
 <h5 id="note">Note</h5>
 <p>The best way to create a Flutter project with your desired package-name is by command line and the --org argument:</p>
-<pre class="language-dart"><code>flutter create --org com.yourdomain yourAppName  
+<pre class="language-dart"><code>mkdir yourAppNAme
+cd ./yourAppName
+flutter create --org com.yourdomain --project-name yourAppName .
 </code></pre>
-<p><a href="https://flutteragency.com/create-a-new-project-in-flutter/">https://flutteragency.com/create-a-new-project-in-flutter/</a></p>
+<p>(notice the "." at the end)<br>
+<a href="https://flutteragency.com/create-a-new-project-in-flutter/">https://flutteragency.com/create-a-new-project-in-flutter/</a></p>
 <p><strong>For a tip in regards to package names - please <a href="#a-tip-in-regards-to-package-names">read this</a>.</strong></p>
 <h3 id="configuring-the-dji-sdk-on-your-flutter-ios-project">Configuring the DJI SDK on your Flutter iOS Project</h3>
 <p>The DJI SDK is automatically added by the plugin.<br>
@@ -732,6 +735,11 @@ Connect it via USB cable and then run the following from your Desktop terminal:<
 <p>Then disconnect the USB cable, and run the following:</p>
 <pre class="language-dart"><code>adb connect {{your-android-ip}}:4455
 </code></pre>
+<h3 id="debugging-ios-over-wifi">Debugging iOS over Wifi</h3>
+<p>On iOS 14+, local network broadcast in apps need to be declared in the app's Info.plist.</p>
+<p>Debug and profile Flutter apps and modules host VM services on the local network to support debugging features such as hot reload and DevTools.</p>
+<p>To make your Flutter app or module attachable and debuggable, add a '_dartobservatory._tcp' value to the 'NSBonjourServices' key in your Info.plist for the Debug/Profile configurations.</p>
+<p>For more information, see <a href="https://flutter.dev/docs/development/add-to-app/ios/project-setup#local-network-privacy-permissions">https://flutter.dev/docs/development/add-to-app/ios/project-setup#local-network-privacy-permissions</a></p>
 <h3 id="a-tip-in-regards-to-package-names">A Tip in regards to Package Names</h3>
 <p>Due to inconsistencies between Google Play and Apple Appstore, there are differences in the "rules" that define what is a valid package-name.
 For example, the "-" character cannot be used for Android, but is valid for iOS.
@@ -791,7 +799,7 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.9
+      1.0.0-dev.11
   </span>
 
   
