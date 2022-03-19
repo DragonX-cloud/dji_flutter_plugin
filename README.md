@@ -148,7 +148,7 @@ android {
     ...
     defaultConfig {
         ...
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         ...
 
@@ -156,8 +156,6 @@ android {
     }
 }
 ```
-**[ ! ] IMPORTANT** For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).  
-And because the minSDK 19 - MultiDex MUST also be enabled.
 
 - Below the `buildTypes` add the `packagingOptions` section to exclude the `rxjava.properties`:
 ```

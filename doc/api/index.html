@@ -189,7 +189,7 @@ Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
     ...
     defaultConfig {
         ...
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 30
         ...
 
@@ -197,8 +197,6 @@ Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
     }
 }
 </code></pre>
-<p><strong><code> ! </code> IMPORTANT</strong> For DJI SDK to work properly the minSDK must be set to 19 (otherwise the helper.install doesn't work).<br>
-And because the minSDK 19 - MultiDex MUST also be enabled.</p>
 <ul>
 <li>Below the <code>buildTypes</code> add the <code>packagingOptions</code> section to exclude the <code>rxjava.properties</code>:</li>
 </ul>
