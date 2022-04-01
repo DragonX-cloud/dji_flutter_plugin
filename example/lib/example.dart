@@ -453,13 +453,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
                               },
                             ),
                             ElevatedButton(
-                              key: const Key('disconnectDroneButton'),
-                              child: const Text('Disconnect'),
-                              onPressed: () async {
-                                await _disconnectDrone();
-                              },
-                            ),
-                            ElevatedButton(
                               key: const Key('delegateButton'),
                               child: const Text('Delegate'),
                               onPressed: () async {
@@ -506,6 +499,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
                               child: const Text('Delete'),
                               onPressed: () async {
                                 await _delete();
+                              },
+                            ),
+                            ElevatedButton(
+                              key: const Key('disconnectDroneButton'),
+                              child: const Text('Disconnect'),
+                              onPressed: () async {
+                                await _disconnectDrone();
                               },
                             ),
                           ],

@@ -1,4 +1,6 @@
+import Foundation
 import DJISDK
+import DJIWidget
 import Flutter
 import UIKit
 
@@ -452,24 +454,97 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 					print("=== DjiPlugin iOS: Download all media started")
 					self._fltSetStatus("Download Started")
 					
-					if let _dronePlayBackManager = _droneCamera.playbackManager {
-						_dronePlayBackManager.selectAllFiles()
-						_dronePlayBackManager.downloadSelectedFiles(
-							preparation: nil,
-							process: nil,
-							fileCompletion: nil,
-							overallCompletion: { (error: Error?) -> Void in
-								if (error != nil) {
-									print("=== DjiPlugin iOS: Download all media failed with error - \(String(describing: error?.localizedDescription))")
-									self._fltSetStatus("Download Failed")
+					if let _droneMediaManager = _droneCamera.mediaManager {
+						// Fetching the Media List and grabbing the lastest media file
+						if _droneMediaManager.sdCardFileListState == DJIMediaFileListState.syncing ||
+						   _droneMediaManager.sdCardFileListState == DJIMediaFileListState.deleting {
+							print("=== DjiPlugin iOS: Download Failed - Media Manager is busy")
+						} else {
+							_droneMediaManager.refreshFileList(of: DJICameraStorageLocation.sdCard, withCompletion: {[weak self] (e: Error?) in
+								if let error = e {
+									print("=== DjiPlugin iOS: Fetch Media File List Failed: %@", error.localizedDescription)
 								} else {
-									print("=== DjiPlugin iOS: Download all media completed successfully")
-									self._fltSetStatus("Downloaded")
+									if let mediaFileList = _droneMediaManager.sdCardFileListSnapshot() {
+										print("=== DjiPlugin iOS: Fetch Media File List Success")
+										
+										// Selecting the last media file
+										if let selectedMedia = mediaFileList.last {
+											let isPhoto = selectedMedia.mediaType == DJIMediaType.JPEG || selectedMedia.mediaType == DJIMediaType.TIFF
+										
+											var previousOffset = UInt(0)
+											var fileData : Data?
+											selectedMedia.fetchData(withOffset: previousOffset, update: DispatchQueue.main, update: {[weak self] (data:Data?, isComplete: Bool, e: Error?) in
+												if let error = e {
+													print("=== DjiPlugin iOS: Fetch Data: %@", error.localizedDescription)
+													self?._fltSetStatus("Download Failed")
+												} else {
+													if let data = data {
+														if fileData == nil {
+															fileData = data
+														} else {
+															fileData?.append(data)
+														}
+														
+														if !isPhoto {
+															previousOffset = previousOffset + UInt(data.count)
+														}
+													}
+													
+													let selectedFileSizeBytes = selectedMedia.fileSizeInBytes
+													let progress = Float(previousOffset) * 100.0 / Float(selectedFileSizeBytes)
+													
+													self?._fltSetStatus(String(format: "%0.1f%%", progress))
+													
+													if isComplete {
+														
+														let tmpDir = NSTemporaryDirectory() as NSString
+														let tmpMediaFilePath = tmpDir.appendingPathComponent(isPhoto ? "image.jpg" : "video.mp4")
+														let url = URL(fileURLWithPath: tmpMediaFilePath)
+														do {
+															try fileData?.write(to: url)
+														} catch {
+															print("=== DjiPlugin iOS: Failed to write data to file: \(error)")
+															self?._fltSetStatus("Download Failed")
+														}
+														
+														guard let mediaURL = URL(string: tmpMediaFilePath) else {
+															print("=== DjiPlugin iOS: Failed to load a filepath to save to")
+															self?._fltSetStatus("Download Failed")
+															return
+														}
+														
+														PHPhotoLibrary.shared().performChanges {
+															if (isPhoto) {
+																PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: mediaURL)
+															} else {
+																PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: mediaURL)
+															}
+														} completionHandler: { (success:Bool, e: Error?) in
+															if (success == true) {
+																print("=== DjiPlugin iOS: Successfully saved media to gallery")
+																
+																print("=== DjiPlugin iOS: Download media completed")
+																self?._fltSetStatus("Downloaded")
+																
+															} else if let error = e {
+																print("=== DjiPlugin iOS: Failed to save media to gallery %@: ", error.localizedDescription)
+																
+																self?._fltSetStatus("Download Failed")
+															}
+														}
+													}
+												}
+											})
+										} else {
+											print("=== DjiPlugin iOS: SD Card File List Snapshot Failed")
+											return;
+										}
+									}
 								}
-							}
-						)
+							})
+						}
 					} else {
-						print("=== DjiPlugin iOS: Download all media failed - no Playback Manager")
+						print("=== DjiPlugin iOS: Download media failed - no Media Manager")
 						self._fltSetStatus("Download Failed")
 					}
 				}
