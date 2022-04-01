@@ -728,7 +728,13 @@ public class MyApplication : Application() {
 ```
 
 ### DJI References
-Useful tutorial: https://www.tooploox.com/blog/automated-drone-missions-on-ios
+**Useful Tutorial**  
+https://www.tooploox.com/blog/automated-drone-missions-on-ios
+
+**iOS Swift Media Manager Demo by @godfreynolan**  
+Special thanks to this wonderful Swift tutorial by @godfreynolan:  
+https://riis.com/blog/dji-sdk-tutorial-creating-a-media-manager-application/  
+https://github.com/godfreynolan/MediaManagerSwift  
 
 ### Debugging Android over Wifi
 Find your device IP Address through the Android > Settings > wifi.
