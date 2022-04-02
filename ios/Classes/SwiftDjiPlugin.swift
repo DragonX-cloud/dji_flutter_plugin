@@ -485,7 +485,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 															fileData?.append(data)
 														}
 														
-														if !isPhoto {
+														if (isPhoto == false) {
 															previousOffset = previousOffset + UInt(data.count)
 														}
 													}
@@ -495,11 +495,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 													
 													self?._fltSetStatus(String(format: "%0.1f%%", progress))
 													
-													if isComplete {
+													if (isComplete == true) {
 														
 														let tmpDir = NSTemporaryDirectory() as NSString
 														let tmpMediaFilePath = tmpDir.appendingPathComponent(isPhoto ? "image.jpg" : "video.mp4")
 														let url = URL(fileURLWithPath: tmpMediaFilePath)
+														
 														do {
 															try fileData?.write(to: url)
 														} catch {
@@ -513,6 +514,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 															return
 														}
 														
+														print("=== DjiPlugin iOS: Download media completed: %@", mediaURL.absoluteString)
+														self?._fltSetStatus("Downloaded")
+														
+//														return mediaURL.absoluteString
+														
+														// Saving the media to the Photo Gallery
 														PHPhotoLibrary.shared().performChanges {
 															if (isPhoto) {
 																PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: mediaURL)
@@ -522,13 +529,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 														} completionHandler: { (success:Bool, e: Error?) in
 															if (success == true) {
 																print("=== DjiPlugin iOS: Successfully saved media to gallery")
-																
+
 																print("=== DjiPlugin iOS: Download media completed")
 																self?._fltSetStatus("Downloaded")
-																
+
 															} else if let error = e {
 																print("=== DjiPlugin iOS: Failed to save media to gallery %@: ", error.localizedDescription)
-																
 																self?._fltSetStatus("Download Failed")
 															}
 														}

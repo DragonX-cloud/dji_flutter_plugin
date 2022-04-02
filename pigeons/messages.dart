@@ -20,10 +20,17 @@ class Drone {
   double? yaw;
 }
 
+class Media {
+  String? fileName;
+  String? fileUrl;
+  int? fileIndex;
+}
+
 @HostApi()
 abstract class DjiHostApi {
   Version getPlatformVersion();
   Battery getBatteryLevel();
+
   void registerApp();
   void connectDrone();
   void disconnectDrone();
@@ -34,6 +41,10 @@ abstract class DjiHostApi {
   void start(String flightJson);
   void downloadAllMedia();
   void deleteAllMedia();
+
+  List<Media> getMediaList();
+  String downloadMedia(int fileIndex);
+  bool deleteMedia(int fileIndex);
 }
 
 @FlutterApi()
