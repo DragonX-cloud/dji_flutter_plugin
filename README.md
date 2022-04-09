@@ -767,5 +767,6 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 flutter analyze
 dartdoc
 dart format .
-dart publish --dry-run
+dart pub publish --dry-run
+dart pub publish
 ```
