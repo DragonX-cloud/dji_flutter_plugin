@@ -357,65 +357,65 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     }
   }
 
-  override fun timeline() {
-    Log.d(TAG, "Timeline Started")
-    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
-    if (_droneFlightController != null) {
-      // First we check if a timeline is already running
-      val _missionControl = MissionControl.getInstance()
-      if (_missionControl.isTimelineRunning == true) {
-        Log.d(TAG, "Error - Timeline already running")
-        return
-      }
-
-      var droneCoordinates = droneCurrentLocation
-      if (droneCoordinates == null) {
-        Log.d(TAG, "Timeline Failed - No droneCurrentLocationCoordinates")
-        return
-      }
-
-      // Set Home Coordinates
-      val droneHomeLocation = LocationCoordinate2D(droneCoordinates.latitude, droneCoordinates.longitude)
-      _droneFlightController.setHomeLocation(droneHomeLocation, null)
-
-      val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
-      val oneMeterOffset: Double = 0.00000899322
-
-      // Take Off
-      scheduledElements.add(TakeOffAction())
-
-      // Waypoint Mission
-      val waypointMissionBuilder = WaypointMission.Builder().autoFlightSpeed(5f)
-        .maxFlightSpeed(15f)
-        .setExitMissionOnRCSignalLostEnabled(true)
-        .finishedAction(WaypointMissionFinishedAction.NO_ACTION)
-        .flightPathMode(WaypointMissionFlightPathMode.CURVED)
-        .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
-        .headingMode(WaypointMissionHeadingMode.AUTO)
-        .repeatTimes(1)
-
-      val waypoints: MutableList<Waypoint> = LinkedList()
-
-      val firstPoint = Waypoint(droneHomeLocation.latitude + 10 * oneMeterOffset, droneHomeLocation.longitude, 2f)
-      val secondPoint = Waypoint(droneHomeLocation.latitude, droneHomeLocation.longitude + 10 * oneMeterOffset, 5f)
-
-      waypoints.add(firstPoint)
-      waypoints.add(secondPoint)
-
-      waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
-
-      val waypointMission = TimelineMission.elementFromWaypointMission(waypointMissionBuilder.build())
-      scheduledElements.add(waypointMission)
-
-      if (_missionControl.scheduledCount() > 0) {
-        _missionControl.unscheduleEverything()
-        _missionControl.removeAllListeners()
-      }
-
-      _missionControl.scheduleElements(scheduledElements)
-      _missionControl.startTimeline()
-    }
-  }
+//  override fun timeline() {
+//    Log.d(TAG, "Timeline Started")
+//    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
+//    if (_droneFlightController != null) {
+//      // First we check if a timeline is already running
+//      val _missionControl = MissionControl.getInstance()
+//      if (_missionControl.isTimelineRunning == true) {
+//        Log.d(TAG, "Error - Timeline already running")
+//        return
+//      }
+//
+//      var droneCoordinates = droneCurrentLocation
+//      if (droneCoordinates == null) {
+//        Log.d(TAG, "Timeline Failed - No droneCurrentLocationCoordinates")
+//        return
+//      }
+//
+//      // Set Home Coordinates
+//      val droneHomeLocation = LocationCoordinate2D(droneCoordinates.latitude, droneCoordinates.longitude)
+//      _droneFlightController.setHomeLocation(droneHomeLocation, null)
+//
+//      val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
+//      val oneMeterOffset: Double = 0.00000899322
+//
+//      // Take Off
+//      scheduledElements.add(TakeOffAction())
+//
+//      // Waypoint Mission
+//      val waypointMissionBuilder = WaypointMission.Builder().autoFlightSpeed(5f)
+//        .maxFlightSpeed(15f)
+//        .setExitMissionOnRCSignalLostEnabled(true)
+//        .finishedAction(WaypointMissionFinishedAction.NO_ACTION)
+//        .flightPathMode(WaypointMissionFlightPathMode.CURVED)
+//        .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
+//        .headingMode(WaypointMissionHeadingMode.AUTO)
+//        .repeatTimes(1)
+//
+//      val waypoints: MutableList<Waypoint> = LinkedList()
+//
+//      val firstPoint = Waypoint(droneHomeLocation.latitude + 10 * oneMeterOffset, droneHomeLocation.longitude, 2f)
+//      val secondPoint = Waypoint(droneHomeLocation.latitude, droneHomeLocation.longitude + 10 * oneMeterOffset, 5f)
+//
+//      waypoints.add(firstPoint)
+//      waypoints.add(secondPoint)
+//
+//      waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
+//
+//      val waypointMission = TimelineMission.elementFromWaypointMission(waypointMissionBuilder.build())
+//      scheduledElements.add(waypointMission)
+//
+//      if (_missionControl.scheduledCount() > 0) {
+//        _missionControl.unscheduleEverything()
+//        _missionControl.removeAllListeners()
+//      }
+//
+//      _missionControl.scheduleElements(scheduledElements)
+//      _missionControl.startTimeline()
+//    }
+//  }
 
   override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
@@ -613,53 +613,56 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     return missionBuilder.build()
   }
 
-  /** Playback Manager Methods */
-  override fun downloadAllMedia() {
-    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
+  override fun downloadMedia(fileIndex: Long?): String {
+    TODO("Not yet implemented")
 
-    if (_dronePlayBackManager != null) {
-      _dronePlayBackManager.selectAllFiles()
-      _dronePlayBackManager.downloadSelectedFiles(File(Environment.DIRECTORY_DOWNLOADS), object: FileDownloadCallback {
-        override fun onStart() {
-          Log.d(TAG, "Download all media started")
-          _fltSetStatus("Download Started")
-        }
-
-        override fun onEnd() {
-          Log.d(TAG, "Download all media completed successfully")
-          _fltSetStatus("Downloaded")
-        }
-
-        override fun onError(e: Exception) {
-          Log.d(TAG, "Download all media failed")
-          _fltSetStatus("Download Failed")
-        }
-
-        override fun onProgressUpdate(progress: Int) {
-        }
-      })
-
-    } else {
-      Log.d(TAG,"Download all media failed - no Playback Manager")
-      _fltSetStatus("Download Failed")
-    }
+//    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
+//
+//    if (_dronePlayBackManager != null) {
+//      _dronePlayBackManager.selectAllFiles()
+//      _dronePlayBackManager.downloadSelectedFiles(File(Environment.DIRECTORY_DOWNLOADS), object: FileDownloadCallback {
+//        override fun onStart() {
+//          Log.d(TAG, "Download all media started")
+//          _fltSetStatus("Download Started")
+//        }
+//
+//        override fun onEnd() {
+//          Log.d(TAG, "Download all media completed successfully")
+//          _fltSetStatus("Downloaded")
+//        }
+//
+//        override fun onError(e: Exception) {
+//          Log.d(TAG, "Download all media failed")
+//          _fltSetStatus("Download Failed")
+//        }
+//
+//        override fun onProgressUpdate(progress: Int) {
+//        }
+//      })
+//
+//    } else {
+//      Log.d(TAG,"Download all media failed - no Playback Manager")
+//      _fltSetStatus("Download Failed")
+//    }
   }
 
-  override fun deleteAllMedia() {
-    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
+  override fun deleteMedia(fileIndex: Long?): Boolean {
+    TODO("Not yet implemented")
 
-    if (_dronePlayBackManager != null) {
-      _fltSetStatus("Delete Started")
-
-      _dronePlayBackManager.selectAllFiles()
-      _dronePlayBackManager.deleteAllSelectedFiles()
-
-      Log.d(TAG,"Delete all media completed")
-      _fltSetStatus("Deleted")
-    } else {
-      Log.d(TAG,"Delete all media failed - no Playback Manager")
-      _fltSetStatus("Delete Failed")
-    }
+//    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
+//
+//    if (_dronePlayBackManager != null) {
+//      _fltSetStatus("Delete Started")
+//
+//      _dronePlayBackManager.selectAllFiles()
+//      _dronePlayBackManager.deleteAllSelectedFiles()
+//
+//      Log.d(TAG,"Delete all media completed")
+//      _fltSetStatus("Deleted")
+//    } else {
+//      Log.d(TAG,"Delete all media failed - no Playback Manager")
+//      _fltSetStatus("Delete Failed")
+//    }
   }
 
 }
