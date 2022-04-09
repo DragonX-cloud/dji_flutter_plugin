@@ -62,9 +62,9 @@
     
 <section class="desc markdown">
   <p>Starts the DJI Drone Flight Timeline.</p>
-<p>The <code>Dji.start</code> method receives a Flight Timeline object and commands the Drone to start executing it.</p>
-<p>The <code>Flight</code> class defines the different flight properties (e.g. location, waypoint, etc.) and provides tools to convert from and to JSON.</p>
-<p>In the example below, the we first validate that the <code>DroneHomeLocation</code> exists and then we define our Flight object, which includes several Flight Elements.</p>
+<p>The <a href="../../dji/Dji/start.html">start()</a> method receives a <code>flight</code> object (Flight Timeline) and commands the Drone to start executing it.</p>
+<p>The <a href="../../flight/Flight-class.html">Flight</a> class defines the different flight properties (e.g. location, waypoint, etc.) and provides tools to convert from and to JSON.</p>
+<p>In the example below, we first validate that the <code>DroneHomeLocation</code> exists and then define our Flight object, which includes several Flight Elements.</p>
 <p>A Flight Element has several types:</p>
 <ul>
 <li>takeOff</li>
@@ -287,14 +287,14 @@ If you want the first waypoint to be 30 degrees to your right, at a distance of 
     <li class="section-title"><a href="../../dji/Dji-class.html#static-methods">Static methods</a></li>
     <li><a href="../../dji/Dji/connectDrone.html">connectDrone</a></li>
     <li><a href="../../dji/Dji/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../../dji/Dji/deleteAllMedia.html">deleteAllMedia</a></li>
+    <li><a href="../../dji/Dji/deleteMedia.html">deleteMedia</a></li>
     <li><a href="../../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../../dji/Dji/downloadAllMedia.html">downloadAllMedia</a></li>
+    <li><a href="../../dji/Dji/downloadMedia.html">downloadMedia</a></li>
+    <li><a href="../../dji/Dji/getMediaList.html">getMediaList</a></li>
     <li><a href="../../dji/Dji/land.html">land</a></li>
     <li><a href="../../dji/Dji/registerApp.html">registerApp</a></li>
     <li><a href="../../dji/Dji/start.html">start</a></li>
     <li><a href="../../dji/Dji/takeOff.html">takeOff</a></li>
-    <li><a class="deprecated" href="../../dji/Dji/timeline.html">timeline</a></li>
 
 </ol>
 
@@ -308,7 +308,7 @@ If you want the first waypoint to be 30 degrees to your right, at a distance of 
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.11
+      1.0.0-dev.12
   </span>
 
   

@@ -353,10 +353,7 @@ public class Messages {
     @NonNull void delegateDrone();
     @NonNull void takeOff();
     @NonNull void land();
-    @NonNull void timeline();
     @NonNull void start(String flightJson);
-    @NonNull void downloadAllMedia();
-    @NonNull void deleteAllMedia();
     @NonNull List<Media> getMediaList();
     @NonNull String downloadMedia(Long fileIndex);
     @NonNull Boolean deleteMedia(Long fileIndex);
@@ -522,25 +519,6 @@ public class Messages {
       }
       {
         BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.timeline", getCodec());
-        if (api != null) {
-          channel.setMessageHandler((message, reply) -> {
-            Map<String, Object> wrapped = new HashMap<>();
-            try {
-              api.timeline();
-              wrapped.put("result", null);
-            }
-            catch (Error | RuntimeException exception) {
-              wrapped.put("error", wrapError(exception));
-            }
-            reply.reply(wrapped);
-          });
-        } else {
-          channel.setMessageHandler(null);
-        }
-      }
-      {
-        BasicMessageChannel<Object> channel =
             new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.start", getCodec());
         if (api != null) {
           channel.setMessageHandler((message, reply) -> {
@@ -552,44 +530,6 @@ public class Messages {
                 throw new NullPointerException("flightJsonArg unexpectedly null.");
               }
               api.start(flightJsonArg);
-              wrapped.put("result", null);
-            }
-            catch (Error | RuntimeException exception) {
-              wrapped.put("error", wrapError(exception));
-            }
-            reply.reply(wrapped);
-          });
-        } else {
-          channel.setMessageHandler(null);
-        }
-      }
-      {
-        BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.downloadAllMedia", getCodec());
-        if (api != null) {
-          channel.setMessageHandler((message, reply) -> {
-            Map<String, Object> wrapped = new HashMap<>();
-            try {
-              api.downloadAllMedia();
-              wrapped.put("result", null);
-            }
-            catch (Error | RuntimeException exception) {
-              wrapped.put("error", wrapError(exception));
-            }
-            reply.reply(wrapped);
-          });
-        } else {
-          channel.setMessageHandler(null);
-        }
-      }
-      {
-        BasicMessageChannel<Object> channel =
-            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.deleteAllMedia", getCodec());
-        if (api != null) {
-          channel.setMessageHandler((message, reply) -> {
-            Map<String, Object> wrapped = new HashMap<>();
-            try {
-              api.deleteAllMedia();
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {

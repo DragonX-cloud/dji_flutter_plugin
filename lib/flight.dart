@@ -155,16 +155,14 @@ class CoordinatesConvertion {
     return gimbalAngleInDegrees.abs() * (-1 / 2);
   }
 
-  static FlightElementWaypointMission?
-      convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-          {required FlightElementWaypointMission flightElementWaypointMission,
-          required FlightLocation droneHomeLocation}) {
+  static convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+      {required FlightElementWaypointMission flightElementWaypointMission,
+      required FlightLocation droneHomeLocation}) {
     if (flightElementWaypointMission.pointOfInterest == null) {
       developer.log(
         'convertWaypointMissionVectorsToLocations - Waypoint Mission Point of Interest does not exist',
         name: kLogKindDjiFlutterPlugin,
       );
-      return null;
     }
 
     int unableToComputeLocationBasedOnVector = -1;
@@ -199,7 +197,6 @@ class CoordinatesConvertion {
         'convertWaypointMissionVectorsToLocations - Unable to compute Waypoint Location based on Waypoint Vector #$unableToComputeLocationBasedOnVector inputs',
         name: kLogKindDjiFlutterPlugin,
       );
-      return null;
     }
 
     developer.log(

@@ -67,7 +67,9 @@
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">static Battery decode(Object message) {
   final Map&lt;Object?, Object?&gt; pigeonMap = message as Map&lt;Object?, Object?&gt;;
-  return Battery()..level = pigeonMap[&#39;level&#39;] as int?;
+  return Battery(
+    level: pigeonMap[&#39;level&#39;] as int?,
+  );
 }</code></pre>
 </section>
 
@@ -128,7 +130,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.8
+      1.0.0-dev.12
   </span>
 
   

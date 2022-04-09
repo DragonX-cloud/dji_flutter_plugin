@@ -204,15 +204,15 @@
 
 </dd>
 
-        <dt id="deleteAllMedia" class="callable">
-  <span class="name"><a href="../dji/Dji/deleteAllMedia.html">deleteAllMedia</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+        <dt id="deleteMedia" class="callable">
+  <span class="name"><a href="../dji/Dji/deleteMedia.html">deleteMedia</a></span><span class="signature">(<wbr><span class="parameter" id="deleteMedia-param-fileIndex"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">fileIndex</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
-  Deletes all media files from the Drone. <a href="../dji/Dji/deleteAllMedia.html">[...]</a>
+  Deletes a specific media file from the Drone (by Index). <a href="../dji/Dji/deleteMedia.html">[...]</a>
   
 
 </dd>
@@ -230,15 +230,28 @@
 
 </dd>
 
-        <dt id="downloadAllMedia" class="callable">
-  <span class="name"><a href="../dji/Dji/downloadAllMedia.html">downloadAllMedia</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+        <dt id="downloadMedia" class="callable">
+  <span class="name"><a href="../dji/Dji/downloadMedia.html">downloadMedia</a></span><span class="signature">(<wbr><span class="parameter" id="downloadMedia-param-fileIndex"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">fileIndex</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>&gt;</span></span>
   </span>
   
 
 </dt>
 <dd>
-  Downloads all media files from the Drone. <a href="../dji/Dji/downloadAllMedia.html">[...]</a>
+  Downloads a specific media file from the Drone (by Index). <a href="../dji/Dji/downloadMedia.html">[...]</a>
+  
+
+</dd>
+
+        <dt id="getMediaList" class="callable">
+  <span class="name"><a href="../dji/Dji/getMediaList.html">getMediaList</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../messages/Media-class.html">Media</a>?</span>&gt;</span>?</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Get the media files list from the Drone (SD Card). <a href="../dji/Dji/getMediaList.html">[...]</a>
   
 
 </dd>
@@ -292,19 +305,6 @@
 <dd>
   Triggers the DJI Drone Take Off action. <a href="../dji/Dji/takeOff.html">[...]</a>
   
-
-</dd>
-
-        <dt id="timeline" class="callable">
-  <span class="name deprecated"><a class="deprecated" href="../dji/Dji/timeline.html">timeline</a></span><span class="signature">(<wbr>)
-    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
-  </span>
-  
-
-</dt>
-<dd>
-  Triggers the DJI Drone pre-defined Timeline. 
-  <div class="features">@<a href="https://api.flutter.dev/flutter/dart-core/Deprecated-class.html">Deprecated</a>(&#39;Use [start] instead.&#39;)</div>
 
 </dd>
 
@@ -372,14 +372,14 @@
     <li class="section-title"><a href="../dji/Dji-class.html#static-methods">Static methods</a></li>
     <li><a href="../dji/Dji/connectDrone.html">connectDrone</a></li>
     <li><a href="../dji/Dji/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../dji/Dji/deleteAllMedia.html">deleteAllMedia</a></li>
+    <li><a href="../dji/Dji/deleteMedia.html">deleteMedia</a></li>
     <li><a href="../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../dji/Dji/downloadAllMedia.html">downloadAllMedia</a></li>
+    <li><a href="../dji/Dji/downloadMedia.html">downloadMedia</a></li>
+    <li><a href="../dji/Dji/getMediaList.html">getMediaList</a></li>
     <li><a href="../dji/Dji/land.html">land</a></li>
     <li><a href="../dji/Dji/registerApp.html">registerApp</a></li>
     <li><a href="../dji/Dji/start.html">start</a></li>
     <li><a href="../dji/Dji/takeOff.html">takeOff</a></li>
-    <li><a class="deprecated" href="../dji/Dji/timeline.html">timeline</a></li>
 
 </ol>
 
@@ -390,7 +390,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.11
+      1.0.0-dev.12
   </span>
 
   

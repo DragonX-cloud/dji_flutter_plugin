@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="description" content="API docs for the downloadAllMedia method from the DjiHostApi class, for the Dart programming language.">
-  <title>downloadAllMedia method - DjiHostApi class - messages library - Dart API</title>
+  <meta name="description" content="API docs for the downloadMedia method from the DjiHostApi class, for the Dart programming language.">
+  <title>downloadMedia method - DjiHostApi class - messages library - Dart API</title>
 
 
   
@@ -32,9 +32,9 @@
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../messages/messages-library.html">messages</a></li>
     <li><a href="../../messages/DjiHostApi-class.html">DjiHostApi</a></li>
-    <li class="self-crumb">downloadAllMedia method</li>
+    <li class="self-crumb">downloadMedia method</li>
   </ol>
-  <div class="self-name">downloadAllMedia</div>
+  <div class="self-name">downloadMedia</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
@@ -45,51 +45,50 @@
 
   <div id="dartdoc-main-content" class="main-content">
       <div>
-<h1><span class="kind-method">downloadAllMedia</span> method 
+<h1><span class="kind-method">downloadMedia</span> method 
     <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
 </h1></div>
 
     <section class="multi-line-signature">
       
 
-<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
-<span class="name ">downloadAllMedia</span>(<wbr>)
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span></span>
+<span class="name ">downloadMedia</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="downloadMedia-param-arg_fileIndex"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">arg_fileIndex</span></span></li>
+</ol>)
 
       
 
     </section>
     
-<section class="desc markdown">
-  <p>Downloads all media files from the Drone.</p>
-<p>See Dji.downloadAllMedia().</p>
-</section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; downloadAllMedia() async {
+  <pre class="language-dart"><code class="language-dart">Future&lt;String&gt; downloadMedia(int arg_fileIndex) async {
   final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-      &#39;dev.flutter.pigeon.DjiHostApi.downloadAllMedia&#39;, codec,
-      binaryMessenger: _binaryMessenger);
+      &#39;dev.flutter.pigeon.DjiHostApi.downloadMedia&#39;, codec, binaryMessenger: _binaryMessenger);
   final Map&lt;Object?, Object?&gt;? replyMap =
-      await channel.send(null) as Map&lt;Object?, Object?&gt;?;
+      await channel.send(&lt;Object&gt;[arg_fileIndex]) as Map&lt;Object?, Object?&gt;?;
   if (replyMap == null) {
     throw PlatformException(
       code: &#39;channel-error&#39;,
       message: &#39;Unable to establish connection on channel.&#39;,
-      details: null,
     );
   } else if (replyMap[&#39;error&#39;] != null) {
-    final Map&lt;Object?, Object?&gt; error =
-        (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
+    final Map&lt;Object?, Object?&gt; error = (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
     throw PlatformException(
       code: (error[&#39;code&#39;] as String?)!,
       message: error[&#39;message&#39;] as String?,
       details: error[&#39;details&#39;],
     );
+  } else if (replyMap[&#39;result&#39;] == null) {
+    throw PlatformException(
+      code: &#39;null-error&#39;,
+      message: &#39;Host platform returned null value for non-null return value.&#39;,
+    );
   } else {
-    return;
+    return (replyMap[&#39;result&#39;] as String?)!;
   }
 }</code></pre>
 </section>
@@ -108,7 +107,7 @@
   <li><a href="../../index.html">dji</a></li>
   <li><a href="../../messages/messages-library.html">messages</a></li>
   <li><a href="../../messages/DjiHostApi-class.html">DjiHostApi</a></li>
-  <li class="self-crumb">downloadAllMedia method</li>
+  <li class="self-crumb">downloadMedia method</li>
 </ol>
 
 
@@ -128,17 +127,17 @@
     <li class="section-title"><a href="../../messages/DjiHostApi-class.html#instance-methods">Methods</a></li>
     <li><a href="../../messages/DjiHostApi/connectDrone.html">connectDrone</a></li>
     <li><a href="../../messages/DjiHostApi/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../../messages/DjiHostApi/deleteAllMedia.html">deleteAllMedia</a></li>
+    <li><a href="../../messages/DjiHostApi/deleteMedia.html">deleteMedia</a></li>
     <li><a href="../../messages/DjiHostApi/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../../messages/DjiHostApi/downloadAllMedia.html">downloadAllMedia</a></li>
+    <li><a href="../../messages/DjiHostApi/downloadMedia.html">downloadMedia</a></li>
     <li><a href="../../messages/DjiHostApi/getBatteryLevel.html">getBatteryLevel</a></li>
+    <li><a href="../../messages/DjiHostApi/getMediaList.html">getMediaList</a></li>
     <li><a href="../../messages/DjiHostApi/getPlatformVersion.html">getPlatformVersion</a></li>
     <li><a href="../../messages/DjiHostApi/land.html">land</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
     <li><a href="../../messages/DjiHostApi/registerApp.html">registerApp</a></li>
     <li><a href="../../messages/DjiHostApi/start.html">start</a></li>
     <li><a href="../../messages/DjiHostApi/takeOff.html">takeOff</a></li>
-    <li><a class="deprecated" href="../../messages/DjiHostApi/timeline.html">timeline</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
 
     <li class="section-title inherited"><a href="../../messages/DjiHostApi-class.html#operators">Operators</a></li>
@@ -161,7 +160,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.8
+      1.0.0-dev.12
   </span>
 
   

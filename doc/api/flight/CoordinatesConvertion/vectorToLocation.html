@@ -86,20 +86,44 @@
 
   azimuthToDestination = 180 -
       vector.headingRelativeToPointOfInterest -
-      (atan((droneLocation.latitude - pointOfInterest.latitude).abs() &#47;
-              (droneLocation.longitude - pointOfInterest.longitude).abs()) *
+      (atan((droneLocation.latitude - pointOfInterest.latitude) &#47;
+              (droneLocation.longitude - pointOfInterest.longitude)) *
           180 &#47;
           pi);
   &#47;&#47; Latitude = North&#47;South
-  destinationLatitude = pointOfInterest.latitude +
+  double computedDestinationLatitude = pointOfInterest.latitude +
       (vector.distanceFromPointOfInterest *
           sin(azimuthToDestination * pi &#47; 180) *
           meterToDecimalDegree);
+  &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+  computedDestinationLatitude = computedDestinationLatitude * 100000000;
+  destinationLatitude = computedDestinationLatitude.round() &#47; 100000000;
+
   &#47;&#47; Longitude = East&#47;West
-  destinationLongitude = pointOfInterest.longitude +
+  double computedDestinationLongitude = pointOfInterest.longitude +
       (vector.distanceFromPointOfInterest *
           cos(azimuthToDestination * pi &#47; 180) *
           meterToDecimalDegree);
+  &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+  computedDestinationLongitude = computedDestinationLongitude * 100000000;
+  destinationLongitude = computedDestinationLongitude.round() &#47; 100000000;
+
+  developer.log(
+    &#39;vectorToLocation - computed coordinates:&#39;,
+    name: kLogKindDjiFlutterPlugin,
+  );
+  developer.log(
+    &#39;Latitude: $destinationLatitude&#39;,
+    name: kLogKindDjiFlutterPlugin,
+  );
+  developer.log(
+    &#39;Longitude: $destinationLongitude&#39;,
+    name: kLogKindDjiFlutterPlugin,
+  );
+  developer.log(
+    &#39;Altitude: ${vector.destinationAltitude}&#39;,
+    name: kLogKindDjiFlutterPlugin,
+  );
 
   return FlightLocation(
       latitude: destinationLatitude,
@@ -167,7 +191,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.11
+      1.0.0-dev.12
   </span>
 
   

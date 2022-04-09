@@ -53,7 +53,8 @@
       
 
 <span class="returntype">void</span>
-<span class="name ">setup</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="setup-param-api"><span class="type-annotation"><a href="../../messages/DjiFlutterApi-class.html">DjiFlutterApi</a>?</span> <span class="parameter-name">api</span></span></li>
+<span class="name ">setup</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="setup-param-api"><span class="type-annotation"><a href="../../messages/DjiFlutterApi-class.html">DjiFlutterApi</a>?</span> <span class="parameter-name">api</span>, </span></li>
+<li><span class="parameter" id="setup-param-binaryMessenger">{<span class="type-annotation"><a href="https://api.flutter.dev/flutter/services/BinaryMessenger-class.html">BinaryMessenger</a>?</span> <span class="parameter-name">binaryMessenger</span>}</span></li>
 </ol>)
 
       
@@ -65,20 +66,18 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static void setup(DjiFlutterApi? api) {
+  <pre class="language-dart"><code class="language-dart">static void setup(DjiFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
   {
-    const BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-        &#39;dev.flutter.pigeon.DjiFlutterApi.setStatus&#39;, codec);
+    final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
+        &#39;dev.flutter.pigeon.DjiFlutterApi.setStatus&#39;, codec, binaryMessenger: binaryMessenger);
     if (api == null) {
       channel.setMessageHandler(null);
     } else {
       channel.setMessageHandler((Object? message) async {
-        assert(message != null,
-            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null.&#39;);
+        assert(message != null, &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null.&#39;);
         final List&lt;Object?&gt; args = (message as List&lt;Object?&gt;?)!;
-        final Drone? arg_drone = args[0] as Drone?;
-        assert(arg_drone != null,
-            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null, expected non-null Drone.&#39;);
+        final Drone? arg_drone = (args[0] as Drone?);
+        assert(arg_drone != null, &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null, expected non-null Drone.&#39;);
         api.setStatus(arg_drone!);
         return;
       });
@@ -145,7 +144,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.8
+      1.0.0-dev.12
   </span>
 
   

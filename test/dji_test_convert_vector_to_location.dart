@@ -1,10 +1,8 @@
 // Run this test using:
 // flutter test test/dji_test_convert_vector_to_location.dart
 
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dji/flight.dart';
-import 'package:dji/dji.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

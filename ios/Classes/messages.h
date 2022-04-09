@@ -74,13 +74,7 @@ NSObject<FlutterMessageCodec> *FLTDjiHostApiGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (void)landWithError:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
-- (void)timelineWithError:(FlutterError *_Nullable *_Nonnull)error;
-/// @return `nil` only when `error != nil`.
 - (void)startFlightJson:(NSString *)flightJson error:(FlutterError *_Nullable *_Nonnull)error;
-/// @return `nil` only when `error != nil`.
-- (void)downloadAllMediaWithError:(FlutterError *_Nullable *_Nonnull)error;
-/// @return `nil` only when `error != nil`.
-- (void)deleteAllMediaWithError:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
 - (nullable NSArray<FLTMedia *> *)getMediaListWithError:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.

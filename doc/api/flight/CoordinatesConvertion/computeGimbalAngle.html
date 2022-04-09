@@ -86,7 +86,8 @@
       atan(groundDistanceInMeters &#47; altitudeDeltaInMeters) * 180 &#47; pi;
 
   &#47;&#47;&#47; We return the gimbal angle as a &quot;minus&quot; to match the DJI SDK gimbalPitch definition.
-  return gimbalAngleInDegrees.abs() * -1;
+  &#47;&#47;&#47; We also divide the angle by 2 (this worked best based on trial-and-error)
+  return gimbalAngleInDegrees.abs() * (-1 &#47; 2);
 }</code></pre>
 </section>
 
@@ -149,7 +150,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.11
+      1.0.0-dev.12
   </span>
 
   

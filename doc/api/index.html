@@ -724,7 +724,12 @@ For example:</p>
 }
 </code></pre>
 <h3 id="dji-references">DJI References</h3>
-<p>Useful tutorial: <a href="https://www.tooploox.com/blog/automated-drone-missions-on-ios">https://www.tooploox.com/blog/automated-drone-missions-on-ios</a></p>
+<p><strong>Useful Tutorial</strong><br>
+<a href="https://www.tooploox.com/blog/automated-drone-missions-on-ios">https://www.tooploox.com/blog/automated-drone-missions-on-ios</a></p>
+<p><strong>iOS Swift Media Manager Demo by @godfreynolan</strong><br>
+Special thanks to this wonderful Swift tutorial by @godfreynolan:<br>
+<a href="https://riis.com/blog/dji-sdk-tutorial-creating-a-media-manager-application/">https://riis.com/blog/dji-sdk-tutorial-creating-a-media-manager-application/</a><br>
+<a href="https://github.com/godfreynolan/MediaManagerSwift">https://github.com/godfreynolan/MediaManagerSwift</a></p>
 <h3 id="debugging-android-over-wifi">Debugging Android over Wifi</h3>
 <p>Find your device IP Address through the Android &gt; Settings &gt; wifi.
 Connect it via USB cable and then run the following from your Desktop terminal:</p>
@@ -743,6 +748,11 @@ Connect it via USB cable and then run the following from your Desktop terminal:<
 For example, the "-" character cannot be used for Android, but is valid for iOS.
 And with underscore there are issue when integrating with various Microsoft services (such as Microsoft Single Sign On).
 So our tip here is to use package names without "-" or underscore, and that's why in the above example we used <code>djiExample</code> instead of <code>dji_example</code> or <code>dji-example</code>.</p>
+<h3 id="tips--steps-before-publishing-a-flutter--dart-package">Tips &amp; Steps before publishing a Flutter / Dart Package</h3>
+<pre class="language-dart"><code>flutter analyze
+dartdoc
+dart publish --dry-run
+</code></pre>
 </section>
 
 
@@ -758,6 +768,13 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 
           <dt id="flight">
   <span class="name"><a href="flight/flight-library.html">flight</a></span> 
+
+</dt>
+<dd> 
+</dd>
+
+          <dt id="messages">
+  <span class="name"><a href="messages/messages-library.html">messages</a></span> 
 
 </dt>
 <dd> 
@@ -785,6 +802,7 @@ So our tip here is to use package names without "-" or underscore, and that's wh
       <li class="section-title">Libraries</li>
       <li><a href="dji/dji-library.html">dji</a></li>
       <li><a href="flight/flight-library.html">flight</a></li>
+      <li><a href="messages/messages-library.html">messages</a></li>
 </ol>
 
   </div>
@@ -797,7 +815,7 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.11
+      1.0.0-dev.12
   </span>
 
   

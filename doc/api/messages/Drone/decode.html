@@ -67,16 +67,17 @@
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">static Drone decode(Object message) {
   final Map&lt;Object?, Object?&gt; pigeonMap = message as Map&lt;Object?, Object?&gt;;
-  return Drone()
-    ..status = pigeonMap[&#39;status&#39;] as String?
-    ..batteryPercent = pigeonMap[&#39;batteryPercent&#39;] as double?
-    ..altitude = pigeonMap[&#39;altitude&#39;] as double?
-    ..latitude = pigeonMap[&#39;latitude&#39;] as double?
-    ..longitude = pigeonMap[&#39;longitude&#39;] as double?
-    ..speed = pigeonMap[&#39;speed&#39;] as double?
-    ..roll = pigeonMap[&#39;roll&#39;] as double?
-    ..pitch = pigeonMap[&#39;pitch&#39;] as double?
-    ..yaw = pigeonMap[&#39;yaw&#39;] as double?;
+  return Drone(
+    status: pigeonMap[&#39;status&#39;] as String?,
+    batteryPercent: pigeonMap[&#39;batteryPercent&#39;] as double?,
+    altitude: pigeonMap[&#39;altitude&#39;] as double?,
+    latitude: pigeonMap[&#39;latitude&#39;] as double?,
+    longitude: pigeonMap[&#39;longitude&#39;] as double?,
+    speed: pigeonMap[&#39;speed&#39;] as double?,
+    roll: pigeonMap[&#39;roll&#39;] as double?,
+    pitch: pigeonMap[&#39;pitch&#39;] as double?,
+    yaw: pigeonMap[&#39;yaw&#39;] as double?,
+  );
 }</code></pre>
 </section>
 
@@ -145,7 +146,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.8
+      1.0.0-dev.12
   </span>
 
   

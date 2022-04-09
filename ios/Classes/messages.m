@@ -353,24 +353,6 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
   {
     FlutterBasicMessageChannel *channel =
       [FlutterBasicMessageChannel
-        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.timeline"
-        binaryMessenger:binaryMessenger
-        codec:FLTDjiHostApiGetCodec()];
-    if (api) {
-      NSCAssert([api respondsToSelector:@selector(timelineWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(timelineWithError:)", api);
-      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
-        FlutterError *error;
-        [api timelineWithError:&error];
-        callback(wrapResult(nil, error));
-      }];
-    }
-    else {
-      [channel setMessageHandler:nil];
-    }
-  }
-  {
-    FlutterBasicMessageChannel *channel =
-      [FlutterBasicMessageChannel
         messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.start"
         binaryMessenger:binaryMessenger
         codec:FLTDjiHostApiGetCodec()];
@@ -381,42 +363,6 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
         NSString *arg_flightJson = args[0];
         FlutterError *error;
         [api startFlightJson:arg_flightJson error:&error];
-        callback(wrapResult(nil, error));
-      }];
-    }
-    else {
-      [channel setMessageHandler:nil];
-    }
-  }
-  {
-    FlutterBasicMessageChannel *channel =
-      [FlutterBasicMessageChannel
-        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.downloadAllMedia"
-        binaryMessenger:binaryMessenger
-        codec:FLTDjiHostApiGetCodec()];
-    if (api) {
-      NSCAssert([api respondsToSelector:@selector(downloadAllMediaWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(downloadAllMediaWithError:)", api);
-      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
-        FlutterError *error;
-        [api downloadAllMediaWithError:&error];
-        callback(wrapResult(nil, error));
-      }];
-    }
-    else {
-      [channel setMessageHandler:nil];
-    }
-  }
-  {
-    FlutterBasicMessageChannel *channel =
-      [FlutterBasicMessageChannel
-        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.deleteAllMedia"
-        binaryMessenger:binaryMessenger
-        codec:FLTDjiHostApiGetCodec()];
-    if (api) {
-      NSCAssert([api respondsToSelector:@selector(deleteAllMediaWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(deleteAllMediaWithError:)", api);
-      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
-        FlutterError *error;
-        [api deleteAllMediaWithError:&error];
         callback(wrapResult(nil, error));
       }];
     }

@@ -761,3 +761,11 @@ Due to inconsistencies between Google Play and Apple Appstore, there are differe
 For example, the "-" character cannot be used for Android, but is valid for iOS.
 And with underscore there are issue when integrating with various Microsoft services (such as Microsoft Single Sign On).
 So our tip here is to use package names without "-" or underscore, and that's why in the above example we used `djiExample` instead of `dji_example` or `dji-example`.
+
+### Tips & Steps before publishing a Flutter / Dart Package
+```
+flutter analyze
+dartdoc
+dart format .
+dart publish --dry-run
+```

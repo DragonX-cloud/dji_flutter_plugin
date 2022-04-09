@@ -52,7 +52,7 @@
     <section class="multi-line-signature">
       
 
-<span class="returntype"><a href="../../flight/FlightElementWaypointMission-class.html">FlightElementWaypointMission</a>?</span>
+<span class="returntype">dynamic</span>
 <span class="name ">convertWaypointMissionVectorsToLocationsWithGimbalPitch</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="convertWaypointMissionVectorsToLocationsWithGimbalPitch-param-flightElementWaypointMission">{<span>required</span> <span class="type-annotation"><a href="../../flight/FlightElementWaypointMission-class.html">FlightElementWaypointMission</a></span> <span class="parameter-name">flightElementWaypointMission</span>, </span></li>
 <li><span class="parameter" id="convertWaypointMissionVectorsToLocationsWithGimbalPitch-param-droneHomeLocation"><span>required</span> <span class="type-annotation"><a href="../../flight/FlightLocation-class.html">FlightLocation</a></span> <span class="parameter-name">droneHomeLocation</span>}</span></li>
 </ol>)
@@ -66,16 +66,14 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static FlightElementWaypointMission?
-    convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-        {required FlightElementWaypointMission flightElementWaypointMission,
-        required FlightLocation droneHomeLocation}) {
+  <pre class="language-dart"><code class="language-dart">static convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+    {required FlightElementWaypointMission flightElementWaypointMission,
+    required FlightLocation droneHomeLocation}) {
   if (flightElementWaypointMission.pointOfInterest == null) {
     developer.log(
       &#39;convertWaypointMissionVectorsToLocations - Waypoint Mission Point of Interest does not exist&#39;,
       name: kLogKindDjiFlutterPlugin,
     );
-    return null;
   }
 
   int unableToComputeLocationBasedOnVector = -1;
@@ -110,7 +108,6 @@
       &#39;convertWaypointMissionVectorsToLocations - Unable to compute Waypoint Location based on Waypoint Vector #$unableToComputeLocationBasedOnVector inputs&#39;,
       name: kLogKindDjiFlutterPlugin,
     );
-    return null;
   }
 
   developer.log(
@@ -179,7 +176,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.11
+      1.0.0-dev.12
   </span>
 
   
