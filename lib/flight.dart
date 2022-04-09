@@ -86,20 +86,44 @@ class CoordinatesConvertion {
 
     azimuthToDestination = 180 -
         vector.headingRelativeToPointOfInterest -
-        (atan((droneLocation.latitude - pointOfInterest.latitude).abs() /
-                (droneLocation.longitude - pointOfInterest.longitude).abs()) *
+        (atan((droneLocation.latitude - pointOfInterest.latitude) /
+                (droneLocation.longitude - pointOfInterest.longitude)) *
             180 /
             pi);
     // Latitude = North/South
-    destinationLatitude = pointOfInterest.latitude +
+    double computedDestinationLatitude = pointOfInterest.latitude +
         (vector.distanceFromPointOfInterest *
             sin(azimuthToDestination * pi / 180) *
             meterToDecimalDegree);
+    // Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+    computedDestinationLatitude = computedDestinationLatitude * 100000000;
+    destinationLatitude = computedDestinationLatitude.round() / 100000000;
+
     // Longitude = East/West
-    destinationLongitude = pointOfInterest.longitude +
+    double computedDestinationLongitude = pointOfInterest.longitude +
         (vector.distanceFromPointOfInterest *
             cos(azimuthToDestination * pi / 180) *
             meterToDecimalDegree);
+    // Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+    computedDestinationLongitude = computedDestinationLongitude * 100000000;
+    destinationLongitude = computedDestinationLongitude.round() / 100000000;
+
+    developer.log(
+      'vectorToLocation - computed coordinates:',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    developer.log(
+      'Latitude: $destinationLatitude',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    developer.log(
+      'Longitude: $destinationLongitude',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    developer.log(
+      'Altitude: ${vector.destinationAltitude}',
+      name: kLogKindDjiFlutterPlugin,
+    );
 
     return FlightLocation(
         latitude: destinationLatitude,
@@ -127,7 +151,8 @@ class CoordinatesConvertion {
         atan(groundDistanceInMeters / altitudeDeltaInMeters) * 180 / pi;
 
     /// We return the gimbal angle as a "minus" to match the DJI SDK gimbalPitch definition.
-    return gimbalAngleInDegrees.abs() * -1;
+    /// We also divide the angle by 2 (this worked best based on trial-and-error)
+    return gimbalAngleInDegrees.abs() * (-1 / 2);
   }
 
   static FlightElementWaypointMission?

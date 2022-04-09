@@ -15,7 +15,7 @@ class Dji {
 
   /// Gets the platform version.
   ///
-  /// The `Dji.platformVersion` gets the host (native platform) version (e.g. The iOS or Android version).
+  /// Fetches the host (native platform) version (e.g. The iOS or Android version).
   ///
   /// Example:
   /// ```dart
@@ -41,7 +41,7 @@ class Dji {
 
   /// Gets the battery level.
   ///
-  /// The `Dji.batteryLevel` gets the host (native platform) battery level (e.g. The iOS or Android battery level).
+  /// Fetches the host (native platform) battery level (e.g. The iOS or Android battery level).
   ///
   /// Example:
   /// ```dart
@@ -65,7 +65,7 @@ class Dji {
 
   /// Registers the app at DJI.
   ///
-  /// The `Dji.registerApp` triggers the DJI SDK registration method.
+  /// Triggers the DJI SDK registration method.
   /// This is a required action, everytime we launch our app, and before we attempt to connect to the Drone.
   ///
   /// Once connected, the `DjiFlutterApi.setStatus()` method is triggered and the status is changed to "Registered".
@@ -111,21 +111,21 @@ class Dji {
 
   /// Disconnects from the DJI Drone.
   ///
-  /// Once disconnected, the DjiFlutterApi.setStatus() method is triggered and the status is changed to "Disconnected".
+  /// Once disconnected, the `DjiFlutterApi.setStatus()` method is triggered and the status is changed to "Disconnected".
   static Future<void> disconnectDrone() async {
     await _api?.disconnectDrone();
   }
 
   /// Starts Listening to DJI Drone status changes.
   ///
-  /// The DjiFlutterApi.setStatus() method is used, and the properties of the Drone class are updated in real time.
+  /// The `DjiFlutterApi.setStatus()` method is used, and the properties of the Drone class are updated in real time.
   static Future<void> delegateDrone() async {
     await _api?.delegateDrone();
   }
 
   /// Triggers the DJI Drone Take Off action.
   ///
-  /// The `Dji.takeOff` method commands the Drone to start take-off.
+  /// Commands the Drone to start take-off.
   ///
   /// Example:
   /// ```
@@ -157,7 +157,7 @@ class Dji {
 
   /// Triggers the DJI Drone Land action.
   ///
-  /// The `Dji.land` method commands the Drone to start landing.
+  /// Commands the Drone to start landing.
   ///
   /// Example:
   /// ```
@@ -187,20 +187,20 @@ class Dji {
     await _api?.land();
   }
 
-  /// Triggers the DJI Drone pre-defined Timeline.
-  ///
-  @Deprecated('Use [start] instead.')
-  static Future<void> timeline() async {
-    await _api?.timeline();
-  }
+  // /// Triggers the DJI Drone pre-defined Timeline.
+  // ///
+  // @Deprecated('Use [start] instead.')
+  // static Future<void> timeline() async {
+  //   await _api?.timeline();
+  // }
 
   /// Starts the DJI Drone Flight Timeline.
   ///
-  /// The `Dji.start` method receives a Flight Timeline object and commands the Drone to start executing it.
+  /// The [start()] method receives a [flight] object (Flight Timeline) and commands the Drone to start executing it.
   ///
-  /// The `Flight` class defines the different flight properties (e.g. location, waypoint, etc.) and provides tools to convert from and to JSON.
+  /// The [Flight] class defines the different flight properties (e.g. location, waypoint, etc.) and provides tools to convert from and to JSON.
   ///
-  /// In the example below, the we first validate that the `DroneHomeLocation` exists and then we define our Flight object, which includes several Flight Elements.
+  /// In the example below, we first validate that the `DroneHomeLocation` exists and then define our Flight object, which includes several Flight Elements.
   ///
   /// A Flight Element has several types:
   /// - takeOff
@@ -365,17 +365,30 @@ class Dji {
     await _api?.start(jsonEncode(flightJson));
   }
 
-  /// Downloads all media files from the Drone.
+  /// Get the media files list from the Drone (SD Card).
   ///
-  /// Work in progress... TBD.
-  static Future<void> downloadAllMedia() async {
-    await _api?.downloadAllMedia();
+  /// Returns a list of Media files.
+  /// The index of each file is used to download or delete the file.
+  static Future<List<Media?>?> getMediaList() async {
+    final mediaList = await _api?.getMediaList();
+    return mediaList;
   }
 
-  /// Deletes all media files from the Drone.
+  /// Downloads a specific media file from the Drone (by Index).
   ///
-  /// Work in progress... TBD.
-  static Future<void> deleteAllMedia() async {
-    await _api?.deleteAllMedia();
+  /// The [fileIndex] is used to locate the relevant file from the Media List and download it.
+  /// The [getMediaList()] must be triggered before using [downloadMedia()].
+  static Future<String?> downloadMedia(int fileIndex) async {
+    final fileUrl = await _api?.downloadMedia(fileIndex);
+    return fileUrl;
+  }
+
+  /// Deletes a specific media file from the Drone (by Index).
+  ///
+  /// The [fileIndex] is used to locate the relevant file from the Media List and delete it.
+  /// The [getMediaList()] must be triggered before using [deleteMedia()].
+  static Future<bool?> deleteMedia(int fileIndex) async {
+    final success = await _api?.deleteMedia(fileIndex);
+    return success;
   }
 }

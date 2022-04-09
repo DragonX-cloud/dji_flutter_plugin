@@ -30,18 +30,13 @@ class Media {
 abstract class DjiHostApi {
   Version getPlatformVersion();
   Battery getBatteryLevel();
-
   void registerApp();
   void connectDrone();
   void disconnectDrone();
   void delegateDrone();
   void takeOff();
   void land();
-  void timeline();
   void start(String flightJson);
-  void downloadAllMedia();
-  void deleteAllMedia();
-
   List<Media> getMediaList();
   String downloadMedia(int fileIndex);
   bool deleteMedia(int fileIndex);

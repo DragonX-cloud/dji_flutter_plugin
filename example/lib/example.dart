@@ -247,9 +247,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _start() async {
     try {
-      droneHomeLocation = FlightLocation(
-          latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
-
       if (droneHomeLocation == null) {
         developer.log(
             'No drone home location exist - unable to start the flight',
@@ -267,10 +264,19 @@ class _ExampleWidgetState extends State<ExampleWidget>
           },
           {
             'type': 'waypointMission',
-            // For example purposes, we set our Point of Interest a few meters away, relative to the Drone's Home Location
+            // For example purposes, we set our Point of Interest a few meters to the north (in relation to the Drone's Home Location).
+            // Note: Setting the precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
             'pointOfInterest': {
-              'latitude': droneHomeLocation!.latitude + (5 * 0.00000899322),
-              'longitude': droneHomeLocation!.longitude + (5 * 0.00000899322),
+              'latitude':
+                  ((droneHomeLocation!.latitude + (45 * 0.00000899322)) *
+                              100000000)
+                          .round() /
+                      100000000,
+              'longitude':
+                  ((droneHomeLocation!.longitude + (0 * 0.00000899322)) *
+                              100000000)
+                          .round() /
+                      100000000,
               'altitude': droneHomeLocation!.altitude,
             },
             'maxFlightSpeed':
@@ -282,37 +288,74 @@ class _ExampleWidgetState extends State<ExampleWidget>
             'rotateGimbalPitch': true,
             'exitMissionOnRCSignalLost': true,
             'waypoints': [
+              // {
+              // 'location': {
+              //   'latitude': 32.2181125,
+              //   'longitude': 34.8674920,
+              //   'altitude': 20.0,
+              // },
+              // 'heading': 0,
+              // 'cornerRadiusInMeters': 15,
+              // 'turnMode': 'clockwise',
+              // 'gimbalPitch': 0,
+              // },
+
+              // This initial waypoint is important, the DJI SDK ignores the cornerRadiusInMeters of the first waypoint (and the turn wouldl not be "round").
+              // Therefore, we add this initial waypoint, just to get the Drone to a specific height, and when it reaches the second waypoint - the cornerRadiusInMeters is treated properly by the DJI SDK.
               {
-                // 'location': {
-                //   'latitude': 32.2181125,
-                //   'longitude': 34.8674920,
-                //   'altitude': 20.0,
-                // },
-                'vector': {
-                  'distanceFromPointOfInterest': 20,
-                  'headingRelativeToPointOfInterest': 45,
-                  'destinationAltitude': 5,
+                'location': {
+                  'latitude': droneHomeLocation!.latitude,
+                  'longitude': droneHomeLocation!.longitude,
+                  'altitude': 10,
                 },
-                //'heading': 0,
-                'cornerRadiusInMeters': 5,
-                'turnMode': 'clockwise',
-                // 'gimbalPitch': 0,
+                'cornerRadiusInMeters': 15,
+                'turnMode': 'counterClockwise',
               },
               {
-                // 'location': {
-                //   'latitude': 32.2181125,
-                //   'longitude': 34.8674920,
-                //   'altitude': 5.0,
-                // },
                 'vector': {
-                  'distanceFromPointOfInterest': 10,
+                  'distanceFromPointOfInterest': 45,
                   'headingRelativeToPointOfInterest': -45,
-                  'destinationAltitude': 3,
+                  'destinationAltitude': 2,
                 },
-                //'heading': 0,
-                'cornerRadiusInMeters': 5,
-                'turnMode': 'clockwise',
-                // 'gimbalPitch': 0,
+                'cornerRadiusInMeters': 15,
+                'turnMode': 'counterClockwise',
+              },
+              {
+                'vector': {
+                  'distanceFromPointOfInterest': 45,
+                  'headingRelativeToPointOfInterest': -135,
+                  'destinationAltitude': 2,
+                },
+                'cornerRadiusInMeters': 15,
+                'turnMode': 'counterClockwise',
+              },
+              {
+                'vector': {
+                  'distanceFromPointOfInterest': 45,
+                  'headingRelativeToPointOfInterest': -225,
+                  'destinationAltitude': 20,
+                },
+                'cornerRadiusInMeters': 15,
+                'turnMode': 'counterClockwise',
+              },
+              {
+                'vector': {
+                  'distanceFromPointOfInterest': 45,
+                  'headingRelativeToPointOfInterest': -315,
+                  'destinationAltitude': 4,
+                },
+                'cornerRadiusInMeters': 15,
+                'turnMode': 'counterClockwise',
+              },
+              {
+                'location': {
+                  'latitude': droneHomeLocation!.latitude,
+                  'longitude': droneHomeLocation!.longitude,
+                  'altitude': droneHomeLocation!.altitude,
+                },
+                'cornerRadiusInMeters': 15,
+                'turnMode': 'counterClockwise',
+                'gimbalPitch': 0,
               },
             ],
           },
@@ -363,13 +406,50 @@ class _ExampleWidgetState extends State<ExampleWidget>
     }
   }
 
+  Future<List<Media?>?> _getMediaList() async {
+    List<Media?>? mediaList;
+
+    try {
+      developer.log(
+        'Get Media List requested',
+        name: kLogKindDjiFlutterPlugin,
+      );
+
+      mediaList = await Dji.getMediaList();
+
+      developer.log(
+        'Media List: $mediaList',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } on PlatformException catch (e) {
+      developer.log(
+        'Get Media List PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } catch (e) {
+      developer.log(
+        'Get Media List Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+
+    return mediaList;
+  }
+
   Future<void> _download() async {
     try {
       developer.log(
         'Download requested',
         name: kLogKindDjiFlutterPlugin,
       );
-      await Dji.downloadAllMedia();
+      // Downloading media file number "0" (a.k.a index: 0)
+      final fileUrl = await Dji.downloadMedia(0);
+      developer.log(
+        'Download successful: $fileUrl',
+        name: kLogKindDjiFlutterPlugin,
+      );
     } on PlatformException catch (e) {
       developer.log(
         'Download PlatformException Error',
@@ -391,7 +471,19 @@ class _ExampleWidgetState extends State<ExampleWidget>
         'Delete requested',
         name: kLogKindDjiFlutterPlugin,
       );
-      await Dji.deleteAllMedia();
+      // Deleting media file number "0" (a.k.a index: 0)
+      final deleted = await Dji.deleteMedia(0);
+      if (deleted == true) {
+        developer.log(
+          'Deleted successfully',
+          name: kLogKindDjiFlutterPlugin,
+        );
+      } else {
+        developer.log(
+          'Delete failed',
+          name: kLogKindDjiFlutterPlugin,
+        );
+      }
     } on PlatformException catch (e) {
       developer.log(
         'Delete PlatformException Error',
@@ -485,6 +577,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
                               child: const Text('Start'),
                               onPressed: () async {
                                 await _start();
+                              },
+                            ),
+                            ElevatedButton(
+                              key: const Key('getMediaList'),
+                              child: const Text('getMediaList'),
+                              onPressed: () async {
+                                await _getMediaList();
                               },
                             ),
                             ElevatedButton(
