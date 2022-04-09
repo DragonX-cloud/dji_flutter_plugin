@@ -613,6 +613,10 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     return missionBuilder.build()
   }
 
+  override fun getMediaList(): MutableList<Messages.Media> {
+    TODO("Not yet implemented")
+  }
+
   override fun downloadMedia(fileIndex: Long?): String {
     TODO("Not yet implemented")
 
