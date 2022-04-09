@@ -95,7 +95,7 @@ class CoordinatesConvertion {
         (vector.distanceFromPointOfInterest *
             sin(azimuthToDestination * pi / 180) *
             meterToDecimalDegree);
-    // Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+    // Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
     computedDestinationLatitude = computedDestinationLatitude * 100000000;
     destinationLatitude = computedDestinationLatitude.round() / 100000000;
 
@@ -104,7 +104,7 @@ class CoordinatesConvertion {
         (vector.distanceFromPointOfInterest *
             cos(azimuthToDestination * pi / 180) *
             meterToDecimalDegree);
-    // Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+    // Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
     computedDestinationLongitude = computedDestinationLongitude * 100000000;
     destinationLongitude = computedDestinationLongitude.round() / 100000000;
 
@@ -151,8 +151,7 @@ class CoordinatesConvertion {
         atan(groundDistanceInMeters / altitudeDeltaInMeters) * 180 / pi;
 
     /// We return the gimbal angle as a "minus" to match the DJI SDK gimbalPitch definition.
-    /// We also divide the angle by 2 (this worked best based on trial-and-error)
-    return gimbalAngleInDegrees.abs() * (-1 / 2);
+    return (gimbalAngleInDegrees.abs() * -1).roundToDouble();
   }
 
   static convertWaypointMissionVectorsToLocationsWithGimbalPitch(

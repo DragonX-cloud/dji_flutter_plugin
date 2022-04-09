@@ -247,6 +247,19 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _start() async {
     try {
+      // droneHomeLocation = FlightLocation(
+      //     latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
+      // droneHomeLocation =
+      //     FlightLocation(latitude: 32.26215, longitude: 34.88217, altitude: 0);
+
+      // In this example, we set the point-of-interest as a few meters away from the Drone's home location.
+      // So before we start the Flight Timeline - we set the drone home location here, based on its current state.
+      droneHomeLocation = FlightLocation(
+        latitude: double.parse(_droneLatitude),
+        longitude: double.parse(_droneLongitude),
+        altitude: double.parse(_droneAltitude),
+      );
+
       if (droneHomeLocation == null) {
         developer.log(
             'No drone home location exist - unable to start the flight',
@@ -265,10 +278,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
           {
             'type': 'waypointMission',
             // For example purposes, we set our Point of Interest a few meters to the north (in relation to the Drone's Home Location).
-            // Note: Setting the precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+            // Note: Setting the precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
             'pointOfInterest': {
               'latitude':
-                  ((droneHomeLocation!.latitude + (45 * 0.00000899322)) *
+                  ((droneHomeLocation!.latitude + (20 * 0.00000899322)) *
                               100000000)
                           .round() /
                       100000000,
@@ -295,7 +308,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
               //   'altitude': 20.0,
               // },
               // 'heading': 0,
-              // 'cornerRadiusInMeters': 15,
+              // 'cornerRadiusInMeters': 5,
               // 'turnMode': 'clockwise',
               // 'gimbalPitch': 0,
               // },
@@ -306,56 +319,55 @@ class _ExampleWidgetState extends State<ExampleWidget>
                 'location': {
                   'latitude': droneHomeLocation!.latitude,
                   'longitude': droneHomeLocation!.longitude,
-                  'altitude': 10,
+                  'altitude': 20,
                 },
-                'cornerRadiusInMeters': 15,
+                'cornerRadiusInMeters': 5,
                 'turnMode': 'counterClockwise',
               },
               {
                 'vector': {
-                  'distanceFromPointOfInterest': 45,
+                  'distanceFromPointOfInterest': 20,
                   'headingRelativeToPointOfInterest': -45,
-                  'destinationAltitude': 2,
+                  'destinationAltitude': 10,
                 },
-                'cornerRadiusInMeters': 15,
+                'cornerRadiusInMeters': 5,
                 'turnMode': 'counterClockwise',
               },
               {
                 'vector': {
-                  'distanceFromPointOfInterest': 45,
+                  'distanceFromPointOfInterest': 20,
                   'headingRelativeToPointOfInterest': -135,
-                  'destinationAltitude': 2,
+                  'destinationAltitude': 10,
                 },
-                'cornerRadiusInMeters': 15,
+                'cornerRadiusInMeters': 5,
                 'turnMode': 'counterClockwise',
               },
               {
                 'vector': {
-                  'distanceFromPointOfInterest': 45,
+                  'distanceFromPointOfInterest': 20,
                   'headingRelativeToPointOfInterest': -225,
                   'destinationAltitude': 20,
                 },
-                'cornerRadiusInMeters': 15,
+                'cornerRadiusInMeters': 5,
                 'turnMode': 'counterClockwise',
               },
               {
                 'vector': {
-                  'distanceFromPointOfInterest': 45,
+                  'distanceFromPointOfInterest': 20,
                   'headingRelativeToPointOfInterest': -315,
-                  'destinationAltitude': 4,
+                  'destinationAltitude': 10,
                 },
-                'cornerRadiusInMeters': 15,
+                'cornerRadiusInMeters': 5,
                 'turnMode': 'counterClockwise',
               },
               {
                 'location': {
                   'latitude': droneHomeLocation!.latitude,
                   'longitude': droneHomeLocation!.longitude,
-                  'altitude': droneHomeLocation!.altitude,
+                  'altitude': 10,
                 },
-                'cornerRadiusInMeters': 15,
+                'cornerRadiusInMeters': 5,
                 'turnMode': 'counterClockwise',
-                'gimbalPitch': 0,
               },
             ],
           },

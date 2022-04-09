@@ -17,7 +17,7 @@ void main() {
     );
 
     // Setting a point-of-intereset to a few meters away from the Drone's home location.
-    // And setting the precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+    // And setting the precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
     final pointOfInterest = FlightLocation(
       latitude:
           ((droneHomeLocation.latitude + (100 * 0.00000899322)) * 100000000)

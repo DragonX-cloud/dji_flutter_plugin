@@ -95,7 +95,7 @@
       (vector.distanceFromPointOfInterest *
           sin(azimuthToDestination * pi &#47; 180) *
           meterToDecimalDegree);
-  &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+  &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
   computedDestinationLatitude = computedDestinationLatitude * 100000000;
   destinationLatitude = computedDestinationLatitude.round() &#47; 100000000;
 
@@ -104,7 +104,7 @@
       (vector.distanceFromPointOfInterest *
           cos(azimuthToDestination * pi &#47; 180) *
           meterToDecimalDegree);
-  &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1m accuracy, which is the GPS limit).
+  &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
   computedDestinationLongitude = computedDestinationLongitude * 100000000;
   destinationLongitude = computedDestinationLongitude.round() &#47; 100000000;
 
