@@ -85,15 +85,22 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 					print("=== DjiPlugin iOS: Drone Flight Controller successfuly configured")
 					drone!.flightController!.delegate = self
 					
-					// Set video record resolution to 720p
-					if let _droneCamera = drone?.camera {
-						_droneCamera.setVideoResolutionAndFrameRate(DJICameraVideoResolutionAndFrameRate(resolution: DJICameraVideoResolution.resolution1280x720, frameRate: DJICameraVideoFrameRate.rate30FPS), withCompletion: nil)
-						
-						// [ ! ] Important Note
-						// We must save the settings to the default profile (otherwise it reverts to the previously saved resolution when the Flight Timeline starts).
-						_droneCamera.saveSettings(to: DJICameraCustomSettingsProfile.profileDefault)
-					}
-		
+//					// Set video record resolution to 720p
+//					if let _droneCamera = drone?.camera {
+//						_droneCamera.setVideoResolutionAndFrameRate(DJICameraVideoResolutionAndFrameRate(resolution: DJICameraVideoResolution.resolution1280x720, frameRate: DJICameraVideoFrameRate.rate30FPS), withCompletion: nil)
+//
+//						// [ ! ] Important Note
+//						// We must save the settings to the default profile (otherwise it reverts to the previously saved resolution when the Flight Timeline starts).
+//						_droneCamera.saveSettings(to: DJICameraCustomSettingsProfile.profileDefault)
+//					}
+					
+					// Listening for DJI Mission Control errors
+					DJISDKManager.missionControl()?.removeAllListeners()
+					DJISDKManager.missionControl()?.addListener(self, toTimelineProgressWith: { (event: DJIMissionControlTimelineEvent, element: DJIMissionControlTimelineElement?, e: Error?, info: Any?) in
+						if let error = e {
+							print("=== DjiPlugin iOS: Mission Control Error - \(error.localizedDescription)")
+						}
+					})
 				} else {
 					print("=== DjiPlugin iOS: Drone Flight Controller Object does not exist")
 					_fltSetStatus("Error")
@@ -237,7 +244,23 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			print("=== DjiPlugin iOS: startFlightTimeline - No Flight Controller")
 			return
 		}
-
+		
+		if (DJISDKManager.missionControl()?.isTimelineRunning == true) {
+			print("=== DjiPlugin iOS: startFlightTimeline - Timeline already running - attempting to stop it")
+			DJISDKManager.missionControl()?.stopTimeline()
+			return
+		}
+		
+		// Set Home Location Coordinates
+		if let currentLocation = droneCurrentLocation {
+			_droneFlightController.setHomeLocation(currentLocation)
+			// _droneFlightController.setHomeLocationUsingAircraftCurrentLocationWithCompletion(nil)
+			print("=== DjiPlugin iOS: Drone Home Location Coordinates: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude)")
+		}
+		
+		// Making sure the MissionControl Timeline is clean
+		DJISDKManager.missionControl()?.unscheduleEverything()
+		
 		var scheduledElements = [DJIMissionControlTimelineElement]()
 
 		for flightElement in flight.timeline! {
