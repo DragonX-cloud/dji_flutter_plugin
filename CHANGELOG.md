@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-dev.13
+- Finalized ability to download and delete specific media files (iOS only for now).
+- Including saving the downloaded media to the device gallery (this will be changed in the future to be done via the Example Flutter app and not natively).
+- Fixed the conversion calculations of the Flight Vector Waypoints to Location Waypoints.
+- Updated tests.
+- Started adding the matching Android methods (work in progress).
+- Enhanced examples.
+- Cleanup.
+
 ## 1.0.0-dev.12
 - Added the ability to download media.
 - Currently supported only on iOS, and only downloads the latest media file.
