@@ -1,5 +1,5 @@
 // Run this test using:
-// flutter test test/dji_test_convert_waypoint_mission_vectors_to_locations.dart
+// flutter test test/dji_test.dart
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:dji/flight.dart';
