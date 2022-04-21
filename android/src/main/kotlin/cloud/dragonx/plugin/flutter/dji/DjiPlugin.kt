@@ -1,82 +1,54 @@
 package cloud.dragonx.plugin.flutter.dji
 
+//import dji.midware.util.ContextUtil.getContext
+
 import android.Manifest
-import android.R.attr
 import android.app.Activity
-import android.app.PendingIntent.getActivity
 import android.content.Context
-import android.app.Application
-import android.content.res.AssetManager
-import android.util.AttributeSet
+import android.os.Environment
 import android.util.Log
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
 import androidx.annotation.NonNull
-import androidx.appcompat.app.AppCompatActivity
+import androidx.multidex.MultiDex
 import com.secneo.sdk.Helper
-
-import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.plugin.common.MethodCall
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import io.flutter.plugin.common.MethodChannel.Result
-
+import dji.common.battery.BatteryState
+import dji.common.camera.SettingsDefinitions
+import dji.common.error.DJICameraError
 import dji.common.error.DJIError
+import dji.common.error.DJISDKError
 import dji.common.flightcontroller.LocationCoordinate3D
-import dji.common.gimbal.Attitude
-import dji.common.gimbal.Rotation
-import dji.common.mission.hotpoint.HotpointHeading
-import dji.common.mission.hotpoint.HotpointMission
-import dji.common.mission.hotpoint.HotpointStartPoint
+import dji.common.mission.waypoint.*
 import dji.common.model.LocationCoordinate2D
 import dji.common.util.CommonCallbacks
+import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
+import dji.sdk.base.BaseProduct.ComponentKey
 import dji.sdk.flightcontroller.FlightController
+import dji.sdk.media.DownloadListener
+import dji.sdk.media.MediaFile
+import dji.sdk.media.MediaManager.FileListState
 import dji.sdk.mission.MissionControl
-import dji.sdk.mission.Triggerable
 import dji.sdk.mission.timeline.TimelineElement
-import dji.sdk.mission.timeline.TimelineEvent
 import dji.sdk.mission.timeline.TimelineMission
-import dji.sdk.mission.timeline.triggers.AircraftLandedTrigger
-import dji.sdk.mission.timeline.triggers.BatteryPowerLevelTrigger
-import dji.sdk.mission.timeline.triggers.Trigger
-import dji.sdk.mission.timeline.triggers.TriggerEvent
-import dji.sdk.mission.timeline.triggers.WaypointReachedTrigger
+import dji.sdk.mission.timeline.actions.LandAction
+import dji.sdk.mission.timeline.actions.RecordVideoAction
+import dji.sdk.mission.timeline.actions.ShootPhotoAction
+import dji.sdk.mission.timeline.actions.TakeOffAction
 import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
-
-import dji.sdk.base.BaseComponent
-
 import dji.sdk.sdkmanager.DJISDKManager
-
-import dji.common.error.DJISDKError
-
-import dji.log.DJILog
-//import dji.midware.util.ContextUtil.getContext
-import dji.sdk.base.BaseProduct.ComponentKey
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
-import dji.thirdparty.afinal.core.AsyncTask
-import io.flutter.app.FlutterApplication
+import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.coroutines.coroutineContext
-
-import androidx.multidex.MultiDex
-import dji.common.battery.BatteryState
-import dji.common.mission.waypoint.*
-import dji.midware.data.model.P3.DataCameraInfoNotify
-import dji.sdk.mission.timeline.actions.*
-import dji.waypointv2.common.waypointv1.TurnMode
+import io.flutter.plugin.common.MethodChannel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.lang.Exception
-import java.util.*
-import android.os.Environment
-
 import java.io.File
-import dji.sdk.camera.PlaybackManager
-import dji.sdk.camera.PlaybackManager.FileDownloadCallback
+import java.nio.ByteBuffer
 
 
 /** DjiPlugin */
@@ -96,10 +68,9 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   var fltDjiFlutterApi: Messages.DjiFlutterApi? = null
   val fltDrone = Messages.Drone()
 
-  var drone: Aircraft? = null
-  var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
-
-  var flight: Flight? = null
+  private var drone: Aircraft? = null
+  private var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
+  private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
@@ -131,8 +102,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   override fun onDetachedFromActivityForConfigChanges() {}
   override fun onDetachedFromActivity() {}
 
-  /* ## */
-
   private fun _fltSetStatus(status: String) {
     fltDrone.status = status
 
@@ -142,6 +111,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       }
     })
   }
+
+  /** Basic Methods **/
 
   override fun getPlatformVersion(): Messages.Version {
     val result = Messages.Version()
@@ -173,7 +144,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       Manifest.permission.READ_PHONE_STATE
     )
     private const val REQUEST_PERMISSION_CODE = 12345
-//    private val isRegistrationInProgress: AtomicBoolean = AtomicBoolean(false)
+    //private val isRegistrationInProgress: AtomicBoolean = AtomicBoolean(false)
   }
 
   override fun registerApp() {
@@ -357,6 +328,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     }
   }
 
+  /** Timeline Methods **/
+
 //  override fun timeline() {
 //    Log.d(TAG, "Timeline Started")
 //    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
@@ -420,18 +393,16 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
 
-    if (flightJson != null) {
-      try {
-        val json = Json {
-          ignoreUnknownKeys = true
-        }
-        val f: Flight = json.decodeFromString<Flight>(flightJson)
-        Log.d(TAG, "Start Flight JSON parsed successfully: $f")
-
-        startFlightTimeline(f)
-      } catch (e: Error) {
-        Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
+    try {
+      val json = Json {
+        ignoreUnknownKeys = true
       }
+      val f: Flight = json.decodeFromString<Flight>(flightJson)
+      Log.d(TAG, "Start Flight JSON parsed successfully: $f")
+
+      startFlightTimeline(f)
+    } catch (e: Error) {
+      Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
     }
   }
 
@@ -446,6 +417,22 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if (_droneFlightController == null) {
       Log.d(TAG, "startFlightTimeline - No Flight Controller")
       return
+    }
+
+    if (MissionControl.getInstance().isTimelineRunning == true) {
+      Log.d(TAG, "startFlightTimeline - Timeline already running - attempting to stop it")
+      return
+    }
+
+    // Set Home Location Coordinates
+    if (droneCurrentLocation != null) {
+      val droneHomeLocation =
+        LocationCoordinate2D(droneCurrentLocation!!.latitude, droneCurrentLocation!!.longitude)
+      _droneFlightController.setHomeLocation(droneHomeLocation, null)
+      Log.d(
+        TAG,
+        "startFlightTimeline - Drone Home Location Coordinates: " + droneHomeLocation.latitude + ", " + droneHomeLocation.longitude
+      )
     }
 
     val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
@@ -491,16 +478,11 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
     val _missionControl = MissionControl.getInstance()
     if (_missionControl != null) {
-        // Cleaning any previous scheduled elements
-        if (_missionControl.scheduledCount() > 0) {
-          _missionControl.unscheduleEverything()
-          _missionControl.removeAllListeners()
-        }
+        // Making sure the MissionControl Timeline is clean
+        _missionControl.unscheduleEverything()
 
-        // Adding the scheduled elements
-        _missionControl.scheduleElements(scheduledElements)
-
-        // Adding a listener to monitor the timeline and output errors
+        // Listening for DJI Mission Control errors
+        _missionControl.removeAllListeners()
         _missionControl.addListener(MissionControl.Listener {
             element, event, error ->
               if (element != null) {
@@ -514,6 +496,9 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
               }
         })
 
+        // Adding the scheduled elements
+        _missionControl.scheduleElements(scheduledElements)
+
         // Starting the Timeline Mission
         _missionControl.startTimeline()
     } else {
@@ -522,7 +507,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     }
   }
 
-  /** DJI Timeline Methods */
+  /** Waypoint Methods */
+
   private fun waypointMission(flightElementWaypointMission: FlightElement): WaypointMission? {
 
     var _maxFlightSpeed: Float = 15.toFloat()
@@ -613,60 +599,205 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     return missionBuilder.build()
   }
 
+  /** Media Methods **/
+
   override fun getMediaList(): MutableList<Messages.Media> {
-    TODO("Not yet implemented")
+    var _fltMediaList: MutableList<Messages.Media> = ArrayList<Messages.Media>()
+
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
+        if (error != null) {
+          Log.d(TAG, "Get media list - set camera mode failed with error" + error.description)
+          _fltSetStatus("Download Failed")
+        } else {
+          Log.d(TAG, "Get media list started")
+
+          val _droneMediaManager = _droneCamera.mediaManager
+          if (_droneMediaManager != null) {
+            // Fetching the Media List from the Drone's SD Card
+            if (_droneMediaManager.sdCardFileListState == FileListState.SYNCING || _droneMediaManager.sdCardFileListState == FileListState.DELETING) {
+              Log.d(TAG, "Get media list failed - Media Manager is busy")
+              _fltSetStatus("Media List Failed")
+            } else {
+              _droneMediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD) { error ->
+                if (error != null) {
+                  Log.d(TAG, "Get media list failed: " + error.description)
+                  _fltSetStatus("Media List Failed")
+                } else {
+                  val sdCardMediaFileList = _droneMediaManager.sdCardFileListSnapshot
+                  if (sdCardMediaFileList != null && !sdCardMediaFileList.isEmpty()) {
+                    Log.d(TAG, "Get media list successful")
+                    _fltSetStatus("Got Media List")
+
+                    mediaFileList = sdCardMediaFileList
+
+                    for (mediaFile in sdCardMediaFileList) {
+                      val fltMediaListElement = Messages.Media()
+                      fltMediaListElement.fileName = mediaFile.fileName
+                      fltMediaListElement.fileIndex = mediaFile.index.toLong()
+
+                      _fltMediaList.add(fltMediaListElement)
+                      Log.d(TAG, "Get media list - added file " + mediaFile.fileName)
+                    }
+                  } else {
+                    Log.d(TAG, "Get media list failed - list is empty")
+                    _fltSetStatus("Media List Failed")
+                  }
+                }
+              }
+            }
+          } else {
+            Log.d(TAG, "Get media list failed - no Media Manager")
+            _fltSetStatus("Media List Failed")
+          }
+        }
+      }
+    } else {
+      Log.d(TAG, "Get media list failed - no Camera object")
+      _fltSetStatus("Media List Failed")
+    }
+
+    return _fltMediaList
   }
 
   override fun downloadMedia(fileIndex: Long?): String {
-    TODO("Not yet implemented")
+    var _mediaURLString: String = ""
+    val _index: Int = fileIndex?.toInt() ?: -1
 
-//    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
-//
-//    if (_dronePlayBackManager != null) {
-//      _dronePlayBackManager.selectAllFiles()
-//      _dronePlayBackManager.downloadSelectedFiles(File(Environment.DIRECTORY_DOWNLOADS), object: FileDownloadCallback {
-//        override fun onStart() {
-//          Log.d(TAG, "Download all media started")
-//          _fltSetStatus("Download Started")
-//        }
-//
-//        override fun onEnd() {
-//          Log.d(TAG, "Download all media completed successfully")
-//          _fltSetStatus("Downloaded")
-//        }
-//
-//        override fun onError(e: Exception) {
-//          Log.d(TAG, "Download all media failed")
-//          _fltSetStatus("Download Failed")
-//        }
-//
-//        override fun onProgressUpdate(progress: Int) {
-//        }
-//      })
-//
-//    } else {
-//      Log.d(TAG,"Download all media failed - no Playback Manager")
-//      _fltSetStatus("Download Failed")
-//    }
+    if (_index < 0) {
+      Log.d(TAG, "Download media failed - invalid index")
+      _fltSetStatus("Download Failed")
+
+      return ""
+    }
+
+    if (mediaFileList.isEmpty()) {
+      Log.d(TAG, "Download media failed - list is empty")
+      _fltSetStatus("Download Failed")
+
+      return ""
+    }
+
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
+        if (error != null) {
+          Log.d(TAG, "Download media - set camera mode failed with error" + error.description)
+          _fltSetStatus("Download Failed")
+        } else if (mediaFileList[_index] != null) {
+          Log.d(TAG, "Download media started")
+
+          val selectedMedia = mediaFileList[_index]
+          val isPhoto =
+            selectedMedia.mediaType == MediaFile.MediaType.JPEG || selectedMedia.mediaType == MediaFile.MediaType.TIFF
+          var previousOffset: UInt = 0u
+          var fileData: ByteBuffer?
+          var currentProgress = -1
+
+          val destDownloadDir = File(djiPluginContext.getExternalFilesDir(null)?.path.toString() + "/dji_media/")
+          val dir = File(Environment.getExternalPublicDirectory(Environment.DIRECTORY_PICTURES))
+
+          selectedMedia.fetchFileData(destDownloadDir, null, object: DownloadListener<String> {
+            override fun onFailure(error: DJIError) {
+              Log.d(TAG, "Download media failed - Fetch File Data: " + error.description)
+              _fltSetStatus("Download Failed")
+              currentProgress = -1
+            }
+
+            override fun onProgress(total: Long, current: Long) {}
+            override fun onRateUpdate(total: Long, current: Long, persize: Long) {
+              val progress = (current * 1F / total * 100).toInt()
+              if (progress != currentProgress) {
+                _fltSetStatus(progress.toString() + "%")
+                currentProgress = progress
+              }
+            }
+
+            override fun onStart() {
+              currentProgress = -1
+
+              Log.d(TAG, "Download media started")
+              _fltSetStatus("Download Started")
+            }
+
+            override fun onSuccess(filePath: String) {
+              currentProgress = -1
+
+              Log.d(TAG, "Download media completed: $filePath")
+              _fltSetStatus("Downloaded")
+            }
+
+            override fun onRealtimeDataUpdate(p0: ByteArray?, p1: Long, p2: Boolean) {
+            }
+          })
+        } else {
+          Log.d(TAG, "Download media - file not found")
+          _fltSetStatus("Download Failed")
+        }
+      }
+    }
+
+    return _mediaURLString
   }
 
   override fun deleteMedia(fileIndex: Long?): Boolean {
-    TODO("Not yet implemented")
+    var _success: Boolean = false
+    val _index: Int = fileIndex?.toInt() ?: -1
 
-//    val _dronePlayBackManager = DJISDKManager.getInstance().product?.camera?.playbackManager
-//
-//    if (_dronePlayBackManager != null) {
-//      _fltSetStatus("Delete Started")
-//
-//      _dronePlayBackManager.selectAllFiles()
-//      _dronePlayBackManager.deleteAllSelectedFiles()
-//
-//      Log.d(TAG,"Delete all media completed")
-//      _fltSetStatus("Deleted")
-//    } else {
-//      Log.d(TAG,"Delete all media failed - no Playback Manager")
-//      _fltSetStatus("Delete Failed")
-//    }
+    if (_index < 0) {
+      Log.d(TAG, "Delete media failed - invalid index")
+      _fltSetStatus("Delete Failed")
+
+      return false
+    }
+
+    if (mediaFileList.isEmpty()) {
+      Log.d(TAG, "Download media failed - list is empty")
+      _fltSetStatus("Delete Failed")
+
+      return false
+    }
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
+        if (error != null) {
+          Log.d(TAG, "Delete media - set camera mode failed with error: " + error.description)
+          _fltSetStatus("Delete Failed")
+        } else if (mediaFileList[_index] != null) {
+          Log.d(TAG, "Delete media started")
+
+          val selectedMedia = mediaFileList[_index]
+          val filesToDelete = ArrayList<MediaFile>()
+          filesToDelete.add(selectedMedia)
+
+          val _droneMediaManager = _droneCamera.mediaManager
+          if (_droneMediaManager != null) {
+            _droneMediaManager.deleteFiles(
+              filesToDelete,
+              object :
+                CommonCallbacks.CompletionCallbackWithTwoParam<List<MediaFile?>?, DJICameraError?> {
+                override fun onSuccess(x: List<MediaFile?>?, y: DJICameraError?) {
+                  Log.d(TAG, "Delete media completed")
+                  _fltSetStatus("Deleted")
+                  _success = true
+                }
+
+                override fun onFailure(error: DJIError) {
+                  Log.d(TAG, "Delete media failed: " + error.description)
+                  _fltSetStatus("Delete Failed")
+                  _success = false
+                }
+              })
+          }
+        } else {
+          Log.d(TAG, "Delete media - file not found")
+          _fltSetStatus("Delete Failed")
+        }
+      }
+    }
+
+    return _success
   }
 
 }

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0-dev.14
+- Completed support for downloading and deleting media files on Android.
+
 ## 1.0.0-dev.13
 - Finalized ability to download and delete specific media files (iOS only for now).
 - Including saving the downloaded media to the device gallery (this will be changed in the future to be done via the Example Flutter app and not natively).
