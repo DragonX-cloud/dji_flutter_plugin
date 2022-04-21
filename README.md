@@ -22,8 +22,11 @@ It currently supports the following features:
 	- Take a picture
 	- Start/Stop video
 	- Waypoints Mission
+- Get Media Files List
+- Download Media File by Index
+- Delete Media File by Index
 
-Streaming or downloading the video/images is not yet supported, but in progress.
+Streaming is not yet supported, but in progress.
 
 ## SETUP
 Before you start using the DJI Flutter plugin, you must first perform some initial setup and configurations as required by DJI SDK.
