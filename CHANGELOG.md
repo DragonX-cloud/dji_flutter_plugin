@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0-dev.15
+- Fixed save path bug on Android.
+
 ## 1.0.0-dev.14
 - Completed support for downloading and deleting media files on Android.
 
