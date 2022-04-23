@@ -365,7 +365,7 @@ class Dji {
     await _api?.start(jsonEncode(flightJson));
   }
 
-  /// Get the media files list from the Drone (SD Card).
+  /// Get the media files list from the Drone (SD card).
   ///
   /// Returns a list of Media files.
   /// The index of each file is used to download or delete the file.
@@ -374,7 +374,7 @@ class Dji {
     return mediaList;
   }
 
-  /// Downloads a specific media file from the Drone (by Index).
+  /// Downloads a specific media file from the Drone's SD card (by Index).
   ///
   /// The [fileIndex] is used to locate the relevant file from the Media List and download it.
   /// The [getMediaList()] must be triggered before using [downloadMedia()].
@@ -383,7 +383,7 @@ class Dji {
     return fileUrl;
   }
 
-  /// Deletes a specific media file from the Drone (by Index).
+  /// Deletes a specific media file from the Drone's SD card (by Index).
   ///
   /// The [fileIndex] is used to locate the relevant file from the Media List and delete it.
   /// The [getMediaList()] must be triggered before using [deleteMedia()].

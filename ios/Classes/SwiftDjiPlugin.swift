@@ -722,7 +722,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		if error != nil {
 			print("=== DjiPlugin iOS: Error: Register app failed! Please enter your app key and check the network.")
 		} else {
-			print("=== DjiPlugin iOS: Register App Successed!")
+			print("=== DjiPlugin iOS: Register App successful")
 			_fltSetStatus("Registered")
 		}
 	}

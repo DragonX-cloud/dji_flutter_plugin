@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-dev.16
+- Updated readme with the latest new methods examples.
+- droneHomeLocation usage cleanup.
+
 ## 1.0.0-dev.15
 - Fixed save path bug on Android.
 

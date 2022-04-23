@@ -31,8 +31,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
-  FlightLocation? droneHomeLocation;
-
   @override
   void initState() {
     super.initState();
@@ -56,17 +54,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
       _dronePitch = drone.pitch?.toStringAsFixed(3) ?? '0.0';
       _droneYaw = drone.yaw?.toStringAsFixed(3) ?? '0.0';
     });
-
-    // Setting the inital drone location as the home location of the drone.
-    if (droneHomeLocation == null &&
-        drone.latitude != null &&
-        drone.longitude != null &&
-        drone.altitude != null) {
-      droneHomeLocation = FlightLocation(
-          latitude: drone.latitude!,
-          longitude: drone.longitude!,
-          altitude: drone.altitude!);
-    }
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -247,22 +234,22 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
   Future<void> _start() async {
     try {
-      // droneHomeLocation = FlightLocation(
+      // final droneHomeLocation = FlightLocation(
       //     latitude: 32.2181125, longitude: 34.8674920, altitude: 0);
-      // droneHomeLocation =
+      // final droneHomeLocation =
       //     FlightLocation(latitude: 32.26215, longitude: 34.88217, altitude: 0);
 
       // In this example, we set the point-of-interest as a few meters away from the Drone's home location.
       // So before we start the Flight Timeline - we set the drone home location here, based on its current state.
-      droneHomeLocation = FlightLocation(
-        latitude: double.parse(_droneLatitude),
-        longitude: double.parse(_droneLongitude),
-        altitude: double.parse(_droneAltitude),
+      final droneHomeLocation = FlightLocation(
+        latitude: double.tryParse(_droneLatitude) ?? 0,
+        longitude: double.tryParse(_droneLongitude) ?? 0,
+        altitude: double.tryParse(_droneAltitude) ?? 0,
       );
 
-      if (droneHomeLocation == null) {
+      if (droneHomeLocation.latitude != 0 && droneHomeLocation.longitude != 0) {
         developer.log(
-            'No drone home location exist - unable to start the flight',
+            'Invalid drone\'s home location - unable to start the flight',
             name: kLogKindDjiFlutterPlugin);
         return;
       }
@@ -280,17 +267,16 @@ class _ExampleWidgetState extends State<ExampleWidget>
             // For example purposes, we set our Point of Interest a few meters to the north (in relation to the Drone's Home Location).
             // Note: Setting the precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
             'pointOfInterest': {
-              'latitude':
-                  ((droneHomeLocation!.latitude + (20 * 0.00000899322)) *
-                              100000000)
-                          .round() /
-                      100000000,
+              'latitude': ((droneHomeLocation.latitude + (20 * 0.00000899322)) *
+                          100000000)
+                      .round() /
+                  100000000,
               'longitude':
-                  ((droneHomeLocation!.longitude + (0 * 0.00000899322)) *
+                  ((droneHomeLocation.longitude + (0 * 0.00000899322)) *
                               100000000)
                           .round() /
                       100000000,
-              'altitude': droneHomeLocation!.altitude,
+              'altitude': droneHomeLocation.altitude,
             },
             'maxFlightSpeed':
                 15.0, // Max Flight Speed is 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
@@ -317,8 +303,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
               // Therefore, we add this initial waypoint, just to get the Drone to a specific height, and when it reaches the second waypoint - the cornerRadiusInMeters is treated properly by the DJI SDK.
               {
                 'location': {
-                  'latitude': droneHomeLocation!.latitude,
-                  'longitude': droneHomeLocation!.longitude,
+                  'latitude': droneHomeLocation.latitude,
+                  'longitude': droneHomeLocation.longitude,
                   'altitude': 20,
                 },
                 'cornerRadiusInMeters': 5,
@@ -362,8 +348,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
               },
               {
                 'location': {
-                  'latitude': droneHomeLocation!.latitude,
-                  'longitude': droneHomeLocation!.longitude,
+                  'latitude': droneHomeLocation.latitude,
+                  'longitude': droneHomeLocation.longitude,
                   'altitude': 10,
                 },
                 'cornerRadiusInMeters': 5,
@@ -389,7 +375,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
           CoordinatesConvertion
               .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
                   flightElementWaypointMission: element,
-                  droneHomeLocation: droneHomeLocation!);
+                  droneHomeLocation: droneHomeLocation);
         }
       }
 

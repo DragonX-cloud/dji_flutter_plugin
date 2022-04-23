@@ -70,8 +70,11 @@ It currently supports the following features:</p>
 <li>Waypoints Mission</li>
 </ul>
 </li>
+<li>Get Media Files List</li>
+<li>Download Media File by Index</li>
+<li>Delete Media File by Index</li>
 </ul>
-<p>Streaming or downloading the video/images is not yet supported, but in progress.</p>
+<p>Streaming is not yet supported, but in progress.</p>
 <h2 id="setup">SETUP</h2>
 <p>Before you start using the DJI Flutter plugin, you must first perform some initial setup and configurations as required by DJI SDK.</p>
 <h3 id="getting-dji-developer-credentials">Getting DJI Developer Credentials</h3>
@@ -665,6 +668,114 @@ If you want the first waypoint to be 30 degrees to your right, at a distance of 
 <li>The waypoint-mission maxFlightSpeed can get a maximum value of 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.</li>
 <li>If you don't specify the <code>gimbalPitch</code>, the Flutter DJI Plugin will automatically calculate the Gimbal (Camera) angle to point to the Point of Interest.</li>
 </ul>
+<h4 id="djigetmedialist">Dji.getMediaList</h4>
+<p>Get the media files list from the Drone (SD card).
+The <code>Dji.getMediaList</code> Returns a list of Media files. 
+The index of each file is used to download or delete the file.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;List&lt;Media?&gt;?&gt; _getMediaList() async {
+  List&lt;Media?&gt;? mediaList;
+
+  try {
+    developer.log(
+      'Get Media List requested',
+      name: kLogKindDjiFlutterPlugin,
+    );
+
+    mediaList = await Dji.getMediaList();
+
+    developer.log(
+      'Media List: $mediaList',
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } on PlatformException catch (e) {
+    developer.log(
+      'Get Media List PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Get Media List Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+
+  return mediaList;
+}
+</code></pre>
+<h4 id="djidownloadmedia">Dji.downloadMedia</h4>
+<p>Downloads a specific media file from the Drone's SD card (by Index).
+The <code>fileIndex</code> is used to locate the relevant file from the Media List and download it.
+The <code>getMediaList()</code> must be triggered before using <code>downloadMedia()</code>.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _download() async {
+  try {
+    developer.log(
+      'Download requested',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    // Downloading media file number "0" (a.k.a index: 0)
+    final fileUrl = await Dji.downloadMedia(0);
+    developer.log(
+      'Download successful: $fileUrl',
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } on PlatformException catch (e) {
+    developer.log(
+      'Download PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Download Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+}
+</code></pre>
+<h4 id="djideletemedia">Dji.deleteMedia</h4>
+<p>Deletes a specific media file from the Drone's SD card (by Index).
+The <code>fileIndex</code> is used to locate the relevant file from the Media List and delete it.
+The <code>getMediaList()</code> must be triggered before using <code>downloadMedia()</code>.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _delete() async {
+  try {
+    developer.log(
+      'Delete requested',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    // Deleting media file number "0" (a.k.a index: 0)
+    final deleted = await Dji.deleteMedia(0);
+    if (deleted == true) {
+      developer.log(
+        'Deleted successfully',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } else {
+      developer.log(
+        'Delete failed',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+  } on PlatformException catch (e) {
+    developer.log(
+      'Delete PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Delete Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+}
+</code></pre>
 <h2 id="tech-notes">TECH NOTES</h2>
 <h3 id="plugin-creation-notes">Plugin Creation Notes</h3>
 <p>This project was created by the Flutter plugin template using:</p>
@@ -817,7 +928,7 @@ dart pub publish
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.14
+      1.0.0-dev.16
   </span>
 
   

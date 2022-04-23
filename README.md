@@ -655,6 +655,122 @@ Future<void> _start() async {
 - The waypoint-mission maxFlightSpeed can get a maximum value of 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
 - If you don't specify the `gimbalPitch`, the Flutter DJI Plugin will automatically calculate the Gimbal (Camera) angle to point to the Point of Interest.
 
+#### Dji.getMediaList
+Get the media files list from the Drone (SD card).
+The `Dji.getMediaList` Returns a list of Media files. 
+The index of each file is used to download or delete the file.
+
+Example:
+```
+Future<List<Media?>?> _getMediaList() async {
+  List<Media?>? mediaList;
+
+  try {
+    developer.log(
+      'Get Media List requested',
+      name: kLogKindDjiFlutterPlugin,
+    );
+
+    mediaList = await Dji.getMediaList();
+
+    developer.log(
+      'Media List: $mediaList',
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } on PlatformException catch (e) {
+    developer.log(
+      'Get Media List PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Get Media List Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+
+  return mediaList;
+}
+```
+
+#### Dji.downloadMedia
+Downloads a specific media file from the Drone's SD card (by Index).
+The `fileIndex` is used to locate the relevant file from the Media List and download it.
+The `getMediaList()` must be triggered before using `downloadMedia()`.
+
+Example:
+```
+Future<void> _download() async {
+  try {
+    developer.log(
+      'Download requested',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    // Downloading media file number "0" (a.k.a index: 0)
+    final fileUrl = await Dji.downloadMedia(0);
+    developer.log(
+      'Download successful: $fileUrl',
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } on PlatformException catch (e) {
+    developer.log(
+      'Download PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Download Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+}
+```
+
+#### Dji.deleteMedia
+Deletes a specific media file from the Drone's SD card (by Index).
+The `fileIndex` is used to locate the relevant file from the Media List and delete it.
+The `getMediaList()` must be triggered before using `downloadMedia()`.
+
+Example:
+```
+Future<void> _delete() async {
+  try {
+    developer.log(
+      'Delete requested',
+      name: kLogKindDjiFlutterPlugin,
+    );
+    // Deleting media file number "0" (a.k.a index: 0)
+    final deleted = await Dji.deleteMedia(0);
+    if (deleted == true) {
+      developer.log(
+        'Deleted successfully',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } else {
+      developer.log(
+        'Delete failed',
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+  } on PlatformException catch (e) {
+    developer.log(
+      'Delete PlatformException Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  } catch (e) {
+    developer.log(
+      'Delete Error',
+      error: e,
+      name: kLogKindDjiFlutterPlugin,
+    );
+  }
+}
+```
 
 ## TECH NOTES
 

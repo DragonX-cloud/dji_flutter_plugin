@@ -1,6 +1,6 @@
 name: dji
 description: A Flutter plugin for DJI Mobile SDK - easily integrate your Flutter App with the DJI SDK for Drones on iOS and Android.
-version: 1.0.0-dev.15
+version: 1.0.0-dev.16
 repository: https://github.com/DragonX-cloud/dji_flutter_plugin
 issue_tracker: https://github.com/DragonX-cloud/dji_flutter_plugin/issues
 homepage: https://dragonx.cloud/
