@@ -696,7 +696,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           var currentProgress = -1
 
           val destDownloadDir = File(djiPluginContext.getExternalFilesDir(null)?.path.toString() + "/dji_media/")
-          
+
           selectedMedia.fetchFileData(destDownloadDir, null, object: DownloadListener<String> {
             override fun onFailure(error: DJIError) {
               Log.d(TAG, "Download media failed - Fetch File Data: " + error.description)

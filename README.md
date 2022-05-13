@@ -889,3 +889,37 @@ dart format .
 dart pub publish --dry-run
 dart pub publish
 ```
+
+### Video Streaming & Decoding Tips
+When using the `DJISDKManager.videoFeeder()?.primaryVideoFeed.add()` and listening to the incoming stream using `videoFeed()`, the DJI SDK generates a Byte Stream of h264 raw data.
+
+If you save the video-data to a file, we can play it using FFPLAY like so:
+```
+ffplay -flags2 showall -f h264 -i ./video_feed.h264
+```
+
+We can convert it to .mp4 using FFMPEG like so:
+```
+ffmpeg -flags2 showall -f h264 -i ./video_feed.h264 ./video_feed.mp4
+```
+
+To use FFMPEG in Flutter - use this package: 
+https://pub.dev/packages/ffmpeg_kit_flutter 
+
+Flutter & MUX: 
+https://blog.codemagic.io/build-video-streaming-with-flutter-and-mux/ 
+
+Playing Byte Stream in Flutter:
+https://github.com/flutter/flutter/issues/59387 
+https://stackoverflow.com/questions/65821003/flutter-web-playing-uint8list-n-videoplayer/65834130 
+
+Userful references in regards to DJI SDK Video decoding:
+https://github.com/dji-sdk/Mobile-SDK-iOS/issues/383 
+https://github.com/dji-sdk/Mobile-SDK-iOS/blob/798b8f2579cb08c643c18cd16b36cdfd3b0962f7/Sample%20Code/SwiftSampleCode/DJISDKSwiftDemo/Camera/VideoPreviewerAdapter.swift 
+https://github.com/michael94ellis/iTello/blob/39bbceecb535395b8de9be3503db351d29f67a3e/iTello/VideoToolBox/VideoStreamManager.swift
+https://www.raywenderlich.com/20518849-an-in-depth-dive-into-streaming-data-across-platform-channels-on-flutter
+https://stackoverflow.com/questions/56170451/what-is-the-difference-between-methodchannel-eventchannel-basicmessagechannel/56171205#56171205
+https://pub.dev/packages/chunked_stream
+
+https://stackoverflow.com/questions/71613821/display-live-video-from-bytes-coming-from-websocket-in-flutter
+	

@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:pigeon/pigeon.dart';
 
 class Version {
@@ -26,6 +27,10 @@ class Media {
   int? fileIndex;
 }
 
+class Stream {
+  Uint8List? data;
+}
+
 @HostApi()
 abstract class DjiHostApi {
   Version getPlatformVersion();
@@ -45,4 +50,5 @@ abstract class DjiHostApi {
 @FlutterApi()
 abstract class DjiFlutterApi {
   void setStatus(Drone drone);
+  void sendVideo(Stream stream);
 }
