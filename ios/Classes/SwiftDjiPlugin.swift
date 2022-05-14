@@ -732,9 +732,11 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Video Feed Methods
 	
-	public func videoFeedStart() {
+	public func videoFeedStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> String? {
 		videoFeedFileData = nil
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
+		
+		return videoFeedUrl.absoluteString
 		
 //		DJIVideoPreviewer.instance().registFrameProcessor(self)
 //		DJIVideoPreviewer.instance().registStreamProcessor(self)
@@ -746,7 +748,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 //		DJIVideoPreviewer.instance().start()
 	}
 	
-	public func videoFeedStop() -> String {
+	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> NSNumber? {
 //		let tmpVideoFeedFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent("video_feed.h264")
 //
 //		guard let videoFeedUrl = URL(string: tmpVideoFeedFilePath) else {
@@ -762,13 +764,13 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		} catch {
 			print("=== DjiPlugin iOS: Failed to save video feed data to file: \(error)")
 			_fltSetStatus("Video Save Failed")
-			return ""
+			return 0
 		}
 		
 		print("=== DjiPlugin iOS: Video feed save completed: \(videoFeedUrl.absoluteString)")
 		_fltSetStatus("Video Saved")
 		
-		return videoFeedUrl.absoluteString
+		return 1
 	}
 	
 	// MARK: - Video Feed Delegate Methods
@@ -940,10 +942,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		if let _ = product {
 			print("=== DjiPlugin iOS: Product Connected successfuly")
 			_fltSetStatus("Connected")
-			
-			// Setup the Video Feed
-			videoFeedStart()
-			
 		} else {
 			print("=== DjiPlugin iOS: Error Connecting Product - DJIBaseProduct does not exist")
 		}

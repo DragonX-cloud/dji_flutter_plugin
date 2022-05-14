@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
@@ -34,6 +35,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _droneYaw = '0.0';
 
   late VideoPlayerController _videoController;
+  String? _videoFeedUrl;
 
   @override
   void initState() {
@@ -510,6 +512,60 @@ class _ExampleWidgetState extends State<ExampleWidget>
     }
   }
 
+  Future<void> _videoFeedStart() async {
+    try {
+      developer.log(
+        'Video Feed Start requested',
+        name: kLogKindDjiFlutterPlugin,
+      );
+      // Start the video feed
+      final videoFeedUrl = await Dji.videoFeedStart();
+      // final videoFeedUrl = 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
+      if (videoFeedUrl != null) {
+        setState(() {
+          _videoFeedUrl = videoFeedUrl;
+        });
+      }
+    } on PlatformException catch (e) {
+      developer.log(
+        'Video Feed Start PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } catch (e) {
+      developer.log(
+        'Video Feed Start Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+  }
+
+  Future<void> _videoFeedStop() async {
+    try {
+      developer.log(
+        'Video Feed Stop requested',
+        name: kLogKindDjiFlutterPlugin,
+      );
+      // Start the video feed
+      final success = await Dji.videoFeedStop();
+      // TBD...
+
+    } on PlatformException catch (e) {
+      developer.log(
+        'Video Feed Stop PlatformException Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    } catch (e) {
+      developer.log(
+        'Video Feed Stop Error',
+        error: e,
+        name: kLogKindDjiFlutterPlugin,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -524,9 +580,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              child: const VideoFeedPlayer(
-                url:
-                    'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+              child: VideoFeedPlayer(
+                url: _videoFeedUrl,
               ),
             ),
             Expanded(
@@ -615,12 +670,26 @@ class _ExampleWidgetState extends State<ExampleWidget>
                               },
                             ),
                             ElevatedButton(
-                              key: const Key('disconnectDroneButton'),
-                              child: const Text('Disconnect'),
+                              key: const Key('startVideoFeed'),
+                              child: const Text('Start Video Feed'),
                               onPressed: () async {
-                                await _disconnectDrone();
+                                await _videoFeedStart();
                               },
                             ),
+                            ElevatedButton(
+                              key: const Key('stopVideoFeed'),
+                              child: const Text('Stop Video Feed'),
+                              onPressed: () async {
+                                await _videoFeedStop();
+                              },
+                            ),
+                            // ElevatedButton(
+                            //   key: const Key('disconnectDroneButton'),
+                            //   child: const Text('Disconnect'),
+                            //   onPressed: () async {
+                            //     await _disconnectDrone();
+                            //   },
+                            // ),
                           ],
                         ),
                       ),
@@ -691,10 +760,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
 class VideoFeedPlayer extends StatefulWidget {
   const VideoFeedPlayer({
     Key? key,
-    required this.url,
+    this.url,
   }) : super(key: key);
 
-  final String url;
+  final String? url;
 
   @override
   State<VideoFeedPlayer> createState() => _VideoFeedPlayerState();
@@ -706,16 +775,33 @@ class _VideoFeedPlayerState extends State<VideoFeedPlayer> {
   @override
   void initState() {
     super.initState();
+  }
 
-    _videoController = VideoPlayerController.network(
-      widget.url,
-    );
-    _videoController.addListener(() {
-      setState(() {});
-    });
-    // _videoController.setLooping(true);
-    _videoController.initialize().then((_) => setState(() {}));
-    _videoController.play();
+  @override
+  void didUpdateWidget(covariant VideoFeedPlayer oldWidget) {
+    if (widget.url != null) {
+      try {
+        final videoFeedFile = File(widget.url!);
+
+        _videoController = VideoPlayerController.file(
+          videoFeedFile,
+        );
+        _videoController.addListener(() {
+          setState(() {});
+        });
+        // _videoController.setLooping(true);
+        _videoController.initialize().then((_) => setState(() {}));
+        _videoController.play();
+      } catch (e) {
+        developer.log(
+          'VideoFeedPlayer Error',
+          error: e,
+          name: kLogKindDjiFlutterPlugin,
+        );
+      }
+    }
+
+    super.didUpdateWidget(oldWidget);
   }
 
   @override
@@ -727,7 +813,11 @@ class _VideoFeedPlayerState extends State<VideoFeedPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    return VideoPlayer(_videoController);
+    if (widget.url != null) {
+      return VideoPlayer(_videoController);
+    } else {
+      return Container();
+    }
   }
 }
 

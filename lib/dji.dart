@@ -391,4 +391,18 @@ class Dji {
     final success = await _api?.deleteMedia(fileIndex);
     return success;
   }
+
+  /// Starts the DJI Video Feeder.
+  ///
+  static Future<String?> videoFeedStart() async {
+    final videoFeedUrl = await _api?.videoFeedStart();
+    return videoFeedUrl;
+  }
+
+  /// Stops the DJI Video Feeder.
+  ///
+  static Future<bool?> videoFeedStop() async {
+    final success = await _api?.videoFeedStop();
+    return success;
+  }
 }

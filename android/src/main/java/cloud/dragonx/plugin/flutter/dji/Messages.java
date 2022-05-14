@@ -390,6 +390,8 @@ public class Messages {
     @NonNull List<Media> getMediaList();
     @NonNull String downloadMedia(Long fileIndex);
     @NonNull Boolean deleteMedia(Long fileIndex);
+    @NonNull String videoFeedStart();
+    @NonNull Boolean videoFeedStop();
 
     /** The codec used by DjiHostApi. */
     static MessageCodec<Object> getCodec() {
@@ -630,6 +632,44 @@ public class Messages {
                 throw new NullPointerException("fileIndexArg unexpectedly null.");
               }
               Boolean output = api.deleteMedia(fileIndexArg.longValue());
+              wrapped.put("result", output);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.videoFeedStart", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              String output = api.videoFeedStart();
+              wrapped.put("result", output);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.videoFeedStop", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              Boolean output = api.videoFeedStop();
               wrapped.put("result", output);
             }
             catch (Error | RuntimeException exception) {

@@ -448,6 +448,42 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
       [channel setMessageHandler:nil];
     }
   }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.videoFeedStart"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(videoFeedStartWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(videoFeedStartWithError:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        NSString *output = [api videoFeedStartWithError:&error];
+        callback(wrapResult(output, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [FlutterBasicMessageChannel
+        messageChannelWithName:@"dev.flutter.pigeon.DjiHostApi.videoFeedStop"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(videoFeedStopWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(videoFeedStopWithError:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        FlutterError *error;
+        NSNumber *output = [api videoFeedStopWithError:&error];
+        callback(wrapResult(output, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
 }
 @interface FLTDjiFlutterApiCodecReader : FlutterStandardReader
 @end
