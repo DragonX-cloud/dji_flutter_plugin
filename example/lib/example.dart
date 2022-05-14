@@ -11,6 +11,8 @@ import 'package:dji/dji.dart';
 
 import 'constants.dart';
 
+import 'package:video_player/video_player.dart';
+
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
 
@@ -30,6 +32,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _droneRoll = '0.0';
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
+
+  late VideoPlayerController _videoController;
 
   @override
   void initState() {
@@ -54,6 +58,15 @@ class _ExampleWidgetState extends State<ExampleWidget>
       _dronePitch = drone.pitch?.toStringAsFixed(3) ?? '0.0';
       _droneYaw = drone.yaw?.toStringAsFixed(3) ?? '0.0';
     });
+  }
+
+  // This function is triggered by the Native Host side whenever a video byte-stream data is sent
+  @override
+  void sendVideo(Stream stream) {
+    developer.log(
+      'Video stream data received: ${stream.data.toString()}',
+      name: kLogKindDjiFlutterPlugin,
+    );
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -509,9 +522,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
-              padding: const EdgeInsets.all(kSpacer),
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
+              child: const VideoFeedPlayer(
+                url:
+                    'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+              ),
             ),
             Expanded(
               child: Row(
@@ -669,6 +685,49 @@ class _ExampleWidgetState extends State<ExampleWidget>
         ),
       ),
     );
+  }
+}
+
+class VideoFeedPlayer extends StatefulWidget {
+  const VideoFeedPlayer({
+    Key? key,
+    required this.url,
+  }) : super(key: key);
+
+  final String url;
+
+  @override
+  State<VideoFeedPlayer> createState() => _VideoFeedPlayerState();
+}
+
+class _VideoFeedPlayerState extends State<VideoFeedPlayer> {
+  late VideoPlayerController _videoController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _videoController = VideoPlayerController.network(
+      widget.url,
+    );
+    _videoController.addListener(() {
+      setState(() {});
+    });
+    // _videoController.setLooping(true);
+    _videoController.initialize().then((_) => setState(() {}));
+    _videoController.play();
+  }
+
+  @override
+  void dispose() {
+    _videoController.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return VideoPlayer(_videoController);
   }
 }
 

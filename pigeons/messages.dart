@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:pigeon/pigeon.dart';
 
 class Version {
@@ -45,6 +44,8 @@ abstract class DjiHostApi {
   List<Media> getMediaList();
   String downloadMedia(int fileIndex);
   bool deleteMedia(int fileIndex);
+  void videoFeedStart();
+  void videoFeedStop();
 }
 
 @FlutterApi()

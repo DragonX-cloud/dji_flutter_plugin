@@ -920,6 +920,7 @@ https://github.com/michael94ellis/iTello/blob/39bbceecb535395b8de9be3503db351d29
 https://www.raywenderlich.com/20518849-an-in-depth-dive-into-streaming-data-across-platform-channels-on-flutter
 https://stackoverflow.com/questions/56170451/what-is-the-difference-between-methodchannel-eventchannel-basicmessagechannel/56171205#56171205
 https://pub.dev/packages/chunked_stream
+https://github.com/flutter/flutter/issues/71357
 
 https://stackoverflow.com/questions/71613821/display-live-video-from-bytes-coming-from-websocket-in-flutter
 	

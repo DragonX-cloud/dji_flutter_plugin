@@ -8,10 +8,13 @@ PODS:
   - DJI-UXSDK-iOS (4.14)
   - DJIWidget (1.6.6)
   - Flutter (1.0.0)
+  - video_player_avfoundation (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
   - dji (from `.symlinks/plugins/dji/ios`)
   - Flutter (from `Flutter`)
+  - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/ios`)
 
 SPEC REPOS:
   trunk:
@@ -24,6 +27,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/dji/ios"
   Flutter:
     :path: Flutter
+  video_player_avfoundation:
+    :path: ".symlinks/plugins/video_player_avfoundation/ios"
 
 SPEC CHECKSUMS:
   dji: 1de15169bf7faaa9704bf51d58e53ac25302f94d
@@ -31,6 +36,7 @@ SPEC CHECKSUMS:
   DJI-UXSDK-iOS: 13bcf4ed89db6ea19fd125b1392613153f0c96b9
   DJIWidget: c5bb70aeb7deb9b0a99e5e63539ac249db4fab67
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  video_player_avfoundation: e489aac24ef5cf7af82702979ed16f2a5ef84cff
 
 PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
 

@@ -303,6 +303,39 @@ public class Messages {
       return pigeonResult;
     }
   }
+
+  /** Generated class from Pigeon that represents data sent in messages. */
+  public static class Stream {
+    private @Nullable byte[] data;
+    public @Nullable byte[] getData() { return data; }
+    public void setData(@Nullable byte[] setterArg) {
+      this.data = setterArg;
+    }
+
+    public static class Builder {
+      private @Nullable byte[] data;
+      public @NonNull Builder setData(@Nullable byte[] setterArg) {
+        this.data = setterArg;
+        return this;
+      }
+      public @NonNull Stream build() {
+        Stream pigeonReturn = new Stream();
+        pigeonReturn.setData(data);
+        return pigeonReturn;
+      }
+    }
+    @NonNull Map<String, Object> toMap() {
+      Map<String, Object> toMapResult = new HashMap<>();
+      toMapResult.put("data", data);
+      return toMapResult;
+    }
+    static @NonNull Stream fromMap(@NonNull Map<String, Object> map) {
+      Stream pigeonResult = new Stream();
+      Object data = map.get("data");
+      pigeonResult.setData((byte[])data);
+      return pigeonResult;
+    }
+  }
   private static class DjiHostApiCodec extends StandardMessageCodec {
     public static final DjiHostApiCodec INSTANCE = new DjiHostApiCodec();
     private DjiHostApiCodec() {}
@@ -619,6 +652,9 @@ public class Messages {
         case (byte)128:         
           return Drone.fromMap((Map<String, Object>) readValue(buffer));
         
+        case (byte)129:         
+          return Stream.fromMap((Map<String, Object>) readValue(buffer));
+        
         default:        
           return super.readValueOfType(type, buffer);
         
@@ -629,6 +665,10 @@ public class Messages {
       if (value instanceof Drone) {
         stream.write(128);
         writeValue(stream, ((Drone) value).toMap());
+      } else 
+      if (value instanceof Stream) {
+        stream.write(129);
+        writeValue(stream, ((Stream) value).toMap());
       } else 
 {
         super.writeValue(stream, value);
@@ -653,6 +693,13 @@ public class Messages {
       BasicMessageChannel<Object> channel =
           new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiFlutterApi.setStatus", getCodec());
       channel.send(new ArrayList<Object>(Arrays.asList(droneArg)), channelReply -> {
+        callback.reply(null);
+      });
+    }
+    public void sendVideo(Stream streamArg, Reply<Void> callback) {
+      BasicMessageChannel<Object> channel =
+          new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiFlutterApi.sendVideo", getCodec());
+      channel.send(new ArrayList<Object>(Arrays.asList(streamArg)), channelReply -> {
         callback.reply(null);
       });
     }

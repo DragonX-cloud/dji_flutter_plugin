@@ -43,6 +43,10 @@ static id GetNullableObject(NSDictionary* dict, id key) {
 + (FLTMedia *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
 @end
+@interface FLTStream ()
++ (FLTStream *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
 
 @implementation FLTVersion
 + (instancetype)makeWithString:(nullable NSString *)string {
@@ -135,6 +139,22 @@ static id GetNullableObject(NSDictionary* dict, id key) {
 }
 - (NSDictionary *)toMap {
   return [NSDictionary dictionaryWithObjectsAndKeys:(self.fileName ? self.fileName : [NSNull null]), @"fileName", (self.fileUrl ? self.fileUrl : [NSNull null]), @"fileUrl", (self.fileIndex ? self.fileIndex : [NSNull null]), @"fileIndex", nil];
+}
+@end
+
+@implementation FLTStream
++ (instancetype)makeWithData:(nullable FlutterStandardTypedData *)data {
+  FLTStream* pigeonResult = [[FLTStream alloc] init];
+  pigeonResult.data = data;
+  return pigeonResult;
+}
++ (FLTStream *)fromMap:(NSDictionary *)dict {
+  FLTStream *pigeonResult = [[FLTStream alloc] init];
+  pigeonResult.data = GetNullableObject(dict, @"data");
+  return pigeonResult;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.data ? self.data : [NSNull null]), @"data", nil];
 }
 @end
 
@@ -438,6 +458,9 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
     case 128:     
       return [FLTDrone fromMap:[self readValue]];
     
+    case 129:     
+      return [FLTStream fromMap:[self readValue]];
+    
     default:    
       return [super readValueOfType:type];
     
@@ -452,6 +475,10 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
 {
   if ([value isKindOfClass:[FLTDrone class]]) {
     [self writeByte:128];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[FLTStream class]]) {
+    [self writeByte:129];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -502,6 +529,16 @@ NSObject<FlutterMessageCodec> *FLTDjiFlutterApiGetCodec() {
       binaryMessenger:self.binaryMessenger
       codec:FLTDjiFlutterApiGetCodec()];
   [channel sendMessage:@[arg_drone] reply:^(id reply) {
+    completion(nil);
+  }];
+}
+- (void)sendVideoStream:(FLTStream *)arg_stream completion:(void(^)(NSError *_Nullable))completion {
+  FlutterBasicMessageChannel *channel =
+    [FlutterBasicMessageChannel
+      messageChannelWithName:@"dev.flutter.pigeon.DjiFlutterApi.sendVideo"
+      binaryMessenger:self.binaryMessenger
+      codec:FLTDjiFlutterApiGetCodec()];
+  [channel sendMessage:@[arg_stream] reply:^(id reply) {
     completion(nil);
   }];
 }

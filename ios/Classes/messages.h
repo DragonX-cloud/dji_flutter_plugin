@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FLTBattery;
 @class FLTDrone;
 @class FLTMedia;
+@class FLTStream;
 
 @interface FLTVersion : NSObject
 + (instancetype)makeWithString:(nullable NSString *)string;
@@ -53,6 +54,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong, nullable) NSNumber * fileIndex;
 @end
 
+@interface FLTStream : NSObject
++ (instancetype)makeWithData:(nullable FlutterStandardTypedData *)data;
+@property(nonatomic, strong, nullable) FlutterStandardTypedData * data;
+@end
+
 /// The codec used by FLTDjiHostApi.
 NSObject<FlutterMessageCodec> *FLTDjiHostApiGetCodec(void);
 
@@ -91,5 +97,6 @@ NSObject<FlutterMessageCodec> *FLTDjiFlutterApiGetCodec(void);
 @interface FLTDjiFlutterApi : NSObject
 - (instancetype)initWithBinaryMessenger:(id<FlutterBinaryMessenger>)binaryMessenger;
 - (void)setStatusDrone:(FLTDrone *)drone completion:(void(^)(NSError *_Nullable))completion;
+- (void)sendVideoStream:(FLTStream *)stream completion:(void(^)(NSError *_Nullable))completion;
 @end
 NS_ASSUME_NONNULL_END

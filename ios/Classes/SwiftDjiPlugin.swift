@@ -4,7 +4,8 @@ import DJIWidget
 import Flutter
 import UIKit
 
-public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener, VideoFrameProcessor, VideoStreamProcessor {
+//public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener, VideoFrameProcessor, VideoStreamProcessor {
+public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener {
 	static var fltDjiFlutterApi: FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
 	let fltStream = FLTStream()
@@ -12,6 +13,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	var drone: DJIAircraft?
 	var droneCurrentLocation: CLLocation?
 	var mediaFileList = [DJIMediaFile?]()
+	
+	let videoFeedUrl = URL(fileURLWithPath: (NSTemporaryDirectory() as NSString).appendingPathComponent("video_feed.h264"))
 	var videoFeedFileData: Data?
 
 	public static func register(with registrar: FlutterPluginRegistrar) {
@@ -21,19 +24,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		fltDjiFlutterApi = FLTDjiFlutterApi(binaryMessenger: messenger)
 	}
 
-	private func _fltSendVideo(_ data: Data) {
-		fltStream.data = data
-
-		SwiftDjiPlugin.fltDjiFlutterApi?.sendVideo(fltStream) { e in
-			if let error = e {
-				print("=== DjiPlugin iOS: Error: sendVideo Closure Error")
-				NSLog("error: \(error.localizedDescription)")
-			} else {
-				print("=== DjiPlugin iOS: sendVideo Closure Success: \(status)")
-			}
-		}
-	}
-	
 	private func _fltSetStatus(_ status: String) {
 		fltDrone.status = status
 
@@ -43,6 +33,19 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				NSLog("error: \(error.localizedDescription)")
 			} else {
 				print("=== DjiPlugin iOS: setStatus Closure Success: \(status)")
+			}
+		}
+	}
+	
+	private func _fltSendVideo(_ data: Data) {
+		fltStream.data = FlutterStandardTypedData(bytes: data)
+		
+		SwiftDjiPlugin.fltDjiFlutterApi?.sendVideoStream(fltStream) { e in
+			if let error = e {
+				print("=== DjiPlugin iOS: Error: sendVideo Closure Error")
+				NSLog("error: \(error.localizedDescription)")
+			} else {
+				print("=== DjiPlugin iOS: sendVideo Closure Success")
 			}
 		}
 	}
@@ -558,119 +561,117 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	public func downloadMediaFileIndex(_ fileIndex: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> String? {
-		return videoFeedSave()
-		
-//		var _mediaURLString: String = ""
-//		let _index: Int = fileIndex.intValue
-//
-//		guard _index >= 0 else {
-//			print("=== DjiPlugin iOS: Download media failed - invalid index")
-//			_fltSetStatus("Download Failed")
-//
-//			return ""
-//		}
-//
-//		guard !mediaFileList.isEmpty else {
-//			print("=== DjiPlugin iOS: Download media failed - list is empty")
-//			_fltSetStatus("Download Failed")
-//
-//			return ""
-//		}
-//
-//		if let _droneCamera = drone?.camera {
-//			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
-//				if (error != nil) {
-//					print("=== DjiPlugin iOS: Download media - set camera mode failed with error - \(String(describing: error?.localizedDescription))")
-//					self._fltSetStatus("Download Failed")
-//				} else {
-//					print("=== DjiPlugin iOS: Download media started")
-//					self._fltSetStatus("Download Started")
-//
-//					if let selectedMedia = self.mediaFileList[_index] {
-//						let isPhoto = selectedMedia.mediaType == DJIMediaType.JPEG || selectedMedia.mediaType == DJIMediaType.TIFF
-//						var previousOffset = UInt(0)
-//						var fileData: Data?
-//
-//						selectedMedia.fetchData(withOffset: previousOffset, update: DispatchQueue.main, update: {[weak self] (data:Data?, isComplete: Bool, e: Error?) in
-//							if let error = e {
-//								print("=== DjiPlugin iOS: Download media failed - Fetch File Data: \(error.localizedDescription)")
-//								self?._fltSetStatus("Download Failed")
-//							} else {
-//								if let data = data {
-//									if fileData == nil {
-//										fileData = data
-//									} else {
-//										fileData?.append(data)
-//									}
-//
-//									if (isPhoto == false) {
-//										previousOffset = previousOffset + UInt(data.count)
-//									}
-//								}
-//
-//								let selectedFileSizeBytes = selectedMedia.fileSizeInBytes
-//								let progress = Float(previousOffset) * 100.0 / Float(selectedFileSizeBytes)
-//
-//								self?._fltSetStatus(String(format: "%0.1f%%", progress))
-//
-//								if (isComplete == true) {
-//
-//									let tmpDir = NSTemporaryDirectory() as NSString
-//									let tmpMediaFilePath = tmpDir.appendingPathComponent(isPhoto ? "image.jpg" : "video.mp4")
-//									let url = URL(fileURLWithPath: tmpMediaFilePath)
-//
-//									do {
-//										try fileData?.write(to: url)
-//									} catch {
-//										print("=== DjiPlugin iOS: Failed to write data to file: \(error)")
-//										self?._fltSetStatus("Download Failed")
-//									}
-//
-//									guard let mediaURL = URL(string: tmpMediaFilePath) else {
-//										print("=== DjiPlugin iOS: Failed to load a filepath to save to")
-//										self?._fltSetStatus("Download Failed")
-//										return
-//									}
-//
-//									print("=== DjiPlugin iOS: Download media completed: \(mediaURL.absoluteString)")
-//									self?._fltSetStatus("Downloaded")
-//
-//									_mediaURLString = mediaURL.absoluteString
-//
-//									// Saving the media to the Photo Gallery
-//									PHPhotoLibrary.shared().performChanges {
-//										if (isPhoto) {
-//											PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: mediaURL)
-//										} else {
-//											PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: mediaURL)
-//										}
-//									} completionHandler: { (success:Bool, e: Error?) in
-//										if (success == true) {
-//											print("=== DjiPlugin iOS: Successfully saved media to gallery")
-//
-//											print("=== DjiPlugin iOS: Download media completed")
-//											self?._fltSetStatus("Downloaded")
-//
-//										} else if let error = e {
-//											print("=== DjiPlugin iOS: Failed to save media to gallery - \(error.localizedDescription)")
-//											self?._fltSetStatus("Download Failed")
-//										}
-//									}
-//								}
-//							}
-//						})
-//					} else {
-//						print("=== DjiPlugin iOS: Download media - file not found")
-//						self._fltSetStatus("Download Failed")
-//					}
-//				}
-//			})
-//		} else {
-//			print("=== DjiPlugin iOS: Download all media failed - no Camera object")
-//			_fltSetStatus("Download Failed")
-//		}
-//
-//		return _mediaURLString
+		var _mediaURLString: String = ""
+		let _index: Int = fileIndex.intValue
+
+		guard _index >= 0 else {
+			print("=== DjiPlugin iOS: Download media failed - invalid index")
+			_fltSetStatus("Download Failed")
+
+			return ""
+		}
+
+		guard !mediaFileList.isEmpty else {
+			print("=== DjiPlugin iOS: Download media failed - list is empty")
+			_fltSetStatus("Download Failed")
+
+			return ""
+		}
+
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Download media - set camera mode failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Download Failed")
+				} else {
+					print("=== DjiPlugin iOS: Download media started")
+					self._fltSetStatus("Download Started")
+
+					if let selectedMedia = self.mediaFileList[_index] {
+						let isPhoto = selectedMedia.mediaType == DJIMediaType.JPEG || selectedMedia.mediaType == DJIMediaType.TIFF
+						var previousOffset = UInt(0)
+						var fileData: Data?
+
+						selectedMedia.fetchData(withOffset: previousOffset, update: DispatchQueue.main, update: {[weak self] (data:Data?, isComplete: Bool, e: Error?) in
+							if let error = e {
+								print("=== DjiPlugin iOS: Download media failed - Fetch File Data: \(error.localizedDescription)")
+								self?._fltSetStatus("Download Failed")
+							} else {
+								if let data = data {
+									if fileData == nil {
+										fileData = data
+									} else {
+										fileData?.append(data)
+									}
+
+									if (isPhoto == false) {
+										previousOffset = previousOffset + UInt(data.count)
+									}
+								}
+
+								let selectedFileSizeBytes = selectedMedia.fileSizeInBytes
+								let progress = Float(previousOffset) * 100.0 / Float(selectedFileSizeBytes)
+
+								self?._fltSetStatus(String(format: "%0.1f%%", progress))
+
+								if (isComplete == true) {
+
+									let tmpDir = NSTemporaryDirectory() as NSString
+									let tmpMediaFilePath = tmpDir.appendingPathComponent(isPhoto ? "image.jpg" : "video.mp4")
+									let url = URL(fileURLWithPath: tmpMediaFilePath)
+
+									do {
+										try fileData?.write(to: url)
+									} catch {
+										print("=== DjiPlugin iOS: Failed to write data to file: \(error)")
+										self?._fltSetStatus("Download Failed")
+									}
+
+									guard let mediaURL = URL(string: tmpMediaFilePath) else {
+										print("=== DjiPlugin iOS: Failed to load a filepath to save to")
+										self?._fltSetStatus("Download Failed")
+										return
+									}
+
+									print("=== DjiPlugin iOS: Download media completed: \(mediaURL.absoluteString)")
+									self?._fltSetStatus("Downloaded")
+
+									_mediaURLString = mediaURL.absoluteString
+
+									// Saving the media to the Photo Gallery
+									PHPhotoLibrary.shared().performChanges {
+										if (isPhoto) {
+											PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: mediaURL)
+										} else {
+											PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: mediaURL)
+										}
+									} completionHandler: { (success:Bool, e: Error?) in
+										if (success == true) {
+											print("=== DjiPlugin iOS: Successfully saved media to gallery")
+
+											print("=== DjiPlugin iOS: Download media completed")
+											self?._fltSetStatus("Downloaded")
+
+										} else if let error = e {
+											print("=== DjiPlugin iOS: Failed to save media to gallery - \(error.localizedDescription)")
+											self?._fltSetStatus("Download Failed")
+										}
+									}
+								}
+							}
+						})
+					} else {
+						print("=== DjiPlugin iOS: Download media - file not found")
+						self._fltSetStatus("Download Failed")
+					}
+				}
+			})
+		} else {
+			print("=== DjiPlugin iOS: Download all media failed - no Camera object")
+			_fltSetStatus("Download Failed")
+		}
+
+		return _mediaURLString
 	}
 	
 	public func deleteMediaFileIndex(_ fileIndex: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> NSNumber? {
@@ -745,20 +746,19 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 //		DJIVideoPreviewer.instance().start()
 	}
 	
-	public func videoFeedSave() -> String {
-		let tmpVideoFeedFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent("video_feed.h264")
-		
-		guard let videoFeedUrl = URL(string: tmpVideoFeedFilePath) else {
-			print("=== DjiPlugin iOS: Video feed save failed to load a filepath to save to")
-			_fltSetStatus("Video Save Failed")
-			return ""
-		}
+	public func videoFeedStop() -> String {
+//		let tmpVideoFeedFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent("video_feed.h264")
+//
+//		guard let videoFeedUrl = URL(string: tmpVideoFeedFilePath) else {
+//			print("=== DjiPlugin iOS: Video feed save failed to load a filepath to save to")
+//			_fltSetStatus("Video Save Failed")
+//			return ""
+//		}
 		
 		do {
 			DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
-			
-			let url = URL(fileURLWithPath: tmpVideoFeedFilePath)
-			try videoFeedFileData?.write(to: url, options: .atomic)
+//			let url = URL(fileURLWithPath: tmpVideoFeedFilePath)
+			try videoFeedFileData?.write(to: videoFeedUrl, options: .atomic)
 		} catch {
 			print("=== DjiPlugin iOS: Failed to save video feed data to file: \(error)")
 			_fltSetStatus("Video Save Failed")
@@ -778,8 +778,17 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			videoFeedFileData = videoData
 		} else {
 			videoFeedFileData?.append(videoData)
-			// Sending the data (byte-stream) to Flutter as Uint8List
 		}
+		
+		// Writing to the file in realtime
+		do {
+			try videoFeedFileData?.write(to: videoFeedUrl, options: .atomic)
+		} catch {
+			print("=== DjiPlugin iOS: Video feed failed to save to in realtime: \(error)")
+		}
+		
+		// Sending the data (byte-stream) to Flutter as Uint8List
+		_fltSendVideo(videoData)
 		
 //		let videoNSData = videoData as NSData
 //		let videoBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: videoNSData.length)
@@ -933,7 +942,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			_fltSetStatus("Connected")
 			
 			// Setup the Video Feed
-			videoFeedSetup()
+			videoFeedStart()
 			
 		} else {
 			print("=== DjiPlugin iOS: Error Connecting Product - DJIBaseProduct does not exist")
