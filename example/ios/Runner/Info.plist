@@ -33,9 +33,12 @@
 	</dict>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Connection with the DJI Drone requires Bluetooth connection.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Used to search for chromecast devices</string>
 	<key>NSBonjourServices</key>
 	<array>
 		<string>_dartobservatory._tcp</string>
+		<string>_googlecast._tcp</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

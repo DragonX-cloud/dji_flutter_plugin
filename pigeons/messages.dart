@@ -45,7 +45,7 @@ abstract class DjiHostApi {
   String downloadMedia(int fileIndex);
   bool deleteMedia(int fileIndex);
   String videoFeedStart();
-  bool videoFeedStop();
+  String videoFeedStop();
 }
 
 @FlutterApi()

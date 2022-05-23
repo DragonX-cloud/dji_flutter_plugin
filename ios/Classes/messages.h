@@ -90,7 +90,7 @@ NSObject<FlutterMessageCodec> *FLTDjiHostApiGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSString *)videoFeedStartWithError:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
-- (nullable NSNumber *)videoFeedStopWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable NSString *)videoFeedStopWithError:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLTDjiHostApi> *_Nullable api);

@@ -391,7 +391,7 @@ public class Messages {
     @NonNull String downloadMedia(Long fileIndex);
     @NonNull Boolean deleteMedia(Long fileIndex);
     @NonNull String videoFeedStart();
-    @NonNull Boolean videoFeedStop();
+    @NonNull String videoFeedStop();
 
     /** The codec used by DjiHostApi. */
     static MessageCodec<Object> getCodec() {
@@ -669,7 +669,7 @@ public class Messages {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
             try {
-              Boolean output = api.videoFeedStop();
+              String output = api.videoFeedStop();
               wrapped.put("result", output);
             }
             catch (Error | RuntimeException exception) {

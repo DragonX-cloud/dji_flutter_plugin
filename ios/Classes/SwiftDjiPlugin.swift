@@ -13,8 +13,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	var drone: DJIAircraft?
 	var droneCurrentLocation: CLLocation?
 	var mediaFileList = [DJIMediaFile?]()
-	
-	let videoFeedUrl = URL(fileURLWithPath: (NSTemporaryDirectory() as NSString).appendingPathComponent("video_feed.h264"))
+	var videoFeedUrl: URL?
 	var videoFeedFileData: Data?
 
 	public static func register(with registrar: FlutterPluginRegistrar) {
@@ -44,8 +43,6 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			if let error = e {
 				print("=== DjiPlugin iOS: Error: sendVideo Closure Error")
 				NSLog("error: \(error.localizedDescription)")
-			} else {
-				print("=== DjiPlugin iOS: sendVideo Closure Success")
 			}
 		}
 	}
@@ -736,7 +733,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		videoFeedFileData = nil
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
 		
-		return videoFeedUrl.absoluteString
+		let cachesDirectory = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true)
+		videoFeedUrl = URL(fileURLWithPath: (cachesDirectory[0] as NSString).appendingPathComponent("video_feed.h264"))
+		
+		print("=== DjiPlugin iOS: Video feed start - videoFeedUrl: \(videoFeedUrl?.absoluteString ?? "Null")")
+		
+		return videoFeedUrl?.absoluteString
 		
 //		DJIVideoPreviewer.instance().registFrameProcessor(self)
 //		DJIVideoPreviewer.instance().registStreamProcessor(self)
@@ -748,14 +750,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 //		DJIVideoPreviewer.instance().start()
 	}
 	
-	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> NSNumber? {
-//		let tmpVideoFeedFilePath = (NSTemporaryDirectory() as NSString).appendingPathComponent("video_feed.h264")
-//
-//		guard let videoFeedUrl = URL(string: tmpVideoFeedFilePath) else {
-//			print("=== DjiPlugin iOS: Video feed save failed to load a filepath to save to")
-//			_fltSetStatus("Video Save Failed")
-//			return ""
-//		}
+	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> String? {
+		guard let videoFeedUrl = videoFeedUrl else {
+			print("=== DjiPlugin iOS: Video feed stop error - no URL path to save to")
+			_fltSetStatus("Video Save Failed")
+			return ""
+		}
 		
 		do {
 			DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
@@ -764,13 +764,13 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		} catch {
 			print("=== DjiPlugin iOS: Failed to save video feed data to file: \(error)")
 			_fltSetStatus("Video Save Failed")
-			return 0
+			return nil
 		}
 		
 		print("=== DjiPlugin iOS: Video feed save completed: \(videoFeedUrl.absoluteString)")
 		_fltSetStatus("Video Saved")
 		
-		return 1
+		return videoFeedUrl.absoluteString
 	}
 	
 	// MARK: - Video Feed Delegate Methods
@@ -783,11 +783,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 		
 		// Writing to the file in realtime
-		do {
-			try videoFeedFileData?.write(to: videoFeedUrl, options: .atomic)
-		} catch {
-			print("=== DjiPlugin iOS: Video feed failed to save to in realtime: \(error)")
-		}
+//		do {
+//			// try videoFeedFileData?.write(to: videoFeedUrl, options: .atomic)
+//			// try videoFeedFileData?.write(to: videoFeedUrl)
+//		} catch {
+//			print("=== DjiPlugin iOS: Video feed failed to save to in realtime: \(error)")
+//		}
 		
 		// Sending the data (byte-stream) to Flutter as Uint8List
 		_fltSendVideo(videoData)
@@ -873,13 +874,17 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 //	public func videoProcessFrame(_ frame: UnsafeMutablePointer<VideoFrameYUV>!) {
 //		guard let buffer = frame.pointee.cv_pixelbuffer_fastupload else { return }
-//      let cvBuf = unsafeBitCast(buffer, to: CVPixelBuffer.self)
-
+		
+//		let cvBuf = unsafeBitCast(buffer, to: CVPixelBuffer.self)
+		
 //		OpenCVProcessor.init().process(frame, videoShowType: Int32(0))
 
 //		if frame.pointee.cv_pixelbuffer_fastupload != nil {
 //            let fileData = Data([UInt8](arrayLiteral: frame.pointee.chromaB.pointee))
-//
+
+			// Sending the data (byte-stream) to Flutter as Uint8List
+//			_fltSendVideo(fileData)
+
 //			if videoFeedFileData == nil {
 //				videoFeedFileData = fileData
 //			} else {

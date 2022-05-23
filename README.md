@@ -903,8 +903,22 @@ We can convert it to .mp4 using FFMPEG like so:
 ffmpeg -flags2 showall -f h264 -i ./video_feed.h264 ./video_feed.mp4
 ```
 
+To output stream by pipe and play:
+```
+ffmpeg -i ./video_feed.mp4 -f mpegts - | ffplay -
+```
+
 To use FFMPEG in Flutter - use this package: 
-https://pub.dev/packages/ffmpeg_kit_flutter 
+https://pub.dev/packages/ffmpeg_kit_flutter
+
+Tips about FFmpegKit:
+1. Set the Podfile iOS target to 15.0
+2. Look for the AppFrameworkInfo.plist and change the MinimumOSVersion to 15.0:
+```
+<key>MinimumOSVersion</key>
+<string>15.0</string>
+```
+3. Go into your iOS folder and run `pod install`
 
 Flutter & MUX: 
 https://blog.codemagic.io/build-video-streaming-with-flutter-and-mux/ 
@@ -923,4 +937,13 @@ https://pub.dev/packages/chunked_stream
 https://github.com/flutter/flutter/issues/71357
 
 https://stackoverflow.com/questions/71613821/display-live-video-from-bytes-coming-from-websocket-in-flutter
+
+https://stackoverflow.com/questions/56284630/how-to-read-dji-h264-fpv-feed-as-opencv-mat-object
+https://github.com/tanersener/flutter-ffmpeg/issues/126
+https://stackoverflow.com/questions/60988912/loading-video-files-from-device-as-bytedata-flutter
+
+https://superuser.com/questions/1676797/how-to-convince-ffmpeg-that-input-is-raw-h264
+https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format
+How to pipe ffmpeg output to video_player flutter widget: 
+https://github.com/tanersener/flutter-ffmpeg/issues/92
 	

@@ -401,8 +401,8 @@ class Dji {
 
   /// Stops the DJI Video Feeder.
   ///
-  static Future<bool?> videoFeedStop() async {
-    final success = await _api?.videoFeedStop();
-    return success;
+  static Future<String?> videoFeedStop() async {
+    final videoFeedUrl = await _api?.videoFeedStop();
+    return videoFeedUrl;
   }
 }

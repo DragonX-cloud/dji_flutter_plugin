@@ -476,7 +476,7 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
       NSCAssert([api respondsToSelector:@selector(videoFeedStopWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(videoFeedStopWithError:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         FlutterError *error;
-        NSNumber *output = [api videoFeedStopWithError:&error];
+        NSString *output = [api videoFeedStopWithError:&error];
         callback(wrapResult(output, error));
       }];
     }

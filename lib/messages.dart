@@ -518,7 +518,7 @@ class DjiHostApi {
     }
   }
 
-  Future<bool> videoFeedStop() async {
+  Future<String> videoFeedStop() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.DjiHostApi.videoFeedStop', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -541,7 +541,7 @@ class DjiHostApi {
         message: 'Host platform returned null value for non-null return value.',
       );
     } else {
-      return (replyMap['result'] as bool?)!;
+      return (replyMap['result'] as String?)!;
     }
   }
 }
