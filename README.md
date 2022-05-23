@@ -946,4 +946,14 @@ https://superuser.com/questions/1676797/how-to-convince-ffmpeg-that-input-is-raw
 https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format
 How to pipe ffmpeg output to video_player flutter widget: 
 https://github.com/tanersener/flutter-ffmpeg/issues/92
+
+https://github.com/tanersener/flutter-ffmpeg/issues/71
+https://programmer.group/basic-usage-of-ffmpeg.html
+https://github.com/dart-lang/sdk/issues/32191
+https://github.com/tanersener/flutter-ffmpeg/issues/92
+https://github.com/tanersener/ffmpeg-kit/issues/350
+https://pub.dev/packages/fijkplayer
+
+https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/pipe_tab.dart
+https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/video_util.dart
 	

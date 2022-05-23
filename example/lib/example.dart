@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -18,15 +16,8 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
-import 'package:ffmpeg_kit_flutter/log.dart';
-import 'package:ffmpeg_kit_flutter/return_code.dart';
-import 'package:ffmpeg_kit_flutter/session.dart';
-import 'package:ffmpeg_kit_flutter/statistics.dart';
 
-import 'package:video_player/video_player.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
-// import 'package:fijkplayer/fijkplayer.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
@@ -48,13 +39,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
-  String? _videoFeedUrl;
-  File? _videoFeedFile;
-  Uint8List? _imageData;
-
-  VideoPlayerController? _videoController;
   VlcPlayerController? _vlcController;
-  // final FijkPlayer _fijkPlayer = FijkPlayer();
 
   @override
   void initState() {
@@ -89,9 +74,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
       name: kLogKindDjiFlutterPlugin,
     );
 
-    setState(() {
-      _imageData = stream.data;
-    });
+    // TBD...
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -160,27 +143,27 @@ class _ExampleWidgetState extends State<ExampleWidget>
     }
   }
 
-  Future<void> _disconnectDrone() async {
-    try {
-      developer.log(
-        'disconnectDrone requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
-      await Dji.disconnectDrone();
-    } on PlatformException catch (e) {
-      developer.log(
-        'disconnectDrone PlatformException Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
-    } catch (e) {
-      developer.log(
-        'disconnectDrone Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
-    }
-  }
+  // Future<void> _disconnectDrone() async {
+  //   try {
+  //     developer.log(
+  //       'disconnectDrone requested',
+  //       name: kLogKindDjiFlutterPlugin,
+  //     );
+  //     await Dji.disconnectDrone();
+  //   } on PlatformException catch (e) {
+  //     developer.log(
+  //       'disconnectDrone PlatformException Error',
+  //       error: e,
+  //       name: kLogKindDjiFlutterPlugin,
+  //     );
+  //   } catch (e) {
+  //     developer.log(
+  //       'disconnectDrone Error',
+  //       error: e,
+  //       name: kLogKindDjiFlutterPlugin,
+  //     );
+  //   }
+  // }
 
   Future<void> _delegateDrone() async {
     try {
@@ -541,8 +524,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
         'Video Feed Start requested',
         name: kLogKindDjiFlutterPlugin,
       );
+
       // Start the video feed
       // final videoFeedUrl = await Dji.videoFeedStart();
+
       // setState(() {
       //   _videoFeedFile = null;
       //   _videoFeedUrl = 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_1MB.mp4';
@@ -551,22 +536,47 @@ class _ExampleWidgetState extends State<ExampleWidget>
       //   _videoFeedUrl = 'https://download.samplelib.com/mp4/sample-5s.mp4';
       // });
 
-      String inputStream =
-          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
-
       final Directory directory = await getApplicationDocumentsDirectory();
       final String path = directory.parent.path + '/tmp/';
-      // final String inputStream = path + 'video_feed.h264';
-      final String outputStream = path + 'video_feed.mp4';
-
+      final String inputStream = path + 'video_feed.h264';
       final String testStream = path + 'video.mp4';
 
-      await FFmpegKit.execute(
-          // '-y -flags2 showall -f h264 -i $inputStream -f mp4 $outputStream');
-          '-y -probesize 8192 -i $testStream -f mp4 $outputStream');
-      setState(() {
-        _videoFeedUrl = null;
-        _videoFeedFile = File(outputStream);
+      FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
+        FFmpegKitConfig.closeFFmpegPipe(outputPipe!);
+        _vlcController?.dispose();
+
+        developer.log(
+          '_videoController outputPipe: $outputPipe',
+          name: kLogKindDjiFlutterPlugin,
+        );
+
+        FFmpegKit.executeAsync(
+          '-y -loglevel error -nostats -flags2 showall -f h264 -i $inputStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+          // '-y -i $testStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+          (session) {},
+          (log) {
+            // developer.log(
+            //   'FFmpegKit.executeAsync logs: ${log.getMessage()}',
+            //   name: kLogKindDjiFlutterPlugin,
+            // );
+          },
+          (statistics) {
+            // developer.log(
+            //   'FFmpegKit.executeAsync statistics: ${statistics.getTime()}',
+            //   name: kLogKindDjiFlutterPlugin,
+            // );
+          },
+        );
+
+        await Future.delayed(const Duration(seconds: 1));
+
+        setState(() {
+          _vlcController = VlcPlayerController.file(
+            File(outputPipe),
+            hwAcc: HwAcc.full,
+            autoPlay: true,
+          );
+        });
       });
     } on PlatformException catch (e) {
       developer.log(
@@ -590,274 +600,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
         name: kLogKindDjiFlutterPlugin,
       );
       // Stop the video feed
-      // await Dji.videoFeedStop();
+      await Dji.videoFeedStop();
 
-      final Directory directory = await getApplicationDocumentsDirectory();
-      final String path = directory.parent.path + '/tmp/';
-
-      final String inputStream = path + 'video_feed.h264';
-      final String outputStream = path + 'video_feed.mp4';
-      final String testStream = path + 'video.mp4';
-
-      final String beeStream =
-          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
-
-      FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
-        FFmpegKitConfig.closeFFmpegPipe(outputPipe!);
-
-        developer.log(
-          '_videoController outputPipe: $outputPipe',
-          name: kLogKindDjiFlutterPlugin,
-        );
-
-        FFmpegKit.executeAsync(
-          '-loglevel error -nostats -y -i $testStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-          (session) {},
-          (log) {
-            developer.log(
-              'FFmpegKit.executeAsync logs: ${log.getMessage()}',
-              name: kLogKindDjiFlutterPlugin,
-            );
-          },
-          (statistics) {
-            if (statistics.getVideoFrameNumber() == 31) {
-              setState(() {
-                _vlcController = VlcPlayerController.file(
-                  File(outputPipe),
-                  hwAcc: HwAcc.full,
-                  autoPlay: true,
-                );
-              });
-            }
-          },
-        );
-      });
-
-      // _videoController = VideoPlayerController.file(
-      //   File(outputPipe),
-      // )..initialize().then((_) {
-      //     developer.log(
-      //       '_videoController initialized.',
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-
-      //     _videoController!.play();
-      //   }).onError((e, stackTrace) {
-      //     developer.log(
-      //       '_videoController initialization on error.',
-      //       error: e,
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-      //   }).catchError((e) {
-      //     developer.log(
-      //       '_videoController initialization catch error.',
-      //       error: e,
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-      //   });
-
-      // _fijkPlayer.setOption(FijkOption.playerCategory, "packet-buffering", "0");
-      // _fijkPlayer.setDataSource(
-      //   testStream,
-      //   autoPlay: true,
-      // );
-
-      // setState(() {
-      //   // _vlcController = VlcPlayerController.file(
-      //   //   File(testStream),
-      //   //   hwAcc: HwAcc.full,
-      //   //   autoPlay: true,
-      //   // );
-
-      //   // vlcPlayerOptions = VlcPlayerOptions();
-
-      //   _vlcController = VlcPlayerController.network(
-      //     'udp://@0.0.0.0:1337',
-      //     hwAcc: HwAcc.full,
-      //     autoPlay: true,
-      //   );
-      // });
-      //
-      // FFmpegKit.executeAsync(
-      //   '-i $testStream -f mpegts udp://localhost:1337',
-      // );
-
-      // Command Line:
-      // ffmpeg -flags2 showall -f h264 -i ./video_feed.h264 -vf fps=1 ./image_%d.jpg
-
-      // void readPipe(pipeName) async {
-      //   var file = File(pipeName);
-      //   // var stream = file.readAsBytes();
-      //   //
-      //   // developer.log(
-      //   //   stream.toString().length.toString(),
-      //   //   name: kLogKindDjiFlutterPlugin,
-      //   // );
-
-      //   var stream = file.openRead();
-      //   stream.listen((e) {
-      //     print(e.length.toString() + "\n");
-      //   }, onError: (e) {
-      //     print(e);
-      //   });
-      // }
-
-      // https://github.com/tanersener/flutter-ffmpeg/issues/71
-      // https://programmer.group/basic-usage-of-ffmpeg.html
-      // https://github.com/dart-lang/sdk/issues/32191
-      // https://github.com/tanersener/flutter-ffmpeg/issues/92
-      // https://github.com/tanersener/ffmpeg-kit/issues/350
-      // https://pub.dev/packages/fijkplayer
-
-      // https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/pipe_tab.dart
-      // https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/video_util.dart
-
-      // final outputPipe = await FFmpegKitConfig.registerNewFFmpegPipe();
-      // final String flvStream = path + 'video_feed6.ts';
-      // FFmpegKit.execute('-y -flags2 showall -i $inputStream -f flv $flvStream');
-      // FFmpegKit.execute('-y -i $testStream $flvStream');
-      // Future.delayed(
-      //   const Duration(seconds: 2),
-      // );
-      // setState(() {
-      //   _vlcController = VlcPlayerController.file(
-      //     File(flvStream),
-      //     hwAcc: HwAcc.full,
-      //     autoPlay: true,
-      //   );
-      // });
-      // await FFmpegKitConfig.closeFFmpegPipe(outputPipe!);
-
-      // FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
-      //   // compute(readPipe, outputPipe);
-
-      //   // final String tmpStream = path + 'tmp1.mkv';
-      //   FFmpegKit.execute(
-      //       // '-y -flags2 showall -f h264 -i $inputStream -f flv $outputPipe')
-      //       // '-y -i $testStream -f mp4 $outputPipe').then((session) {
-      //       // '-y -flags2 showall -f h264 -i $inputStream -f mp4 $outputPipe')
-      //       // '-y -i $inputStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-      //       '-i $testStream -f avi -y $outputPipe').then((session) async {
-      //     final returnCode = await session.getReturnCode();
-
-      //     developer.log(
-      //       'sendVideo FFMPEG Return Code: $returnCode',
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-
-      //     if (ReturnCode.isSuccess(returnCode)) {
-      //       developer.log(
-      //         'sendVideo FFMPEG Success',
-      //         name: kLogKindDjiFlutterPlugin,
-      //       );
-      //       setState(() {
-      //         _videoFeedUrl = outputPipe;
-      //         _videoFeedFile = null;
-      //         // _vlcController?.setMediaFromFile(
-      //         //   File(outputPipe!),
-      //         //   hwAcc: HwAcc.full,
-      //         //   autoPlay: true,
-      //         // );
-      //       });
-      //     } else if (ReturnCode.isCancel(returnCode)) {
-      //       developer.log(
-      //         'sendVideo FFMPEG Cancel',
-      //         name: kLogKindDjiFlutterPlugin,
-      //       );
-      //     } else {
-      //       developer.log(
-      //         'sendVideo FFMPEG Error',
-      //         name: kLogKindDjiFlutterPlugin,
-      //       );
-      //     }
-      //     // FFmpegKitConfig.closeFFmpegPipe(outputPipe!);
-      //   });
-
-      //   setState(() {
-      //     _videoFeedUrl = outputPipe;
-      //     _videoFeedFile = null;
-
-      //     // _vlcController = VlcPlayerController.file(
-      //     //   File(outputPipe!),
-      //     //   hwAcc: HwAcc.full,
-      //     //   autoPlay: true,
-      //     // );
-      //   });
-
-      //   // FFmpegKitConfig.writeToPipe();
-      //   FFmpegKitConfig.closeFFmpegPipe(outputPipe!);
-      // });
-
-      // await FFmpegKit.execute(
-      //     // '-flags2 showall -f h264 -i $inputStream -vf fps=1 -f apng $videoData')
-      //     '-y -flags2 showall -f h264 -i $inputStream -f mp4 $outputStream');
-
-      // setState(() {
-      //   _videoFeedUrl = null;
-      //   _videoFeedFile = File(outputStream);
-      // });
-
-      // FFmpegKit.execute(
-      //         '-y -flags2 showall -f h264 -i $inputStream -f mp4 $outputStream')
-      //     .then((session) async {
-      //   final returnCode = await session.getReturnCode();
-
-      //   developer.log(
-      //     'sendVideo FFMPEG Return Code: $returnCode',
-      //     name: kLogKindDjiFlutterPlugin,
-      //   );
-
-      //   if (ReturnCode.isSuccess(returnCode)) {
-      //     setState(() {
-      //       // _imageData = imageData as Uint8List;
-      //       _videoFeedUrl = testStream;
-      //     });
-
-      //     developer.log(
-      //       'sendVideo FFMPEG Success',
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-      //   } else if (ReturnCode.isCancel(returnCode)) {
-      //     developer.log(
-      //       'sendVideo FFMPEG Cancel',
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-      //   } else {
-      //     developer.log(
-      //       'sendVideo FFMPEG Error',
-      //       name: kLogKindDjiFlutterPlugin,
-      //     );
-      //   }
-      // });
-
-      //   // const videoFeedUrl =
-      //   //     'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
-      //   // const videoFeedUrl = 'file:///private/var/mobile/Containers/Data/Application/D1C7215E-1492-4457-A830-F513CEA7BD80/tmp/video_feed.h264';
-
-      //   // String nsTemporaryPath = "${directory.parent.path}/tmp/";
-
-      //   // Note: In iOS the path_provider Temporary directory is actually the Application Cache Directory
-      //   // final Directory directory = await getTemporaryDirectory();
-      //   // final String videoFeedUrl = directory.path + 'video_feed.h264';
-
-      //   final Directory directory = await getApplicationDocumentsDirectory();
-      //   final String path = directory.parent.path + '/tmp/';
-      //   final String videoFeedUrl = path + 'video_feed.h264';
-
-      //   developer.log(
-      //     'Video Feed Stop - videoFeedUrl: $videoFeedUrl',
-      //     name: kLogKindDjiFlutterPlugin,
-      //   );
-
-      // setState(() {
-      //   _videoFeedUrl = videoFeedUrl;
-      // });
-      // } on PlatformException catch (e) {
-      //   developer.log(
-      //     'Video Feed Stop PlatformException Error',
-      //     error: e,
-      //     name: kLogKindDjiFlutterPlugin,
-      //   );
+      _vlcController?.stop();
+      _vlcController?.dispose();
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -881,34 +627,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              // decoration: _imageData != null
-              //     ? BoxDecoration(
-              //         image: DecorationImage(
-              //             fit: BoxFit.cover,
-              //             image: MemoryImage(_imageData!, scale: 1.0)),
-              //       )
-              //     : null,
-
-              // child:
-              //     _imageData != null ? Image.memory(_imageData!) : Container(),
-
               child: Stack(children: [
-                VideoFeedPlayer(
-                  url: _videoFeedUrl,
-                  file: _videoFeedFile,
-                ),
                 _vlcController != null
                     ? VlcPlayer(
                         controller: _vlcController!,
                         aspectRatio: 16 / 9,
                       )
                     : Container(),
-                _videoController != null
-                    ? VideoPlayer(_videoController!)
-                    : Container(),
-                // FijkView(
-                //   player: _fijkPlayer,
-                // ),
               ]),
             ),
             Expanded(
@@ -1081,87 +806,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
         ),
       ),
     );
-  }
-}
-
-class VideoFeedPlayer extends StatefulWidget {
-  const VideoFeedPlayer({
-    Key? key,
-    this.url,
-    this.file,
-  }) : super(key: key);
-
-  final String? url;
-  final File? file;
-
-  @override
-  State<VideoFeedPlayer> createState() => _VideoFeedPlayerState();
-}
-
-class _VideoFeedPlayerState extends State<VideoFeedPlayer> {
-  late VideoPlayerController videoController;
-  File? videoFeedFile;
-  bool videoFileExists = false;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void didUpdateWidget(covariant VideoFeedPlayer oldWidget) {
-    videoFileExists = false;
-    if (widget.url != null) {
-      final videoFeedUrl = widget.url!;
-      videoController = VideoPlayerController.network(
-        videoFeedUrl,
-      );
-      videoController.initialize().then((_) => setState(() {}));
-      videoController.play();
-    } else if (widget.file != null) {
-      videoFeedFile = widget.file!;
-      videoFeedFile?.exists().then((exists) {
-        videoFileExists = exists;
-        if (videoFileExists == true) {
-          developer.log(
-            'VideoFeedPlayer file exists.',
-            name: kLogKindDjiFlutterPlugin,
-          );
-          videoController = VideoPlayerController.file(
-            videoFeedFile!,
-          );
-          // videoController.addListener(() {
-          //   setState(() {});
-          // });
-          // videoController.setLooping(true);
-          videoController.initialize().then((_) => setState(() {}));
-          videoController.play();
-        } else {
-          developer.log(
-            'VideoFeedPlayer Error: File does not exist - ${widget.url}',
-            name: kLogKindDjiFlutterPlugin,
-          );
-        }
-      });
-    }
-
-    super.didUpdateWidget(oldWidget);
-  }
-
-  @override
-  void dispose() {
-    videoController.dispose();
-
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (videoFileExists == true) {
-      return VideoPlayer(videoController);
-    } else {
-      return Container();
-    }
   }
 }
 
