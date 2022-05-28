@@ -920,12 +920,22 @@ Tips about FFmpegKit:
 ```
 3. Go into your iOS folder and run `pod install`
 
+
+What is FFMPEG:
+https://medium.com/hamza-solutions/ffmpeg-tool-with-flutter-ac1d68c2fddb
+
 Flutter & MUX: 
 https://blog.codemagic.io/build-video-streaming-with-flutter-and-mux/ 
 
 Playing Byte Stream in Flutter:
 https://github.com/flutter/flutter/issues/59387 
 https://stackoverflow.com/questions/65821003/flutter-web-playing-uint8list-n-videoplayer/65834130 
+
+VLC Player Tutorial: 
+https://morioh.com/p/ddfd5bb6d250
+
+Understanding Bytes in Dart: 
+https://suragch.medium.com/working-with-bytes-in-dart-6ece83455721
 
 Userful references in regards to DJI SDK Video decoding:
 https://github.com/dji-sdk/Mobile-SDK-iOS/issues/383 
@@ -956,4 +966,6 @@ https://pub.dev/packages/fijkplayer
 
 https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/pipe_tab.dart
 https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/video_util.dart
+
+https://stackoverflow.com/questions/64847755/write-continuous-stream-to-file-flutter-dart
 	

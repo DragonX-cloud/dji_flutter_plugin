@@ -26,6 +26,9 @@ dependencies:
   path_provider: ^2.0.10
   ffmpeg_kit_flutter: ^4.5.1
   flutter_vlc_player: ^7.1.4
+  # flutter_playout: ^2.0.1
+  native_video_view: ^1.0.5
+  # dio: ^4.0.6
   
 dev_dependencies:
   flutter_test:

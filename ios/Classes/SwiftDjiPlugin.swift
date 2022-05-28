@@ -736,9 +736,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		let cachesDirectory = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true)
 		videoFeedUrl = URL(fileURLWithPath: (cachesDirectory[0] as NSString).appendingPathComponent("video_feed.h264"))
 		
-		print("=== DjiPlugin iOS: Video feed start - videoFeedUrl: \(videoFeedUrl?.absoluteString ?? "Null")")
+		let videoFeedUrlRelative = videoFeedUrl?.absoluteString.replacingOccurrences(of: "file://", with: "")
+		print("=== DjiPlugin iOS: Video feed start - videoFeedUrlRelative: \(videoFeedUrlRelative ?? "Null")")
 		
-		return videoFeedUrl?.absoluteString
+		return videoFeedUrlRelative
 		
 //		DJIVideoPreviewer.instance().registFrameProcessor(self)
 //		DJIVideoPreviewer.instance().registStreamProcessor(self)
