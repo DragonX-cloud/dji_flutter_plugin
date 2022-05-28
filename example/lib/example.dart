@@ -622,13 +622,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
           //   FFmpegKit.cancel(_ffmpegKitSessionId);
           // }
 
-          FFmpegKit.executeAsync(
+          await FFmpegKit.executeAsync(
             // '-y -loglevel error -nostats -probesize 128 -flags2 showall -f h264 -i $inputStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -probesize 32 -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov -r 25 $outputPipe',
             // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mpegts -r 25 -probesize 32 -fflags nobuffer -flags low_delay $outputPipe',
-            '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov -r 25 -fflags nobuffer $outputPipe',
+            '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             (session) {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -638,10 +638,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
               );
             },
             (log) {
-              // developer.log(
-              //   'FFmpegKit.executeAsync logs: ${log.getMessage()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
+              developer.log(
+                'FFmpegKit.executeAsync logs: ${log.getMessage()}',
+                name: kLogKindDjiFlutterPlugin,
+              );
             },
             (statistics) {
               // developer.log(
@@ -665,7 +665,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
               //   });
               // }
 
-              if (statistics.getTime() > 1000 && _vlcController == null) {
+              if (statistics.getTime() > 1 && _vlcController == null) {
                 setState(() {
                   developer.log(
                     'FFmpegKit.executeAsync - starting VLC Player',
@@ -683,7 +683,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
                           ],
                         ),
                         advanced: VlcAdvancedOptions([
-                          VlcAdvancedOptions.networkCaching(1000),
+                          VlcAdvancedOptions.networkCaching(0),
+                          VlcAdvancedOptions.liveCaching(0),
+                          VlcAdvancedOptions.clockSynchronization(0),
+                        ]),
+                        sout: VlcStreamOutputOptions([
+                          // VlcStreamOutputOptions.soutMuxCaching(0),
                         ]),
                         // extras: [
                         //   '--start-time=6',
