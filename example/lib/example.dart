@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data' show ByteBuffer, ByteData, Uint8List;
+// import 'dart:typed_data' show ByteBuffer, ByteData, Uint8List;
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -18,10 +17,11 @@ import 'package:path_provider/path_provider.dart';
 
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+// import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 // import 'package:flutter_playout/video.dart';
-import 'package:native_video_view/native_video_view.dart';
+// import 'package:native_video_view/native_video_view.dart';
 
 // import 'package:dio/dio.dart';
 
@@ -553,7 +553,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
         // final Directory directory = await getTemporaryDirectory();
         // final String downloadPath = directory.path + '/download_stream.mp4';
         // final File downloadFile = File(downloadPath);
-        final String videoFeedPath = inputPipe; //directory.path + '/tmp.h264';
+        // final String videoFeedPath = directory.path + '/video_feed.h264';
+        final String videoFeedPath = inputPipe;
         _videoFeedFile = File(videoFeedPath);
         // final String outputPipe = directory.path + '/tmp.mp4';
         // final File outputFile = File(outputPipe);
@@ -583,7 +584,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
         _videoFeedSink = _videoFeedFile?.openWrite();
 
         // Start the video feed
-        await Dji.videoFeedStart();
+        // await Dji.videoFeedStart();
+        // FFmpegKitConfig.writeToPipe(videoFeedPath, inputPipe);
 
         // downloadStream.listen((data) {
         //   print(data.length.toString());
@@ -628,7 +630,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
             // '-y -probesize 32 -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov -r 25 $outputPipe',
             // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mpegts -r 25 -probesize 32 -fflags nobuffer -flags low_delay $outputPipe',
-            '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+            '-y -probesize 32 -flags2 showall -f h264 -i $videoFeedPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -movflags frag_keyframe+empty_moov $outputPipe',
             (session) {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -665,7 +667,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
               //   });
               // }
 
-              if (statistics.getTime() > 1 && _vlcController == null) {
+              if (statistics.getTime() > 1) {
                 setState(() {
                   developer.log(
                     'FFmpegKit.executeAsync - starting VLC Player',
@@ -696,14 +698,17 @@ class _ExampleWidgetState extends State<ExampleWidget>
                       ),
                     );
                   } else {
-                    // _vlcController?.setMediaFromFile(
-                    //   File(outputPipe),
-                    // );
+                    _vlcController?.setMediaFromFile(
+                      File(outputPipe),
+                    );
                   }
                 });
               }
             },
           );
+
+          await Future.delayed(const Duration(seconds: 1));
+          await Dji.videoFeedStart();
 
           // FFmpegKit.execute(
           //   // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
