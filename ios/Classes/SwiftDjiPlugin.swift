@@ -17,7 +17,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	var videoFeedUrl: URL?
 	var videoFeedPath: String?
 //	var videoFeedFileHandler: FileHandle?
-//	var videoFeedFileData: Data?
+	var videoFeedFileData: Data?
 
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger: FlutterBinaryMessenger = registrar.messenger()
@@ -733,7 +733,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	// MARK: - Video Feed Methods
 	
 	public func videoFeedStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> String? {
-//		videoFeedFileData = nil
+		videoFeedFileData = nil
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
 		
 		let cachesDirectory = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true)
@@ -761,13 +761,13 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		print("=== DjiPlugin iOS: Video feed start - videoFeedUrlRelative: \(videoFeedUrlRelative ?? "Null")")
 		_fltSetStatus("Video Started")
 		
-		DJIVideoPreviewer.instance().type = .none
-		DJIVideoPreviewer.instance().enableHardwareDecode = true
-		DJIVideoPreviewer.instance().enableFastUpload = true
-		DJIVideoPreviewer.instance().encoderType = ._MavicAir
-		DJIVideoPreviewer.instance().registFrameProcessor(self)
+//		DJIVideoPreviewer.instance().type = .none
+//		DJIVideoPreviewer.instance().enableHardwareDecode = true
+//		DJIVideoPreviewer.instance().enableFastUpload = true
+//		DJIVideoPreviewer.instance().encoderType = ._MavicAir
+//		DJIVideoPreviewer.instance().registFrameProcessor(self)
 //		DJIVideoPreviewer.instance().registStreamProcessor(self)
-		DJIVideoPreviewer.instance().start()
+//		DJIVideoPreviewer.instance().start()
 		
 		return videoFeedUrlRelative
 	}
@@ -782,7 +782,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		do {
 			DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
 //			let url = URL(fileURLWithPath: tmpVideoFeedFilePath)
-//			try videoFeedFileData?.write(to: videoFeedUrl, options: .atomic)
+			try videoFeedFileData?.write(to: videoFeedUrl, options: .atomic)
 
 //			if let fileHandler = videoFeedFileHandler {
 //				fileHandler.closeFile()
@@ -802,14 +802,15 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	// MARK: - Video Feed Delegate Methods
 	
 	public func videoFeed(_ videoFeed: DJIVideoFeed, didUpdateVideoData videoData: Data) {
-//		if videoFeedFileData == nil {
-//			videoFeedFileData = videoData
-//		} else {
-//			videoFeedFileData?.append(videoData)
-//		}
+		if videoFeedFileData == nil {
+			videoFeedFileData = videoData
+		} else {
+			videoFeedFileData?.append(videoData)
+		}
 		
 		// Sending the data (byte-stream) to Flutter as Uint8List
 		_fltSendVideo(videoData)
+		
 //		print("=== DjiPlugin iOS: Video feed Data length: \(videoData.count)")
 		
 		// Writing to the file in realtime
@@ -825,11 +826,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 //		} catch {
 //			print("=== DjiPlugin iOS: Video feed failed to save to in realtime: \(error)")
 //		}
-		
-		let videoNSData = videoData as NSData
-		let videoBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: videoNSData.length)
-		videoNSData.getBytes(videoBuffer, length: videoNSData.length)
-		DJIVideoPreviewer.instance().push(videoBuffer, length: Int32(videoNSData.length))
+	
+		// Push video buffer into the DJI Video Previewer
+//		let videoNSData = videoData as NSData
+//		let videoBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: videoNSData.length)
+//		videoNSData.getBytes(videoBuffer, length: videoNSData.length)
+//		DJIVideoPreviewer.instance().push(videoBuffer, length: Int32(videoNSData.length))
 		
 //		let djiLB2AUDRemoveParser = DJILB2AUDRemoveParser()
 //		djiLB2AUDRemoveParser?.parse(videoBuffer, inSize: Int32(videoNSData.length))
@@ -908,21 +910,21 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	public func videoProcessFrame(_ frame: UnsafeMutablePointer<VideoFrameYUV>!) {
 //		print("Video Data Length: \(frame.pointee)")
-		
+//		
 //		guard let buffer = frame.pointee.cv_pixelbuffer_fastupload else { return }
 //		let videoData = Data([UInt8](arrayLiteral: buffer.load(as: UInt8.self)))
 //		_fltSendVideo(videoData)
-		
+//		
 //		let cvBuf = unsafeBitCast(buffer, to: CVPixelBuffer.self)
 //		OpenCVProcessor.init().process(frame, videoShowType: Int32(0))
-
+//
 //		let Y = Data([UInt8](arrayLiteral: frame.pointee.luma.pointee))
 //		let U = Data([UInt8](arrayLiteral: frame.pointee.chromaB.pointee))
 //		let V = Data([UInt8](arrayLiteral: frame.pointee.chromaR.pointee))
 //		_fltSendVideo(Y)
 //		_fltSendVideo(U)
 //		_fltSendVideo(V)
-
+//
 //		let resolution = CGSize(width: CGFloat(frame.pointee.width), height: CGFloat(frame.pointee.height))
 //
 //        if frame.pointee.cv_pixelbuffer_fastupload != nil {

@@ -19,7 +19,9 @@ import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 // import 'package:ffmpeg_kit_flutter/ffmpeg_session.dart';
 
+// import 'package:video_player/video_player.dart' as VP;
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+// import 'package:dart_vlc/dart_vlc.dart' as VLC;
 // import 'package:flutter_playout/video.dart';
 // import 'package:native_video_view/native_video_view.dart';
 
@@ -46,7 +48,9 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _droneYaw = '0.0';
 
   VlcPlayerController? _vlcController;
+  // VLC.Player? _vlcPlayer;
   // VideoViewController? _nativeVideoViewController;
+  // VP.VideoPlayerController? _vpController;
   int? _ffmpegKitSessionId;
 
   File? _videoFeedFile;
@@ -81,14 +85,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
   @override
   void sendVideo(Stream stream) {
     if (stream.data != null && _videoFeedFile != null) {
-      _videoFeedSink?.add(stream.data!);
+      // final dataLength = stream.data!.lengthInBytes;
+      // developer.log(
+      //   'Send Video - Data Length: $dataLength',
+      //   name: kLogKindDjiFlutterPlugin,
+      // );
 
-      // _videoFeedFile?.length().then((length) {
-      //   developer.log(
-      //     'Send Video - File Length: $length',
-      //     name: kLogKindDjiFlutterPlugin,
-      //   );
-      // });
+      _videoFeedSink?.add(stream.data!);
     }
   }
 
@@ -550,9 +553,33 @@ class _ExampleWidgetState extends State<ExampleWidget>
           return;
         }
 
-        // final Directory directory = await getTemporaryDirectory();
+        final Directory directory = await getTemporaryDirectory();
+
+        // final String outputPath = directory.path + '/output.mp4';
+
         // final String downloadPath = directory.path + '/download_stream.mp4';
         // final File downloadFile = File(downloadPath);
+
+        const String exampleAssetPath = 'videos/example.mov';
+        // setState(() {
+        //   _vlcController = VlcPlayerController.asset(
+        //     exampleAssetPath,
+        //   );
+        // });
+        // return;
+
+        ByteData data = await rootBundle.load(exampleAssetPath);
+        String exampleStreamPath = directory.path + '/example_stream.mov';
+        List<int> bytes =
+            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        await File(exampleStreamPath).writeAsBytes(bytes);
+        // setState(() {
+        //   _vlcController = VlcPlayerController.file(
+        //     File(exampleStreamPath),
+        //   );
+        // });
+        // return;
+
         // final String videoFeedPath = directory.path + '/video_feed.h264';
         final String videoFeedPath = inputPipe;
         _videoFeedFile = File(videoFeedPath);
@@ -580,12 +607,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
         // }
         // await Future.delayed(const Duration(seconds: 5));
         // var downloadStream = downloadFile.openRead();
-
-        _videoFeedSink = _videoFeedFile?.openWrite();
-
-        // Start the video feed
-        // await Dji.videoFeedStart();
-        // FFmpegKitConfig.writeToPipe(videoFeedPath, inputPipe);
 
         // downloadStream.listen((data) {
         //   print(data.length.toString());
@@ -624,32 +645,304 @@ class _ExampleWidgetState extends State<ExampleWidget>
           //   FFmpegKit.cancel(_ffmpegKitSessionId);
           // }
 
+          // _vpController = VP.VideoPlayerController.network(
+          //   'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+          // )..initialize().then((_) {
+          //     // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+          //     setState(() {});
+          //   });
+          // return;
+
+          // Initializing the VLC Dart Player
+          // await VLC.DartVLC.initialize(useFlutterNativeView: true);
+          // _vlcPlayer = VLC.Player(
+          //   id: 0,
+          //   videoDimensions: const VLC.VideoDimensions(640, 360),
+          //   // registerTexture: !Platform.isWindows,
+          // );
+
+          // _vlcPlayer?.currentStream.listen((current) {
+          //   developer.log(
+          //     'VLC current stream: $current',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
+          // _vlcPlayer?.positionStream.listen((position) {
+          //   developer.log(
+          //     'VLC position: $position',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
+          // _vlcPlayer?.playbackStream.listen((playback) {
+          //   developer.log(
+          //     'VLC position: $playback',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
+          // _vlcPlayer?.generalStream.listen((general) {
+          //   developer.log(
+          //     'VLC general: $general',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
+          // _vlcPlayer?.videoDimensionsStream.listen((videoDimensions) {
+          //   developer.log(
+          //     'VLC videoDimensions: $videoDimensions',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
+          // _vlcPlayer?.bufferingProgressStream.listen(
+          //   (bufferingProgress) {
+          //     developer.log(
+          //       'VLC bufferingProgress: $bufferingProgress',
+          //       name: kLogKindDjiFlutterPlugin,
+          //     );
+          //   },
+          // );
+          // _vlcPlayer?.errorStream.listen((event) {
+          //   developer.log(
+          //     'VLC error: $event',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
+
+          _videoFeedSink = _videoFeedFile?.openWrite();
+          // FFmpegKitConfig.writeToPipe(exampleStreamPath, inputPipe).then((_) {
+          //   FFmpegKitConfig.closeFFmpegPipe(inputPipe);
+          // });
+          // await Future.delayed(const Duration(seconds: 3));
+
+          setState(() {
+            // Initializing the VPC Player
+            // _vpController = VP.VideoPlayerController.file(File(outputPath))
+            //   ..initialize().then((_) {
+            //     // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+            //     setState(() {
+            //       developer.log(
+            //         'Video Player initialized',
+            //         name: kLogKindDjiFlutterPlugin,
+            //       );
+            //     });
+            //   });
+
+            _vlcController ??= VlcPlayerController.file(
+              // File(outputPipe),
+              File(outputPipe),
+              autoInitialize: true,
+              autoPlay: false,
+              hwAcc: HwAcc.auto,
+              options: VlcPlayerOptions(
+                video: VlcVideoOptions(
+                  [
+                    VlcVideoOptions.dropLateFrames(true),
+                    VlcVideoOptions.skipFrames(true),
+                  ],
+                ),
+                advanced: VlcAdvancedOptions([
+                  VlcAdvancedOptions.networkCaching(0),
+                  VlcAdvancedOptions.liveCaching(0),
+                  VlcAdvancedOptions.clockSynchronization(0),
+                ]),
+                sout: VlcStreamOutputOptions([
+                  VlcStreamOutputOptions.soutMuxCaching(0),
+                ]),
+                extras: [],
+              ),
+            );
+          });
+
+          _vlcController?.addOnInitListener(() async {
+            developer.log(
+              'VLC Player: addOnInitListener - initialized',
+              name: kLogKindDjiFlutterPlugin,
+            );
+
+            // await Dji.videoFeedStart();
+
+            // setState(() {
+            //   _vlcController?.play();
+            // });
+
+            // _vlcController?.setMediaFromFile(
+            //   File(outputPipe),
+            //   autoPlay: true,
+            //   hwAcc: HwAcc.full,
+            // );
+          });
+
+          // https://ffmpeg.org/ffmpeg-formats.html
           await FFmpegKit.executeAsync(
             // '-y -loglevel error -nostats -probesize 128 -flags2 showall -f h264 -i $inputStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -probesize 32 -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov -r 25 $outputPipe',
             // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mpegts -r 25 -probesize 32 -fflags nobuffer -flags low_delay $outputPipe',
-            '-y -probesize 32 -flags2 showall -f h264 -i $videoFeedPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -movflags frag_keyframe+empty_moov $outputPipe',
-            (session) {
+            // '-y -loglevel error -nostats -probesize 32 -err_detect ignore_err -flags low_delay -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 320x180 -r 15 -f hls -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -f mpegts udp://localhost:1337',
+            // '-y -probesize 32 -flags2 showall -f h264 -i $videoFeedPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags single_file -hls_time 0 -hls_list_size 0 -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -re -err_detect ignore_err -probesize 32 -fflags nobuffer -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags split_by_time -hls_time 0 -hls_list_size 0 -hls_allow_cache 0 $outputPipe',
+            // '-y -re -err_detect ignore_err -probesize 32 -fflags nobuffer -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags split_by_time -hls_time 2 -hls_list_size 0 -hls_allow_cache 0 -live_start_index -1 $outputPipe',
+            // '-y -re -err_detect ignore_err -probesize 32 -fflags nobuffer -f mov -i $exampleStreamPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags split_by_time -hls_time 2 -hls_list_size 0 -hls_allow_cache 0 -live_start_index -1 $outputPipe',
+            '-y -re -err_detect ignore_err -f mov -i $exampleStreamPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_time 0 $outputPipe',
+            // '-y -re -f mov -i $exampleStreamPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
+            (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
               developer.log(
-                'FFmpegKit.executeAsync logs: $_ffmpegKitSessionId',
+                'FFmpegKit.executeAsync sessionId: $_ffmpegKitSessionId',
                 name: kLogKindDjiFlutterPlugin,
               );
             },
             (log) {
+              if (log.getLevel() < 32) {
+                developer.log(
+                  'FFmpegKit.executeAsync logs: ${log.getMessage()}',
+                  name: kLogKindDjiFlutterPlugin,
+                );
+              }
+            },
+            (statistics) async {
               developer.log(
-                'FFmpegKit.executeAsync logs: ${log.getMessage()}',
+                'FFmpegKit.executeAsync statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}',
                 name: kLogKindDjiFlutterPlugin,
               );
-            },
-            (statistics) {
-              // developer.log(
-              //   'FFmpegKit.executeAsync statistics: ${statistics.getTime()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
+
+              if (statistics.getTime() >= 1500 &&
+                  await _vlcController?.isPlaying() == false) {
+                // Initializing the VLC Player
+                // https://wiki.videolan.org/Uncommon_uses/
+                setState(() {
+                  developer.log(
+                    'VLC Player: play',
+                    name: kLogKindDjiFlutterPlugin,
+                  );
+                  _vlcController?.play();
+
+                  // _nativeVideoViewController
+                  //     ?.setVideoSource(
+                  //   outputPath,
+                  //   // 'https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/360/Big_Buck_Bunny_360_10s_20MB.mp4',
+                  //   sourceType: VideoSourceType.file,
+                  //   requestAudioFocus: false,
+                  // )
+                  //     .then((_) {
+                  //   developer.log(
+                  //     'Native Video View: play',
+                  //     name: kLogKindDjiFlutterPlugin,
+                  //   );
+
+                  //   _vlcController?.play();
+                  //   _nativeVideoViewController?.play();
+                  // }).onError((error, stackTrace) {
+                  //   developer.log(
+                  //     'Native Video View: error',
+                  //     error: error,
+                  //     name: kLogKindDjiFlutterPlugin,
+                  //   );
+                  // });
+
+                  // _vlcController?.initialize().then((_) {
+                  //   _vlcController?.play();
+                  // });
+
+                  // _vpController =
+                  //     VP.VideoPlayerController.file(File(outputPath))
+                  //       ..initialize().then((_) {
+                  //         // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+                  //         setState(() {
+                  //           developer.log(
+                  //             'Video Player initialized',
+                  //             name: kLogKindDjiFlutterPlugin,
+                  //           );
+
+                  //           _vpController?.play().then((_) {
+                  //             developer.log(
+                  //               'Video Player: play',
+                  //               name: kLogKindDjiFlutterPlugin,
+                  //             );
+                  //           }).onError((error, stackTrace) {
+                  //             developer.log(
+                  //               'Video Player: error',
+                  //               error: error,
+                  //               name: kLogKindDjiFlutterPlugin,
+                  //             );
+                  //           });
+                  //         });
+                  //       }).onError((error, stackTrace) {
+                  //         developer.log(
+                  //           'Video Player Initialize: error',
+                  //           error: error,
+                  //           name: kLogKindDjiFlutterPlugin,
+                  //         );
+                  //       });
+                });
+              }
+
+              // Start the video feed
+              await Dji.videoFeedStart();
+              // await Future.delayed(const Duration(seconds: 2));
+
+              // setState(() {
+              //     _vlcController ??= VlcPlayerController.file(
+              //       File(outputPipe),
+              //       // _vlcController = VlcPlayerController.network(
+              //       // 'udp://@0.0.0.0:1337',
+              //       // _vlcController = VlcPlayerController.network(
+              //       // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+              //       autoInitialize: true,
+              //       autoPlay: true,
+              //       hwAcc: HwAcc.disabled,
+              //       options: VlcPlayerOptions(
+              //         video: VlcVideoOptions(
+              //           [
+              //             VlcVideoOptions.dropLateFrames(true),
+              //             VlcVideoOptions.skipFrames(true),
+              //           ],
+              //         ),
+              //         advanced: VlcAdvancedOptions([
+              //           VlcAdvancedOptions.networkCaching(0),
+              //           VlcAdvancedOptions.liveCaching(0),
+              //           VlcAdvancedOptions.clockSynchronization(0),
+              //         ]),
+              //         sout: VlcStreamOutputOptions([
+              //           VlcStreamOutputOptions.soutMuxCaching(0),
+              //         ]),
+              //         extras: [
+              //           // '--start-time 2',
+              //           // '-sout-keep',
+              //           // '--ttl 60',
+              //           // '--rtsp-tcp',
+              //         ],
+              //       ),
+              //       onInit: () async {
+              //         developer.log(
+              //           'VLC Player initialized',
+              //           name: kLogKindDjiFlutterPlugin,
+              //         );
+
+              //         // await _vlcController?.setMediaFromFile(
+              //         //   File(outputPipe),
+              //         //   autoPlay: true,
+              //         //   hwAcc: HwAcc.auto,
+              //         // );
+
+              //         // developer.log(
+              //         //   'VLC Player isSeekable: ${await _vlcController?.isSeekable()}',
+              //         //   name: kLogKindDjiFlutterPlugin,
+              //         // );
+
+              //         // await _vlcController?.seekTo(
+              //         //   const Duration(
+              //         //     seconds: 3,
+              //         //   ),
+              //         // );
+
+              //         // await Dji.videoFeedStart();
+              //         // await Future.delayed(const Duration(seconds: 3));
+              //         // await _vlcController?.play();
+              //       },
+              //     );
+              //   });
 
               // if (statistics.getTime() > 1000 &&
               //     _nativeVideoViewController?.videoFile == null) {
@@ -667,48 +960,47 @@ class _ExampleWidgetState extends State<ExampleWidget>
               //   });
               // }
 
-              if (statistics.getTime() > 1) {
-                setState(() {
-                  developer.log(
-                    'FFmpegKit.executeAsync - starting VLC Player',
-                    name: kLogKindDjiFlutterPlugin,
-                  );
+              // if (statistics.getVideoFrameNumber() > 1 &&
+              //     _vpController != null) {
+              //   developer.log(
+              //     'FFmpegKit.executeAsync - starting Video Player',
+              //     name: kLogKindDjiFlutterPlugin,
+              //   );
 
-                  if (_vlcController == null) {
-                    _vlcController = VlcPlayerController.file(
-                      File(outputPipe),
-                      options: VlcPlayerOptions(
-                        video: VlcVideoOptions(
-                          [
-                            VlcVideoOptions.dropLateFrames(true),
-                            VlcVideoOptions.skipFrames(true),
-                          ],
-                        ),
-                        advanced: VlcAdvancedOptions([
-                          VlcAdvancedOptions.networkCaching(0),
-                          VlcAdvancedOptions.liveCaching(0),
-                          VlcAdvancedOptions.clockSynchronization(0),
-                        ]),
-                        sout: VlcStreamOutputOptions([
-                          // VlcStreamOutputOptions.soutMuxCaching(0),
-                        ]),
-                        // extras: [
-                        //   '--start-time=6',
-                        // ],
-                      ),
-                    );
-                  } else {
-                    _vlcController?.setMediaFromFile(
-                      File(outputPipe),
-                    );
-                  }
-                });
-              }
+              //   // Play the video player
+              //   _vpController?.play();
+              // }
             },
           );
 
-          await Future.delayed(const Duration(seconds: 1));
-          await Dji.videoFeedStart();
+          // Initializing the Video Player
+          // _vpController = VP.VideoPlayerController.file(File(outputPipe));
+          // _vpController = VP.VideoPlayerController.network(
+          //   'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+          // );
+
+          // try {
+          //   await _vpController?.initialize();
+          //   developer.log(
+          //     'Video Player initialized',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // } catch (e) {
+          //   developer.log(
+          //     'Video Player initialization failed: ${e.toString()}',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // }
+
+          // _vpController?.play();
+
+          // _vlcPlayer?.open(
+          //   VLC.Media.file(
+          //     File(outputPipe),
+          //     startTime: const Duration(seconds: 5),
+          //   ),
+          //   autoStart: true,
+          // );
 
           // FFmpegKit.execute(
           //   // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
@@ -741,7 +1033,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
       await Dji.videoFeedStop();
       _videoFeedSink?.close();
       _vlcController?.stop();
+      _vlcController?.dispose();
+      _vlcController = null;
+      // _vlcPlayer?.stop();
+      // _vpController?.pause();
       // _nativeVideoViewController?.stop();
+
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -766,12 +1063,27 @@ class _ExampleWidgetState extends State<ExampleWidget>
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
               child: Stack(children: [
+                // _vpController?.value.isInitialized == true
+                //     ? VP.VideoPlayer(_vpController!)
+                //     : Container(),
+
                 _vlcController != null
                     ? VlcPlayer(
                         controller: _vlcController!,
-                        aspectRatio: 16 / 9,
+                        aspectRatio: MediaQuery.of(context).size.width /
+                            (MediaQuery.of(context).size.height * 0.2),
                       )
                     : Container(),
+
+                // VLC.Video(
+                //   player: _vlcPlayer,
+                //   width: MediaQuery.of(context).size.width,
+                //   height: MediaQuery.of(context).size.height * 0.2,
+                //   // volumeThumbColor: Colors.blue,
+                //   // volumeActiveColor: Colors.blue,
+                //   // showControls: true,
+                // )
+
                 // NativeVideoView(
                 //   keepAspectRatio: false,
                 //   showMediaController: false,
@@ -781,7 +1093,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
                 //   },
                 //   onPrepared: (controller, info) {
                 //     debugPrint('NativeVideoView: Video prepared');
-                //     controller.play();
+                //     // controller.play();
                 //   },
                 //   onError: (controller, what, extra, message) {
                 //     debugPrint(

@@ -968,4 +968,12 @@ https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-d
 https://github.com/tanersener/ffmpeg-kit-test/blob/main/flutter/test-app-local-dependency/lib/video_util.dart
 
 https://stackoverflow.com/questions/64847755/write-continuous-stream-to-file-flutter-dart
+
+https://github.com/dji-sdk/DJIWidget/issues/9
+
+Converting CVPixelBuffer to Data: 
+https://gist.github.com/T1T4N/0ae90716b0c5d1bea39efe94512e1b72
+
+Swift DJICustomVideoFrameExtractor example: 
+https://github.com/Darko28/DJIML/blob/2499fcc50b64c1d22162753ce442da16c0b2c425/DJIML/DJIMLViewController.swift
 	
