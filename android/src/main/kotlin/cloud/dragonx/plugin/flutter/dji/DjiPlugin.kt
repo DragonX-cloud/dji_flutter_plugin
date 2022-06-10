@@ -1,11 +1,10 @@
-package cloud.dragonx.plugin.flutter.dji
+  package cloud.dragonx.plugin.flutter.dji
 
 //import dji.midware.util.ContextUtil.getContext
 
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.multidex.MultiDex
@@ -22,6 +21,8 @@ import dji.common.util.CommonCallbacks
 import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
 import dji.sdk.base.BaseProduct.ComponentKey
+import dji.sdk.camera.VideoFeeder
+import dji.sdk.camera.VideoFeeder.VideoDataListener
 import dji.sdk.flightcontroller.FlightController
 import dji.sdk.media.DownloadListener
 import dji.sdk.media.MediaFile
@@ -41,8 +42,6 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.MethodChannel
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -51,26 +50,28 @@ import java.io.File
 import java.nio.ByteBuffer
 
 
-/** DjiPlugin */
+  /** DjiPlugin */
 
 class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /// The MethodChannel that will the communication between Flutter and native Android
   ///
   /// This local reference serves to register the plugin with the Flutter Engine and unregister it
   /// when the Flutter Engine is detached from the Activity
-  private lateinit var channel : MethodChannel
+  private lateinit var channel: MethodChannel
 
   // How to get context and activity in Flutter Plugin for android:
   // https://www.jianshu.com/p/eb7df49fdfb1
-  private lateinit var djiPluginActivity:Activity
+  private lateinit var djiPluginActivity: Activity
   private lateinit var djiPluginContext: Context
 
   var fltDjiFlutterApi: Messages.DjiFlutterApi? = null
   val fltDrone = Messages.Drone()
+  val fltStream = Messages.Stream()
 
   private var drone: Aircraft? = null
   private var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
   private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
+  private var videoDataListener: VideoDataListener? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
@@ -108,6 +109,16 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     djiPluginActivity.runOnUiThread(Runnable {
       fltDjiFlutterApi?.setStatus(fltDrone) {
         Log.d(TAG, "setStatus Closure Success: $status")
+      }
+    })
+  }
+
+  private fun _fltSendVideo(data: ByteArray?) {
+    fltStream.data = data
+
+    djiPluginActivity.runOnUiThread(Runnable {
+      fltDjiFlutterApi?.sendVideo(fltStream) {
+        //Log.d(TAG, "sendVideo Closure Success: ${data?.size}")
       }
     })
   }
@@ -327,68 +338,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       Log.d(TAG,"Landing Failed - No Flight Controller")
     }
   }
-
-  /** Timeline Methods **/
-
-//  override fun timeline() {
-//    Log.d(TAG, "Timeline Started")
-//    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
-//    if (_droneFlightController != null) {
-//      // First we check if a timeline is already running
-//      val _missionControl = MissionControl.getInstance()
-//      if (_missionControl.isTimelineRunning == true) {
-//        Log.d(TAG, "Error - Timeline already running")
-//        return
-//      }
-//
-//      var droneCoordinates = droneCurrentLocation
-//      if (droneCoordinates == null) {
-//        Log.d(TAG, "Timeline Failed - No droneCurrentLocationCoordinates")
-//        return
-//      }
-//
-//      // Set Home Coordinates
-//      val droneHomeLocation = LocationCoordinate2D(droneCoordinates.latitude, droneCoordinates.longitude)
-//      _droneFlightController.setHomeLocation(droneHomeLocation, null)
-//
-//      val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
-//      val oneMeterOffset: Double = 0.00000899322
-//
-//      // Take Off
-//      scheduledElements.add(TakeOffAction())
-//
-//      // Waypoint Mission
-//      val waypointMissionBuilder = WaypointMission.Builder().autoFlightSpeed(5f)
-//        .maxFlightSpeed(15f)
-//        .setExitMissionOnRCSignalLostEnabled(true)
-//        .finishedAction(WaypointMissionFinishedAction.NO_ACTION)
-//        .flightPathMode(WaypointMissionFlightPathMode.CURVED)
-//        .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
-//        .headingMode(WaypointMissionHeadingMode.AUTO)
-//        .repeatTimes(1)
-//
-//      val waypoints: MutableList<Waypoint> = LinkedList()
-//
-//      val firstPoint = Waypoint(droneHomeLocation.latitude + 10 * oneMeterOffset, droneHomeLocation.longitude, 2f)
-//      val secondPoint = Waypoint(droneHomeLocation.latitude, droneHomeLocation.longitude + 10 * oneMeterOffset, 5f)
-//
-//      waypoints.add(firstPoint)
-//      waypoints.add(secondPoint)
-//
-//      waypointMissionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
-//
-//      val waypointMission = TimelineMission.elementFromWaypointMission(waypointMissionBuilder.build())
-//      scheduledElements.add(waypointMission)
-//
-//      if (_missionControl.scheduledCount() > 0) {
-//        _missionControl.unscheduleEverything()
-//        _missionControl.removeAllListeners()
-//      }
-//
-//      _missionControl.scheduleElements(scheduledElements)
-//      _missionControl.startTimeline()
-//    }
-//  }
 
   override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
@@ -797,6 +746,19 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     }
 
     return _success
+  }
+
+  /** Video Feed Methods **/
+
+  override fun videoFeedStart() {
+    videoDataListener = VideoDataListener { bytes, _ ->
+      _fltSendVideo(bytes)
+    }
+    VideoFeeder.getInstance().primaryVideoFeed.addVideoDataListener(videoDataListener!!)
+  }
+
+  override fun videoFeedStop() {
+    VideoFeeder.getInstance().primaryVideoFeed.removeVideoDataListener(videoDataListener)
   }
 
 }
