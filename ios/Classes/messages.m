@@ -458,8 +458,8 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
       NSCAssert([api respondsToSelector:@selector(videoFeedStartWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(videoFeedStartWithError:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         FlutterError *error;
-        NSString *output = [api videoFeedStartWithError:&error];
-        callback(wrapResult(output, error));
+        [api videoFeedStartWithError:&error];
+        callback(wrapResult(nil, error));
       }];
     }
     else {
@@ -476,8 +476,8 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
       NSCAssert([api respondsToSelector:@selector(videoFeedStopWithError:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(videoFeedStopWithError:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         FlutterError *error;
-        NSString *output = [api videoFeedStopWithError:&error];
-        callback(wrapResult(output, error));
+        [api videoFeedStopWithError:&error];
+        callback(wrapResult(nil, error));
       }];
     }
     else {
