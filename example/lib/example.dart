@@ -9,19 +9,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
 import 'package:dji/dji.dart';
-
 import 'constants.dart';
-
 import 'package:path_provider/path_provider.dart';
-
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
-
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
-
-// import 'package:video_player/video_player.dart';
-
-// import 'package:native_video_view/native_video_view.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
@@ -44,8 +36,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _droneYaw = '0.0';
 
   VlcPlayerController? _vlcController;
-  // VideoPlayerController? _vpController;
-  // VideoViewController? _nativeVideoViewController;
   int? _ffmpegKitSessionId;
   File? _videoFeedFile;
   IOSink? _videoFeedSink;
@@ -541,29 +531,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
           return;
         }
 
-        final Directory directory = await getTemporaryDirectory();
-
-        // final String outputPath = directory.path + '/output_test.mp4';
-        // final File outputFile = File(outputPath);
-        // if (await outputFile.exists() == true) {
-        //   outputFile.delete();
-        // }
-
-        // const String exampleAssetPath = 'videos/example.mov';
-
-        // ByteData data = await rootBundle.load(exampleAssetPath);
-        // String exampleStreamPath = directory.path + '/example_stream.mov';
-        // List<int> bytes =
-        //     data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-        // await File(exampleStreamPath).writeAsBytes(bytes);
-
         final String videoFeedPath = inputPipe;
         _videoFeedFile = File(videoFeedPath);
-
-        developer.log(
-          'Video Feed Start - video feed path: $videoFeedPath',
-          name: kLogKindDjiFlutterPlugin,
-        );
 
         FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
           if (outputPipe == null) {
@@ -575,22 +544,19 @@ class _ExampleWidgetState extends State<ExampleWidget>
             return;
           }
 
+          // We must close the output pipe here, otherwise the FFMPEG convertion won't start.
           FFmpegKitConfig.closeFFmpegPipe(outputPipe);
 
-          developer.log(
-            'Video Feed Start outputPipe: $outputPipe',
-            name: kLogKindDjiFlutterPlugin,
-          );
-
+          // Opening the video feed file (input pipe) for writing.
           _videoFeedSink = _videoFeedFile?.openWrite();
 
+          // Starting the video feed
+          await Dji.videoFeedStart();
+
+          // Initializing the VLC Video Player.
           setState(() {
             _vlcController ??= VlcPlayerController.file(
               File(outputPipe),
-              // _vlcController = VlcPlayerController.network(
-              // 'udp://@0.0.0.0:1337',
-              // _vlcController = VlcPlayerController.network(
-              // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
               autoInitialize: true,
               autoPlay: false,
               hwAcc: HwAcc.auto,
@@ -610,13 +576,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
                 sout: VlcStreamOutputOptions([
                   VlcStreamOutputOptions.soutMuxCaching(0),
                 ]),
-                extras: [
-                  // '--key-faster 10',
-                  // '--start-time 2',
-                  // '-sout-keep',
-                  // '--ttl 1',
-                  // '--rtsp-tcp',
-                ],
+                extras: [],
               ),
             );
           });
@@ -628,34 +588,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
           //   );
           // });
 
-          // https://ffmpeg.org/ffmpeg-formats.html
-          // Using -re causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
+          // Executing the FFMPEG convertion (from the native DJI SDK H264 Raw Byte Stream to HLS for minimal latency)
           await FFmpegKit.executeAsync(
-            // '-y -loglevel error -nostats -probesize 128 -flags2 showall -f h264 -i $inputStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -probesize 32 -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov -r 25 $outputPipe',
-            // '-y -flags2 showall -f h264 -err_detect ignore_err -i $videoFeedPath -f mpegts -r 25 -probesize 32 -fflags nobuffer -flags low_delay $outputPipe',
-            // '-y -loglevel error -nostats -probesize 32 -err_detect ignore_err -flags low_delay -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 320x180 -r 15 -f hls -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -f mpegts udp://localhost:1337',
-            // '-y -probesize 32 -flags2 showall -f h264 -i $videoFeedPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags single_file -hls_time 0 -hls_list_size 0 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -re -err_detect ignore_err -probesize 32 -fflags nobuffer -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags split_by_time -hls_time 0 -hls_list_size 0 -hls_allow_cache 0 $outputPipe',
-            // '-y -re -err_detect ignore_err -probesize 32 -fflags nobuffer -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags split_by_time -hls_time 2 -hls_list_size 0 -hls_allow_cache 0 -live_start_index -1 $outputPipe',
-            // '-y -re -err_detect ignore_err -probesize 32 -fflags nobuffer -f mov -i $exampleStreamPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_flags split_by_time -hls_time 2 -hls_list_size 0 -hls_allow_cache 0 -live_start_index -1 $outputPipe',
-            // '-y -re -err_detect ignore_err -f mov -i $exampleStreamPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_time 0 $outputPipe',
-            // '-y -re -err_detect ignore_err -f mov -i $exampleStreamPath -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_time 0 udp://localhost:1337',
-            // '-y -err_detect ignore_err -f mov -i $exampleStreamPath -f mpegts -s 640x360 -r 15 $outputPipe',
-            // '-y -err_detect ignore_err -flags2 showall -f h264 -i $inputPipe -f mpegts -s 640x360 -r 15 $outputPipe',
-            // '-y -re -err_detect ignore_err -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_time 0 $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -r 10 -f hls -hls_time 0 $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -r 15 -chunk_duration 0 -max_delay 0 -f hls -hls_time 500ms -hls_list_size 12 -hls_allow_cache 1 -hls_flags split_by_time $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -vf "fps=15" -c:v libx264 -f hls $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -f hls -hls_allow_cache 0 -hls_time 200ms -hls_list_size 3 -max_delay 0 -s 640x360 -r 15 -vf "fps=15" -g 15 -b:v 10k -maxrate 10k -bufsize 10k $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -f mp4 -movflags frag_keyframe+empty_moov -s 640x360 -r 15 -vf "fps=15" -g 15 -b:v 10k -maxrate 10k -bufsize 10k $outputPipe',
-
+            // https://ffmpeg.org/ffmpeg-formats.html
+            // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
             '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
+            // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
             // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -movflags frag_keyframe+empty_moov $outputPipe',
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -665,6 +604,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
               );
             },
             (log) {
+              // The logs here are disabled because they cause additional latency for some reason.
               // if (log.getLevel() < 32) {
               //   developer.log(
               //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
@@ -673,14 +613,15 @@ class _ExampleWidgetState extends State<ExampleWidget>
               // }
             },
             (statistics) async {
+              // The logs here are disabled because they cause additional latency for some reason.
               // developer.log(
               //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
               //   name: kLogKindDjiFlutterPlugin,
               // );
 
+              // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
               if (statistics.getTime() >= 1 &&
                   await _vlcController?.isPlaying() == false) {
-                // if (statistics.getVideoFrameNumber() == 1) {
                 developer.log(
                   'VLC Player: play',
                   name: kLogKindDjiFlutterPlugin,
@@ -690,46 +631,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
                   _vlcController?.play();
                 });
               }
-
-              // if (statistics.getTime() >= 1 && _vpController == null) {
-              //   _vpController ??= VideoPlayerController.file(File(outputPath))
-              //     // _vpController ??= VideoPlayerController.network(
-              //     // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')
-              //     ..initialize().then((_) {
-              //       // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
-              //       setState(() {
-              //         developer.log(
-              //           'Video Player initialized',
-              //           name: kLogKindDjiFlutterPlugin,
-              //         );
-
-              //         _vpController?.play();
-              //       });
-              //     });
-              // }
-
-              // if (statistics.getTime() >= 1 &&
-              //     _nativeVideoViewController?.videoFile == null) {
-              //   setState(() {
-              //     _nativeVideoViewController
-              //         ?.setVideoSource(
-              //       outputPath,
-              //       sourceType: VideoSourceType.file,
-              //       // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-              //       // sourceType: VideoSourceType.network,
-              //       requestAudioFocus: false,
-              //     )
-              //         .then((_) {
-              //       // _nativeVideoViewController?.play();
-              //     });
-              //   });
-              // }
             },
           );
-
-          // Start the video feed
-          await Dji.videoFeedStart();
-          // await Future.delayed(const Duration(milliseconds: 4000));
         });
       });
     } on PlatformException catch (e) {
@@ -760,9 +663,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
       _vlcController?.stop();
       _vlcController?.dispose();
       _vlcController = null;
-
-      // _vpController?.pause();
-      // _nativeVideoViewController?.stop();
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -786,39 +686,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              child: Stack(children: [
-                _vlcController != null
-                    ? VlcPlayer(
-                        controller: _vlcController!,
-                        aspectRatio: MediaQuery.of(context).size.width /
-                            (MediaQuery.of(context).size.height * 0.2),
-                      )
-                    : Container(),
-
-                // _vpController?.value.isInitialized == true
-                //     ? VideoPlayer(_vpController!)
-                //     : Container(),
-
-                // NativeVideoView(
-                //   keepAspectRatio: false,
-                //   showMediaController: false,
-                //   enableVolumeControl: false,
-                //   onCreated: (controller) {
-                //     _nativeVideoViewController = controller;
-                //   },
-                //   onPrepared: (controller, info) {
-                //     debugPrint('NativeVideoView: Video prepared');
-                //     controller.play();
-                //   },
-                //   onError: (controller, what, extra, message) {
-                //     debugPrint(
-                //         'NativeVideoView: Player Error ($what | $extra | $message)');
-                //   },
-                //   onCompletion: (controller) {
-                //     debugPrint('NativeVideoView: Video completed');
-                //   },
-                // ),
-              ]),
+              child: _vlcController != null
+                  ? VlcPlayer(
+                      controller: _vlcController!,
+                      aspectRatio: MediaQuery.of(context).size.width /
+                          (MediaQuery.of(context).size.height * 0.2),
+                    )
+                  : Container(),
             ),
             Expanded(
               child: Row(
