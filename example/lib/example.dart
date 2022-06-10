@@ -19,6 +19,10 @@ import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
+// import 'package:video_player/video_player.dart';
+
+// import 'package:native_video_view/native_video_view.dart';
+
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
 
@@ -40,6 +44,8 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _droneYaw = '0.0';
 
   VlcPlayerController? _vlcController;
+  // VideoPlayerController? _vpController;
+  // VideoViewController? _nativeVideoViewController;
   int? _ffmpegKitSessionId;
   File? _videoFeedFile;
   IOSink? _videoFeedSink;
@@ -537,19 +543,19 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
         final Directory directory = await getTemporaryDirectory();
 
-        // final String outputPath = directory.path + '/output_test.ts';
+        // final String outputPath = directory.path + '/output_test.mp4';
         // final File outputFile = File(outputPath);
         // if (await outputFile.exists() == true) {
         //   outputFile.delete();
         // }
 
-        const String exampleAssetPath = 'videos/example.mov';
+        // const String exampleAssetPath = 'videos/example.mov';
 
-        ByteData data = await rootBundle.load(exampleAssetPath);
-        String exampleStreamPath = directory.path + '/example_stream.mov';
-        List<int> bytes =
-            data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-        await File(exampleStreamPath).writeAsBytes(bytes);
+        // ByteData data = await rootBundle.load(exampleAssetPath);
+        // String exampleStreamPath = directory.path + '/example_stream.mov';
+        // List<int> bytes =
+        //     data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+        // await File(exampleStreamPath).writeAsBytes(bytes);
 
         final String videoFeedPath = inputPipe;
         _videoFeedFile = File(videoFeedPath);
@@ -615,14 +621,15 @@ class _ExampleWidgetState extends State<ExampleWidget>
             );
           });
 
-          _vlcController?.addOnInitListener(() async {
-            developer.log(
-              'VLC Player: addOnInitListener - initialized',
-              name: kLogKindDjiFlutterPlugin,
-            );
-          });
+          // _vlcController?.addOnInitListener(() async {
+          //   developer.log(
+          //     'VLC Player: addOnInitListener - initialized',
+          //     name: kLogKindDjiFlutterPlugin,
+          //   );
+          // });
 
           // https://ffmpeg.org/ffmpeg-formats.html
+          // Using -re causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
           await FFmpegKit.executeAsync(
             // '-y -loglevel error -nostats -probesize 128 -flags2 showall -f h264 -i $inputStream -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             // '-y -flags2 showall -f h264 -i $videoFeedPath -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
@@ -648,7 +655,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
             '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
             // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mpegts $outputPipe',
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -movflags frag_keyframe+empty_moov $outputPipe',
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -659,10 +666,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
             },
             (log) {
               // if (log.getLevel() < 32) {
-              // developer.log(
-              //   'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
+              //   developer.log(
+              //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
+              //     name: kLogKindDjiFlutterPlugin,
+              //   );
               // }
             },
             (statistics) async {
@@ -683,6 +690,40 @@ class _ExampleWidgetState extends State<ExampleWidget>
                   _vlcController?.play();
                 });
               }
+
+              // if (statistics.getTime() >= 1 && _vpController == null) {
+              //   _vpController ??= VideoPlayerController.file(File(outputPath))
+              //     // _vpController ??= VideoPlayerController.network(
+              //     // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')
+              //     ..initialize().then((_) {
+              //       // Ensure the first frame is shown after the video is initialized, even before the play button has been pressed.
+              //       setState(() {
+              //         developer.log(
+              //           'Video Player initialized',
+              //           name: kLogKindDjiFlutterPlugin,
+              //         );
+
+              //         _vpController?.play();
+              //       });
+              //     });
+              // }
+
+              // if (statistics.getTime() >= 1 &&
+              //     _nativeVideoViewController?.videoFile == null) {
+              //   setState(() {
+              //     _nativeVideoViewController
+              //         ?.setVideoSource(
+              //       outputPath,
+              //       sourceType: VideoSourceType.file,
+              //       // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+              //       // sourceType: VideoSourceType.network,
+              //       requestAudioFocus: false,
+              //     )
+              //         .then((_) {
+              //       // _nativeVideoViewController?.play();
+              //     });
+              //   });
+              // }
             },
           );
 
@@ -715,9 +756,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
       // Stop the video feed
       await Dji.videoFeedStop();
       _videoFeedSink?.close();
+
       _vlcController?.stop();
       _vlcController?.dispose();
       _vlcController = null;
+
+      // _vpController?.pause();
+      // _nativeVideoViewController?.stop();
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -741,13 +786,39 @@ class _ExampleWidgetState extends State<ExampleWidget>
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              child: _vlcController != null
-                  ? VlcPlayer(
-                      controller: _vlcController!,
-                      aspectRatio: MediaQuery.of(context).size.width /
-                          (MediaQuery.of(context).size.height * 0.2),
-                    )
-                  : Container(),
+              child: Stack(children: [
+                _vlcController != null
+                    ? VlcPlayer(
+                        controller: _vlcController!,
+                        aspectRatio: MediaQuery.of(context).size.width /
+                            (MediaQuery.of(context).size.height * 0.2),
+                      )
+                    : Container(),
+
+                // _vpController?.value.isInitialized == true
+                //     ? VideoPlayer(_vpController!)
+                //     : Container(),
+
+                // NativeVideoView(
+                //   keepAspectRatio: false,
+                //   showMediaController: false,
+                //   enableVolumeControl: false,
+                //   onCreated: (controller) {
+                //     _nativeVideoViewController = controller;
+                //   },
+                //   onPrepared: (controller, info) {
+                //     debugPrint('NativeVideoView: Video prepared');
+                //     controller.play();
+                //   },
+                //   onError: (controller, what, extra, message) {
+                //     debugPrint(
+                //         'NativeVideoView: Player Error ($what | $extra | $message)');
+                //   },
+                //   onCompletion: (controller) {
+                //     debugPrint('NativeVideoView: Video completed');
+                //   },
+                // ),
+              ]),
             ),
             Expanded(
               child: Row(

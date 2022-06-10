@@ -25,12 +25,9 @@ dependencies:
   cupertino_icons: ^1.0.2
   path_provider: ^2.0.10
   ffmpeg_kit_flutter: ^4.5.1
-  # video_player: ^2.4.2
   flutter_vlc_player: ^7.1.5
-  # dart_vlc: ^0.2.1
-  # flutter_playout: ^2.0.1
-  native_video_view: ^1.0.5
-  # dio: ^4.0.6
+  # video_player: ^2.4.2
+  # native_video_view: ^1.0.5
   
 dev_dependencies:
   flutter_test:
