@@ -320,7 +320,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
               // 'gimbalPitch': 0,
               // },
 
-              // This initial waypoint is important, the DJI SDK ignores the cornerRadiusInMeters of the first waypoint (and the turn wouldl not be "round").
+              // This initial waypoint is important, the DJI SDK ignores the cornerRadiusInMeters of the first waypoint (and the turn would not be "round").
               // Therefore, we add this initial waypoint, just to get the Drone to a specific height, and when it reaches the second waypoint - the cornerRadiusInMeters is treated properly by the DJI SDK.
               {
                 'location': {
@@ -537,6 +537,12 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
         final Directory directory = await getTemporaryDirectory();
 
+        // final String outputPath = directory.path + '/output_test.ts';
+        // final File outputFile = File(outputPath);
+        // if (await outputFile.exists() == true) {
+        //   outputFile.delete();
+        // }
+
         const String exampleAssetPath = 'videos/example.mov';
 
         ByteData data = await rootBundle.load(exampleAssetPath);
@@ -599,9 +605,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
                   VlcStreamOutputOptions.soutMuxCaching(0),
                 ]),
                 extras: [
+                  // '--key-faster 10',
                   // '--start-time 2',
                   // '-sout-keep',
-                  // '--ttl 60',
+                  // '--ttl 1',
                   // '--rtsp-tcp',
                 ],
               ),
@@ -634,7 +641,14 @@ class _ExampleWidgetState extends State<ExampleWidget>
             // '-y -err_detect ignore_err -flags2 showall -f h264 -i $inputPipe -f mpegts -s 640x360 -r 15 $outputPipe',
             // '-y -re -err_detect ignore_err -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -s 640x360 -r 15 -f hls -hls_time 0 $outputPipe',
             // '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -r 10 -f hls -hls_time 0 $outputPipe',
-            '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -r 15 -f hls -hls_time 0 $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -r 15 -chunk_duration 0 -max_delay 0 -f hls -hls_time 500ms -hls_list_size 12 -hls_allow_cache 1 -hls_flags split_by_time $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x360 -vf "fps=15" -c:v libx264 -f hls $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -fflags discardcorrupt -fflags nobuffer -avioflags direct -flags low_delay -f hls -hls_allow_cache 0 -hls_time 200ms -hls_list_size 3 -max_delay 0 -s 640x360 -r 15 -vf "fps=15" -g 15 -b:v 10k -maxrate 10k -bufsize 10k $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -f mp4 -movflags frag_keyframe+empty_moov -s 640x360 -r 15 -vf "fps=15" -g 15 -b:v 10k -maxrate 10k -bufsize 10k $outputPipe',
+
+            '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mpegts $outputPipe',
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -645,10 +659,10 @@ class _ExampleWidgetState extends State<ExampleWidget>
             },
             (log) {
               // if (log.getLevel() < 32) {
-              //   developer.log(
-              //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-              //     name: kLogKindDjiFlutterPlugin,
-              //   );
+              // developer.log(
+              //   'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
+              //   name: kLogKindDjiFlutterPlugin,
+              // );
               // }
             },
             (statistics) async {
@@ -659,6 +673,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
               if (statistics.getTime() >= 1 &&
                   await _vlcController?.isPlaying() == false) {
+                // if (statistics.getVideoFrameNumber() == 1) {
                 developer.log(
                   'VLC Player: play',
                   name: kLogKindDjiFlutterPlugin,
