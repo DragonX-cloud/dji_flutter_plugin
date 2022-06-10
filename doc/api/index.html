@@ -185,14 +185,14 @@ Please note this "sync" might take several long minutes.</p>
 <h5 id="3-update-androidappbuildgradle">3. Update android/app/build.gradle</h5>
 <p>Open the android/app/build.grade file and update the following:</p>
 <ul>
-<li>Set defaultConfig parameters with minSdkVersion 19 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).<br>
+<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).<br>
 Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
 </ul>
 <pre class="language-dart"><code>android {
     ...
     defaultConfig {
         ...
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 30
         ...
 

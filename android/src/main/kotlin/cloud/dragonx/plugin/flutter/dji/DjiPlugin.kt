@@ -22,7 +22,6 @@ import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
 import dji.sdk.base.BaseProduct.ComponentKey
 import dji.sdk.camera.VideoFeeder
-import dji.sdk.camera.VideoFeeder.VideoDataListener
 import dji.sdk.flightcontroller.FlightController
 import dji.sdk.media.DownloadListener
 import dji.sdk.media.MediaFile
@@ -71,7 +70,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   private var drone: Aircraft? = null
   private var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
   private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
-  private var videoDataListener: VideoDataListener? = null
+  private var videoDataListener: VideoFeeder.VideoDataListener? = null
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
@@ -751,14 +750,20 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-    videoDataListener = VideoDataListener { bytes, _ ->
-      _fltSendVideo(bytes)
+    if (videoDataListener == null) {
+      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+        _fltSendVideo(bytes)
+      }
     }
-    VideoFeeder.getInstance().primaryVideoFeed.addVideoDataListener(videoDataListener!!)
+    videoDataListener?.let {
+      VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
+    }
   }
 
   override fun videoFeedStop() {
-    VideoFeeder.getInstance().primaryVideoFeed.removeVideoDataListener(videoDataListener)
+    videoDataListener?.let {
+      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
+    }
   }
 
 }

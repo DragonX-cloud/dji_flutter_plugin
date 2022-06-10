@@ -144,14 +144,14 @@ Below the `<application>` tag and above the `<activity>` tag, add the following 
 
 ##### 3. Update android/app/build.gradle
 Open the android/app/build.grade file and update the following:
-- Set defaultConfig parameters with minSdkVersion 19 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).  
+- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).  
 Also, **add and make sure multiDexEnabled is set to TRUE**:
 ```
 android {
     ...
     defaultConfig {
         ...
-        minSdkVersion 21
+        minSdkVersion 24
         targetSdkVersion 30
         ...
 
