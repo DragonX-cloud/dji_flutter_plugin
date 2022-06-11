@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/dji.iml" filepath="$PROJECT_DIR$/dji.iml" />
       <module fileurl="file://$PROJECT_DIR$/android/dji_android.iml" filepath="$PROJECT_DIR$/android/dji_android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/example/android/dji_example_android.iml" filepath="$PROJECT_DIR$/example/android/dji_example_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/example/android/example_android.iml" filepath="$PROJECT_DIR$/example/android/example_android.iml" />
     </modules>
   </component>
 </project>

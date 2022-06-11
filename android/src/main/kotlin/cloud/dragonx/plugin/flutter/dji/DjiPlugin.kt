@@ -21,7 +21,6 @@ import dji.common.util.CommonCallbacks
 import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
 import dji.sdk.base.BaseProduct.ComponentKey
-import dji.sdk.camera.VideoFeeder
 import dji.sdk.flightcontroller.FlightController
 import dji.sdk.media.DownloadListener
 import dji.sdk.media.MediaFile
@@ -37,6 +36,7 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
+import dji.sdk.camera.VideoFeeder
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -48,8 +48,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.nio.ByteBuffer
 
-
-  /** DjiPlugin */
+/** DjiPlugin */
 
 class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /// The MethodChannel that will the communication between Flutter and native Android
@@ -70,13 +69,21 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   private var drone: Aircraft? = null
   private var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
   private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
+
   private var videoDataListener: VideoFeeder.VideoDataListener? = null
+//  private lateinit var sourceListener: VideoFeeder.PhysicalSourceListener
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
     fltDjiFlutterApi = Messages.DjiFlutterApi(flutterPluginBinding.binaryMessenger)
 
     this.djiPluginContext = flutterPluginBinding.applicationContext
+
+    // Preparing the Video Feed Listener
+    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
+    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+      _fltSendVideo(bytes)
+    }
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -750,20 +757,30 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-    if (videoDataListener == null) {
-      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-        _fltSendVideo(bytes)
-      }
-    }
+//    sourceListener = VideoFeeder.PhysicalSourceListener { videoFeed, newPhysicalSource ->
+//      if (videoFeed === VideoFeeder.getInstance().primaryVideoFeed) {
+//        Log.d(TAG, "Video Feed - Primary Source: $newPhysicalSource")
+//      }
+//    }
+//    VideoFeeder.getInstance().addPhysicalSourceListener(sourceListener)
+
+//    if (videoDataListener == null) {
+//      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+//        _fltSendVideo(bytes)
+//      }
+//    }
+
     videoDataListener?.let {
       VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
     }
   }
 
   override fun videoFeedStop() {
-    videoDataListener?.let {
-      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
-    }
+//    videoDataListener?.let {
+//      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
+//    }
+
+    VideoFeeder.getInstance()?.primaryVideoFeed?.listeners?.clear()
   }
 
 }

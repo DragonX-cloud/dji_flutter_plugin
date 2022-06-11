@@ -1,6 +1,7 @@
 -keepattributes Exceptions,InnerClasses,*Annotation*,Signature,EnclosingMethod
 
 -dontoptimize
+-dontpreverify
 -dontwarn okio.**
 -dontwarn org.bouncycastle.**
 -dontwarn dji.**
@@ -51,6 +52,8 @@
 
 -keep class com.squareup.wire.** { *; }
 
+-keep class sun.misc.Unsafe { *; }
+
 -keep class com.secneo.** { *; }
 
 -keep class org.greenrobot.eventbus.**{*;}
@@ -60,6 +63,12 @@
 -keepclasseswithmembers,allowshrinking class * {
     native <methods>;
 }
+
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+
+-keep class androidx.appcompat.widget.SearchView { *; }
 
 -keepclassmembers class * extends android.app.Service
 -keepclassmembers public class * extends android.view.View {
@@ -77,6 +86,29 @@
 
 -dontwarn com.mapbox.services.android.location.LostLocationEngine
 -dontwarn com.mapbox.services.android.location.MockLocationEngine
+-keepclassmembers class * implements android.arch.lifecycle.LifecycleObserver {
+    <init>(...);
+}
+# ViewModel's empty constructor is considered to be unused by proguard
+-keepclassmembers class * extends android.arch.lifecycle.ViewModel {
+    <init>(...);
+}
+# keep Lifecycle State and Event enums values
+-keepclassmembers class android.arch.lifecycle.Lifecycle$State { *; }
+-keepclassmembers class android.arch.lifecycle.Lifecycle$Event { *; }
+# keep methods annotated with @OnLifecycleEvent even if they seem to be unused
+# (Mostly for LiveData.LifecycleBoundObserver.onStateChange(), but who knows)
+-keepclassmembers class * {
+    @android.arch.lifecycle.OnLifecycleEvent *;
+}
+
+-keepclassmembers class * implements android.arch.lifecycle.LifecycleObserver {
+    <init>(...);
+}
+
+-keep class * implements android.arch.lifecycle.LifecycleObserver {
+    <init>(...);
+}
 -keepclassmembers class android.arch.** { *; }
 -keep class android.arch.** { *; }
 -dontwarn android.arch.**
