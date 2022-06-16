@@ -390,7 +390,7 @@ public class Messages {
     @NonNull List<Media> getMediaList();
     @NonNull String downloadMedia(Long fileIndex);
     @NonNull Boolean deleteMedia(Long fileIndex);
-    @NonNull void videoFeedStart();
+    @NonNull void videoFeedStart(String outputPath);
     @NonNull void videoFeedStop();
 
     /** The codec used by DjiHostApi. */
@@ -650,7 +650,12 @@ public class Messages {
           channel.setMessageHandler((message, reply) -> {
             Map<String, Object> wrapped = new HashMap<>();
             try {
-              api.videoFeedStart();
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              String outputPathArg = (String)args.get(0);
+              if (outputPathArg == null) {
+                throw new NullPointerException("outputPathArg unexpectedly null.");
+              }
+              api.videoFeedStart(outputPathArg);
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {

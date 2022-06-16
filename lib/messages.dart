@@ -160,31 +160,34 @@ class _DjiHostApiCodec extends StandardMessageCodec {
     if (value is Battery) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is Media) {
+    } else 
+    if (value is Media) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else if (value is Version) {
+    } else 
+    if (value is Version) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
-    } else {
+    } else 
+{
       super.writeValue(buffer, value);
     }
   }
-
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128:       
         return Battery.decode(readValue(buffer)!);
-
-      case 129:
+      
+      case 129:       
         return Media.decode(readValue(buffer)!);
-
-      case 130:
+      
+      case 130:       
         return Version.decode(readValue(buffer)!);
-
-      default:
+      
+      default:      
         return super.readValueOfType(type, buffer);
+      
     }
   }
 }
@@ -193,8 +196,7 @@ class DjiHostApi {
   /// Constructor for [DjiHostApi].  The [binaryMessenger] named argument is
   /// available for dependency injection.  If it is left null, the default
   /// BinaryMessenger will be used which routes to the host platform.
-  DjiHostApi({BinaryMessenger? binaryMessenger})
-      : _binaryMessenger = binaryMessenger;
+  DjiHostApi({BinaryMessenger? binaryMessenger}) : _binaryMessenger = binaryMessenger;
 
   final BinaryMessenger? _binaryMessenger;
 
@@ -202,8 +204,7 @@ class DjiHostApi {
 
   Future<Version> getPlatformVersion() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.getPlatformVersion', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.getPlatformVersion', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -212,8 +213,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -231,8 +231,7 @@ class DjiHostApi {
 
   Future<Battery> getBatteryLevel() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.getBatteryLevel', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.getBatteryLevel', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -241,8 +240,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -260,8 +258,7 @@ class DjiHostApi {
 
   Future<void> registerApp() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.registerApp', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.registerApp', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -270,8 +267,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -284,8 +280,7 @@ class DjiHostApi {
 
   Future<void> connectDrone() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.connectDrone', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.connectDrone', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -294,8 +289,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -308,8 +302,7 @@ class DjiHostApi {
 
   Future<void> disconnectDrone() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.disconnectDrone', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.disconnectDrone', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -318,8 +311,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -332,8 +324,7 @@ class DjiHostApi {
 
   Future<void> delegateDrone() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.delegateDrone', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.delegateDrone', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -342,8 +333,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -356,8 +346,7 @@ class DjiHostApi {
 
   Future<void> takeOff() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.takeOff', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.takeOff', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -366,8 +355,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -380,8 +368,7 @@ class DjiHostApi {
 
   Future<void> land() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.land', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.land', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -390,8 +377,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -404,8 +390,7 @@ class DjiHostApi {
 
   Future<void> start(String arg_flightJson) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.start', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.start', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_flightJson]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -414,8 +399,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -428,8 +412,7 @@ class DjiHostApi {
 
   Future<List<Media?>> getMediaList() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.getMediaList', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.getMediaList', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -438,8 +421,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -457,8 +439,7 @@ class DjiHostApi {
 
   Future<String> downloadMedia(int arg_fileIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.downloadMedia', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.downloadMedia', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_fileIndex]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -467,8 +448,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -486,8 +466,7 @@ class DjiHostApi {
 
   Future<bool> deleteMedia(int arg_fileIndex) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.deleteMedia', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.deleteMedia', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object>[arg_fileIndex]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -496,8 +475,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -513,20 +491,18 @@ class DjiHostApi {
     }
   }
 
-  Future<void> videoFeedStart() async {
+  Future<void> videoFeedStart(String arg_outputPath) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.videoFeedStart', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.videoFeedStart', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
-        await channel.send(null) as Map<Object?, Object?>?;
+        await channel.send(<Object>[arg_outputPath]) as Map<Object?, Object?>?;
     if (replyMap == null) {
       throw PlatformException(
         code: 'channel-error',
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -539,8 +515,7 @@ class DjiHostApi {
 
   Future<void> videoFeedStop() async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-        'dev.flutter.pigeon.DjiHostApi.videoFeedStop', codec,
-        binaryMessenger: _binaryMessenger);
+        'dev.flutter.pigeon.DjiHostApi.videoFeedStop', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(null) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -549,8 +524,7 @@ class DjiHostApi {
         message: 'Unable to establish connection on channel.',
       );
     } else if (replyMap['error'] != null) {
-      final Map<Object?, Object?> error =
-          (replyMap['error'] as Map<Object?, Object?>?)!;
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
       throw PlatformException(
         code: (error['code'] as String?)!,
         message: error['message'] as String?,
@@ -569,29 +543,30 @@ class _DjiFlutterApiCodec extends StandardMessageCodec {
     if (value is Drone) {
       buffer.putUint8(128);
       writeValue(buffer, value.encode());
-    } else if (value is Stream) {
+    } else 
+    if (value is Stream) {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
-    } else {
+    } else 
+{
       super.writeValue(buffer, value);
     }
   }
-
   @override
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
-      case 128:
+      case 128:       
         return Drone.decode(readValue(buffer)!);
-
-      case 129:
+      
+      case 129:       
         return Stream.decode(readValue(buffer)!);
-
-      default:
+      
+      default:      
         return super.readValueOfType(type, buffer);
+      
     }
   }
 }
-
 abstract class DjiFlutterApi {
   static const MessageCodec<Object?> codec = _DjiFlutterApiCodec();
 
@@ -600,18 +575,15 @@ abstract class DjiFlutterApi {
   static void setup(DjiFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.DjiFlutterApi.setStatus', codec,
-          binaryMessenger: binaryMessenger);
+          'dev.flutter.pigeon.DjiFlutterApi.setStatus', codec, binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null,
-              'Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null.');
+          assert(message != null, 'Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final Drone? arg_drone = (args[0] as Drone?);
-          assert(arg_drone != null,
-              'Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null, expected non-null Drone.');
+          assert(arg_drone != null, 'Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null, expected non-null Drone.');
           api.setStatus(arg_drone!);
           return;
         });
@@ -619,18 +591,15 @@ abstract class DjiFlutterApi {
     }
     {
       final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
-          'dev.flutter.pigeon.DjiFlutterApi.sendVideo', codec,
-          binaryMessenger: binaryMessenger);
+          'dev.flutter.pigeon.DjiFlutterApi.sendVideo', codec, binaryMessenger: binaryMessenger);
       if (api == null) {
         channel.setMessageHandler(null);
       } else {
         channel.setMessageHandler((Object? message) async {
-          assert(message != null,
-              'Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null.');
+          assert(message != null, 'Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null.');
           final List<Object?> args = (message as List<Object?>?)!;
           final Stream? arg_stream = (args[0] as Stream?);
-          assert(arg_stream != null,
-              'Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null, expected non-null Stream.');
+          assert(arg_stream != null, 'Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null, expected non-null Stream.');
           api.sendVideo(arg_stream!);
           return;
         });

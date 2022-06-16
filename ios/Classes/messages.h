@@ -88,7 +88,7 @@ NSObject<FlutterMessageCodec> *FLTDjiHostApiGetCodec(void);
 /// @return `nil` only when `error != nil`.
 - (nullable NSNumber *)deleteMediaFileIndex:(NSNumber *)fileIndex error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
-- (void)videoFeedStartWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (void)videoFeedStartOutputPath:(NSString *)outputPath error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
 - (void)videoFeedStopWithError:(FlutterError *_Nullable *_Nonnull)error;
 @end

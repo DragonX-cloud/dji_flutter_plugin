@@ -3,17 +3,12 @@ PODS:
     - DJI-SDK-iOS (~> 4.16)
     - DJI-UXSDK-iOS (~> 4.14)
     - DJIWidget (~> 1.6.6)
+    - ffmpeg-kit-ios-full (~> 4.5.1)
     - Flutter
   - DJI-SDK-iOS (4.16)
   - DJI-UXSDK-iOS (4.14)
   - DJIWidget (1.6.6)
-  - ffmpeg-kit-ios-https (4.5.1)
-  - ffmpeg_kit_flutter (4.5.1):
-    - ffmpeg_kit_flutter/https (= 4.5.1)
-    - Flutter
-  - ffmpeg_kit_flutter/https (4.5.1):
-    - ffmpeg-kit-ios-https (= 4.5.1)
-    - Flutter
+  - ffmpeg-kit-ios-full (4.5.1)
   - Flutter (1.0.0)
   - flutter_vlc_player (3.0.3):
     - Flutter
@@ -24,7 +19,6 @@ PODS:
 
 DEPENDENCIES:
   - dji (from `.symlinks/plugins/dji/ios`)
-  - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - Flutter (from `Flutter`)
   - flutter_vlc_player (from `.symlinks/plugins/flutter_vlc_player/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
@@ -34,14 +28,12 @@ SPEC REPOS:
     - DJI-SDK-iOS
     - DJI-UXSDK-iOS
     - DJIWidget
-    - ffmpeg-kit-ios-https
+    - ffmpeg-kit-ios-full
     - MobileVLCKit
 
 EXTERNAL SOURCES:
   dji:
     :path: ".symlinks/plugins/dji/ios"
-  ffmpeg_kit_flutter:
-    :path: ".symlinks/plugins/ffmpeg_kit_flutter/ios"
   Flutter:
     :path: Flutter
   flutter_vlc_player:
@@ -50,12 +42,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_ios/ios"
 
 SPEC CHECKSUMS:
-  dji: 1de15169bf7faaa9704bf51d58e53ac25302f94d
+  dji: b9cb9f41fee836e2ff1b3bd4e48b99369c641d80
   DJI-SDK-iOS: 1eea401c947433562e268f9cce25f1ea5c132875
   DJI-UXSDK-iOS: 13bcf4ed89db6ea19fd125b1392613153f0c96b9
   DJIWidget: c5bb70aeb7deb9b0a99e5e63539ac249db4fab67
-  ffmpeg-kit-ios-https: cec24d405b511e4f274980d8a9c751d384f89558
-  ffmpeg_kit_flutter: e2f0bd6b75e361faeee3b34c70650d3ec6ec35d0
+  ffmpeg-kit-ios-full: 1e918caa885a00501ec1606c68a874d07d681705
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
   flutter_vlc_player: a0bd756da5d2456f6d26963976616185a65ec677
   MobileVLCKit: 20ccee43f7788a94ea1f67179e33d9600779dfd9

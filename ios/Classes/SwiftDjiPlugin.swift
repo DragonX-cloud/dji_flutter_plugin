@@ -3,6 +3,7 @@ import DJISDK
 import DJIWidget
 import Flutter
 import UIKit
+import ffmpegkit
 
 public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener {
 	
@@ -13,10 +14,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	var drone: DJIAircraft?
 	var droneCurrentLocation: CLLocation?
 	var mediaFileList = [DJIMediaFile?]()
-	var videoFeedUrl: URL?
-	var videoFeedPath: String?
-	var videoFeedFileData: Data?
-
+	var videoFeedInputPath: String?
+	var videoFeedOutputPath: String?
+	var videoFeedOutputFile: FileHandle?
+	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger: FlutterBinaryMessenger = registrar.messenger()
 		let api: FLTDjiHostApi & NSObjectProtocol = SwiftDjiPlugin()
@@ -569,12 +570,40 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Video Feed Methods
 	
-	public func videoFeedStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
+	public func videoFeedStartOutputPath(_ outputPath: String, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		if (FileManager.default.fileExists(atPath: outputPath)) {
+			do {
+				try FileManager.default.removeItem(atPath: outputPath)
+			} catch {
+				print("=== DjiPlugin iOS: Video Feed Start - failed to delete file: \(error)")
+			}
+		}
+		
+		FileManager.default.createFile(atPath: outputPath, contents: nil)
+		
+		videoFeedOutputPath = outputPath
+		videoFeedOutputFile = FileHandle(forWritingAtPath: outputPath)
+	
+		if let inputPipe = FFmpegKitConfig.registerNewFFmpegPipe(), let outputPipe = videoFeedOutputFile {
+			videoFeedInputPath = inputPipe
+			
+			// Starting the DJI Video Feed
+			DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
+			
+			// Converting the input video data pipe into a video file container
+			FFmpegKit.executeAsync("-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i \(inputPipe) -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov \(outputPipe)") { ffmpegSession in
+				if let log = ffmpegSession?.getLogs()[0] {
+					print(log);
+				}
+			}
+			
+			FFmpegKitConfig.closeFFmpegPipe(inputPipe)
+		}
 	}
 	
 	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
+		 videoFeedOutputFile?.closeFile()
 	}
 	
 	// MARK: - Video Feed Delegate Methods
@@ -582,6 +611,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	public func videoFeed(_ videoFeed: DJIVideoFeed, didUpdateVideoData videoData: Data) {
 		// Sending the data (H264 Raw byte-stream) to Flutter as Uint8List
 		_fltSendVideo(videoData)
+
+		// Writing the video data into the video input pipe of FFMPEG
+		//videoFeedOutputFile?.seekToEndOfFile()
+		videoFeedOutputFile?.write(videoData)
 	}
 
 	// MARK: - DJISDKManager Delegate Methods
@@ -811,3 +844,4 @@ extension Data {
         return Data(bytesNoCopy: rawFrame, count: totalSize, deallocator: .free)
     }
 }
+

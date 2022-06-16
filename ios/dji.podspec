@@ -17,8 +17,9 @@ A new flutter plugin project.
   s.dependency 'Flutter'
   s.dependency 'DJI-SDK-iOS', '~> 4.16'
   s.dependency 'DJI-UXSDK-iOS', '~> 4.14'
-  s.dependency 'DJIWidget','~> 1.6.6'
-  s.platform = :ios, '12.0'
+  s.dependency 'DJIWidget', '~> 1.6.6'
+  s.dependency 'ffmpeg-kit-ios-full', '~> 4.5.1'
+  s.platform = :ios, '12.1'
 
   # Flutter.framework does not contain a i386 or arm64 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64 i386' }

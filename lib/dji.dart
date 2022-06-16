@@ -394,8 +394,8 @@ class Dji {
 
   /// Starts the DJI Video Feeder.
   ///
-  static Future<void> videoFeedStart() async {
-    await _api?.videoFeedStart();
+  static Future<void> videoFeedStart(String outputPath) async {
+    await _api?.videoFeedStart(outputPath);
   }
 
   /// Stops the DJI Video Feeder.
