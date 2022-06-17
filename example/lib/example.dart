@@ -9,11 +9,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
 import 'package:dji/dji.dart';
+import 'package:flutter_isolate/flutter_isolate.dart';
 import 'constants.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+
+import 'example_video_feed.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
@@ -36,8 +36,6 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _droneYaw = '0.0';
 
   VlcPlayerController? _vlcController;
-  int? _ffmpegKitSessionId;
-  File? _videoFeedFile;
   IOSink? _videoFeedSink;
 
   @override
@@ -68,7 +66,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
   // This function is triggered by the Native Host side whenever a video byte-stream data is sent
   @override
   void sendVideo(Stream stream) {
-    if (stream.data != null && _videoFeedFile != null) {
+    if (stream.data != null && _videoFeedSink != null) {
       _videoFeedSink?.add(stream.data!);
     }
   }
@@ -99,20 +97,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'registerApp requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       await Dji.registerApp();
     } on PlatformException catch (e) {
       developer.log(
         'registerApp PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'registerApp Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -121,20 +119,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'connectDrone requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       await Dji.connectDrone();
     } on PlatformException catch (e) {
       developer.log(
         'connectDrone PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'connectDrone Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -143,20 +141,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
   //   try {
   //     developer.log(
   //       'disconnectDrone requested',
-  //       name: kLogKindDjiFlutterPlugin,
+  //       name: kLogKindDjiFlutterPluginExample,
   //     );
   //     await Dji.disconnectDrone();
   //   } on PlatformException catch (e) {
   //     developer.log(
   //       'disconnectDrone PlatformException Error',
   //       error: e,
-  //       name: kLogKindDjiFlutterPlugin,
+  //       name: kLogKindDjiFlutterPluginExample,
   //     );
   //   } catch (e) {
   //     developer.log(
   //       'disconnectDrone Error',
   //       error: e,
-  //       name: kLogKindDjiFlutterPlugin,
+  //       name: kLogKindDjiFlutterPluginExample,
   //     );
   //   }
   // }
@@ -165,20 +163,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'delegateDrone requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       await Dji.delegateDrone();
     } on PlatformException catch (e) {
       developer.log(
         'delegateDrone PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'delegateDrone Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -187,20 +185,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Takeoff requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       await Dji.takeOff();
     } on PlatformException catch (e) {
       developer.log(
         'Takeoff PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Takeoff Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -209,20 +207,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Land requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       await Dji.land();
     } on PlatformException catch (e) {
       developer.log(
         'Land PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Land Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -231,20 +229,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
   //   try {
   //     developer.log(
   //       'Timeline requested',
-  //       name: kLogKindDjiFlutterPlugin,
+  //       name: kLogKindDjiFlutterPluginExample,
   //     );
   //     await Dji.timeline();
   //   } on PlatformException catch (e) {
   //     developer.log(
   //       'Timeline PlatformException Error',
   //       error: e,
-  //       name: kLogKindDjiFlutterPlugin,
+  //       name: kLogKindDjiFlutterPluginExample,
   //     );
   //   } catch (e) {
   //     developer.log(
   //       'Timeline Error',
   //       error: e,
-  //       name: kLogKindDjiFlutterPlugin,
+  //       name: kLogKindDjiFlutterPluginExample,
   //     );
   //   }
   // }
@@ -267,7 +265,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
       if (droneHomeLocation.latitude != 0 && droneHomeLocation.longitude != 0) {
         developer.log(
             'Invalid drone\'s home location - unable to start the flight',
-            name: kLogKindDjiFlutterPlugin);
+            name: kLogKindDjiFlutterPluginExample);
         return;
       }
 
@@ -398,25 +396,25 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
       developer.log(
         'Flight Object: ${jsonEncode(flight)}',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
 
       developer.log(
         'Start Flight requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       await Dji.start(flight: flight);
     } on PlatformException catch (e) {
       developer.log(
         'Start Flight PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Start Flight Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -427,26 +425,26 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Get Media List requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
 
       mediaList = await Dji.getMediaList();
 
       developer.log(
         'Media List: $mediaList',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } on PlatformException catch (e) {
       developer.log(
         'Get Media List PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Get Media List Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
 
@@ -457,25 +455,25 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Download requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       // Downloading media file number "0" (a.k.a index: 0)
       final fileUrl = await Dji.downloadMedia(0);
       developer.log(
         'Download successful: $fileUrl',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } on PlatformException catch (e) {
       developer.log(
         'Download PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Download Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -484,32 +482,32 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Delete requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       // Deleting media file number "0" (a.k.a index: 0)
       final deleted = await Dji.deleteMedia(0);
       if (deleted == true) {
         developer.log(
           'Deleted successfully',
-          name: kLogKindDjiFlutterPlugin,
+          name: kLogKindDjiFlutterPluginExample,
         );
       } else {
         developer.log(
           'Delete failed',
-          name: kLogKindDjiFlutterPlugin,
+          name: kLogKindDjiFlutterPluginExample,
         );
       }
     } on PlatformException catch (e) {
       developer.log(
         'Delete PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Delete Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -518,134 +516,24 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Video Feed Start requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
 
-      FFmpegKitConfig.registerNewFFmpegPipe().then((inputPipe) async {
-        if (inputPipe == null) {
-          developer.log(
-            'Video Feed Start failed - no Input Pipe',
-            name: kLogKindDjiFlutterPlugin,
-          );
+      // Starting the video feed
+      await Dji.videoFeedStart();
 
-          return;
-        }
-
-        final String videoFeedPath = inputPipe;
-        _videoFeedFile = File(videoFeedPath);
-
-        FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
-          if (outputPipe == null) {
-            developer.log(
-              'Video Feed Start failed - no Output Pipe',
-              name: kLogKindDjiFlutterPlugin,
-            );
-
-            return;
-          }
-
-          // We must close the output pipe here, otherwise the FFMPEG convertion won't start.
-          FFmpegKitConfig.closeFFmpegPipe(outputPipe);
-
-          // Opening the video feed file (input pipe) for writing.
-          _videoFeedSink = _videoFeedFile?.openWrite();
-
-          // Starting the video feed
-          await Dji.videoFeedStart();
-
-          // Initializing the VLC Video Player.
-          setState(() {
-            _vlcController ??= VlcPlayerController.file(
-              File(outputPipe),
-              autoInitialize: true,
-              autoPlay: false,
-              hwAcc: HwAcc.auto,
-              options: VlcPlayerOptions(
-                video: VlcVideoOptions(
-                  [
-                    VlcVideoOptions.dropLateFrames(true),
-                    VlcVideoOptions.skipFrames(true),
-                  ],
-                ),
-                advanced: VlcAdvancedOptions([
-                  VlcAdvancedOptions.fileCaching(0),
-                  VlcAdvancedOptions.networkCaching(0),
-                  VlcAdvancedOptions.liveCaching(0),
-                  VlcAdvancedOptions.clockSynchronization(0),
-                ]),
-                sout: VlcStreamOutputOptions([
-                  VlcStreamOutputOptions.soutMuxCaching(0),
-                ]),
-                extras: [],
-              ),
-            );
-          });
-
-          // _vlcController?.addOnInitListener(() async {
-          //   developer.log(
-          //     'VLC Player: addOnInitListener - initialized',
-          //     name: kLogKindDjiFlutterPlugin,
-          //   );
-          // });
-
-          // Executing the FFMPEG convertion (from the native DJI SDK H264 Raw Byte Stream to HLS for minimal latency)
-          await FFmpegKit.executeAsync(
-            // https://ffmpeg.org/ffmpeg-formats.html
-            // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
-            '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
-            // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            (session) async {
-              _ffmpegKitSessionId = session.getSessionId();
-
-              developer.log(
-                'FFmpegKit sessionId: $_ffmpegKitSessionId',
-                name: kLogKindDjiFlutterPlugin,
-              );
-            },
-            (log) {
-              // The logs here are disabled because they cause additional latency for some reason.
-              // if (log.getLevel() < 32) {
-              //   developer.log(
-              //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-              //     name: kLogKindDjiFlutterPlugin,
-              //   );
-              // }
-            },
-            (statistics) async {
-              // The logs here are disabled because they cause additional latency for some reason.
-              // developer.log(
-              //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
-
-              // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
-              if (statistics.getTime() >= 1 &&
-                  await _vlcController?.isPlaying() == false) {
-                developer.log(
-                  'VLC Player: play',
-                  name: kLogKindDjiFlutterPlugin,
-                );
-
-                setState(() {
-                  _vlcController?.play();
-                });
-              }
-            },
-          );
-        });
-      });
+      FlutterIsolate.spawn(VideoFeed.start, {});
     } on PlatformException catch (e) {
       developer.log(
         'Video Feed Start PlatformException Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     } catch (e) {
       developer.log(
         'Video Feed Start Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }
@@ -654,7 +542,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
     try {
       developer.log(
         'Video Feed Stop requested',
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
       // Stop the video feed
       await Dji.videoFeedStop();
@@ -667,7 +555,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
       developer.log(
         'Video Feed Stop Error',
         error: e,
-        name: kLogKindDjiFlutterPlugin,
+        name: kLogKindDjiFlutterPluginExample,
       );
     }
   }

@@ -27,7 +27,7 @@
     <!-- android:name="androidx.multidex.MultiDexApplication" -->
     <!-- android:name="cloud.dragonx.plugin.flutter.djiExample.MainApplication" -->
     <application
-        android:label="dji_example"
+        android:label="djiExample"
         android:icon="@mipmap/ic_launcher">
 
        <!-- Start of DJI SDK -->

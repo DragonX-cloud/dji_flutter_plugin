@@ -5,6 +5,7 @@
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.media.MediaFormat
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.multidex.MultiDex
@@ -18,6 +19,8 @@ import dji.common.flightcontroller.LocationCoordinate3D
 import dji.common.mission.waypoint.*
 import dji.common.model.LocationCoordinate2D
 import dji.common.util.CommonCallbacks
+import dji.midware.media.colors.FFMpegConvertFromI420Wrapper
+import dji.midware.media.muxer.FFMpegMuxer
 import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
 import dji.sdk.base.BaseProduct.ComponentKey
@@ -37,6 +40,7 @@ import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
 import dji.sdk.camera.VideoFeeder
+import dji.sdk.codec.DJICodecManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -78,12 +82,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     fltDjiFlutterApi = Messages.DjiFlutterApi(flutterPluginBinding.binaryMessenger)
 
     this.djiPluginContext = flutterPluginBinding.applicationContext
-
-    // Preparing the Video Feed Listener
-    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
-    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-      _fltSendVideo(bytes)
-    }
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -102,6 +100,12 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     // [ ! ] DJI SDK Must be "installed" using this function, before any method of DJI SDK is used.
     MultiDex.install(this.djiPluginContext)
     Helper.install(this.djiPluginActivity.application)
+
+    // Preparing the Video Feed Listener
+    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
+    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+      _fltSendVideo(bytes)
+    }
   }
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     onAttachedToActivity(binding)
@@ -773,6 +777,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     videoDataListener?.let {
       VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
     }
+
+    
   }
 
   override fun videoFeedStop() {
