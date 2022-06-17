@@ -15,8 +15,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	var droneCurrentLocation: CLLocation?
 	var mediaFileList = [DJIMediaFile?]()
 	var videoFeedInputPath: String?
+	var videoFeedInputFile: FileHandle?
 	var videoFeedOutputPath: String?
 	var videoFeedOutputFile: FileHandle?
+	
 	
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger: FlutterBinaryMessenger = registrar.messenger()
@@ -571,7 +573,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	// MARK: - Video Feed Methods
 	
 	public func videoFeedStartOutputPath(_ outputPath: String, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		if (FileManager.default.fileExists(atPath: outputPath)) {
+		if (FileManager.default.fileExists(atPath: outputPath) == true) {
 			do {
 				try FileManager.default.removeItem(atPath: outputPath)
 			} catch {
@@ -581,29 +583,47 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		
 		FileManager.default.createFile(atPath: outputPath, contents: nil)
 		
+		let cacheDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+		print("====== cacheDirectory: \(cacheDirectory)")
+		
 		videoFeedOutputPath = outputPath
 		videoFeedOutputFile = FileHandle(forWritingAtPath: outputPath)
-	
+		print("====== videoFeedOutputPath: \(videoFeedOutputPath!)")
+		
 		if let inputPipe = FFmpegKitConfig.registerNewFFmpegPipe(), let outputPipe = videoFeedOutputFile {
 			videoFeedInputPath = inputPipe
+			print("====== videoFeedInputPath: \(videoFeedInputPath!)")
 			
 			// Starting the DJI Video Feed
 			DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
 			
+			//videoFeedInputFile = FileHandle(forWritingAtPath: videoFeedInputPath!)
+			
 			// Converting the input video data pipe into a video file container
 			FFmpegKit.executeAsync("-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i \(inputPipe) -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov \(outputPipe)") { ffmpegSession in
+				if let session = ffmpegSession?.getId() {
+					print("=== DjiPlugin iOS: FFmpeg Session ID - \(session)")
+				}
 				if let log = ffmpegSession?.getLogs()[0] {
-					print(log);
+					print("=== DjiPlugin iOS: FFmpeg Session Log - \(log)")
+				}
+				if let returnCode = ffmpegSession?.getReturnCode() {
+					print("=== DjiPlugin iOS: FFmpeg Session Return Code - \(returnCode)")
 				}
 			}
-			
-			FFmpegKitConfig.closeFFmpegPipe(inputPipe)
+
+			//FFmpegKit.execute("-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i \(inputPipe) -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov \(outputPipe)")
 		}
 	}
 	
 	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
-		 videoFeedOutputFile?.closeFile()
+		
+		FFmpegKitConfig.closeFFmpegPipe(videoFeedInputPath)
+		videoFeedInputFile?.closeFile()
+		
+		FFmpegKitConfig.closeFFmpegPipe(videoFeedOutputPath)
+		videoFeedOutputFile?.closeFile()
 	}
 	
 	// MARK: - Video Feed Delegate Methods
@@ -612,15 +632,23 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		// Sending the data (H264 Raw byte-stream) to Flutter as Uint8List
 		_fltSendVideo(videoData)
 
+//		do {
+//			try videoData.write(to: URL(fileURLWithPath: videoFeedInputPath!))
+//		} catch {
+//			print("=== DjiPlugin iOS: Video Feed Error - \(error)")
+//		}
+		
 		// Writing the video data into the video input pipe of FFMPEG
-		//videoFeedOutputFile?.seekToEndOfFile()
-		videoFeedOutputFile?.write(videoData)
+		//self.videoFeedInputFile?.seekToEndOfFile()
+		videoFeedInputFile?.write(videoData)
+		//videoFeedInputFile?.closeFile()
+		
 	}
 
 	// MARK: - DJISDKManager Delegate Methods
 
 	public func didUpdateDatabaseDownloadProgress(_ progress: Progress) {
-		print("Downloading database: \(progress.completedUnitCount) / \(progress.totalUnitCount)")
+		print("=== DjiPlugin iOS: Downloading database - \(progress.completedUnitCount) / \(progress.totalUnitCount)")
 	}
 
 	public func appRegisteredWithError(_ error: Error?) {
