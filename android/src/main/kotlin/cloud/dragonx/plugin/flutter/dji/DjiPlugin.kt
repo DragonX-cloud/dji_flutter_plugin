@@ -757,30 +757,15 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-//    sourceListener = VideoFeeder.PhysicalSourceListener { videoFeed, newPhysicalSource ->
-//      if (videoFeed === VideoFeeder.getInstance().primaryVideoFeed) {
-//        Log.d(TAG, "Video Feed - Primary Source: $newPhysicalSource")
-//      }
-//    }
-//    VideoFeeder.getInstance().addPhysicalSourceListener(sourceListener)
-
-//    if (videoDataListener == null) {
-//      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-//        _fltSendVideo(bytes)
-//      }
-//    }
-
     videoDataListener?.let {
       VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
     }
   }
 
   override fun videoFeedStop() {
-//    videoDataListener?.let {
-//      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
-//    }
-
-    VideoFeeder.getInstance()?.primaryVideoFeed?.listeners?.clear()
+    videoDataListener?.let {
+      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
+    }
   }
 
 }

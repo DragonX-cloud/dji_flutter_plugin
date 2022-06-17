@@ -86,6 +86,25 @@
       });
     }
   }
+  {
+    final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
+        &#39;dev.flutter.pigeon.DjiFlutterApi.sendVideo&#39;, codec,
+        binaryMessenger: binaryMessenger);
+    if (api == null) {
+      channel.setMessageHandler(null);
+    } else {
+      channel.setMessageHandler((Object? message) async {
+        assert(message != null,
+            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null.&#39;);
+        final List&lt;Object?&gt; args = (message as List&lt;Object?&gt;?)!;
+        final Stream? arg_stream = (args[0] as Stream?);
+        assert(arg_stream != null,
+            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null, expected non-null Stream.&#39;);
+        api.sendVideo(arg_stream!);
+        return;
+      });
+    }
+  }
 }</code></pre>
 </section>
 
@@ -122,6 +141,7 @@
 
     <li class="section-title"><a href="../../messages/DjiFlutterApi-class.html#instance-methods">Methods</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
+    <li><a href="../../messages/DjiFlutterApi/sendVideo.html">sendVideo</a></li>
     <li><a href="../../messages/DjiFlutterApi/setStatus.html">setStatus</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
 
@@ -147,7 +167,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.16
+      1.0.0-dev.17
   </span>
 
   

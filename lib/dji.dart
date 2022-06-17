@@ -394,6 +394,8 @@ class Dji {
 
   /// Starts the DJI Video Feeder.
   ///
+  /// Triggers the DJI Camera Preview and streams raw H264 byte-stream to the sendVideo() method.
+  /// The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).
   static Future<void> videoFeedStart() async {
     await _api?.videoFeedStart();
   }
