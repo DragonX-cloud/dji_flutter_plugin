@@ -616,7 +616,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     return _fltMediaList
   }
 
-  override fun downloadMedia(fileIndex: Long?): String {
+  override fun downloadMedia(fileIndex: Long): String {
     var _mediaURLString: String = ""
     val _index: Int = fileIndex?.toInt() ?: -1
 
@@ -695,7 +695,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     return _mediaURLString
   }
 
-  override fun deleteMedia(fileIndex: Long?): Boolean {
+  override fun deleteMedia(fileIndex: Long): Boolean {
     var _success: Boolean = false
     val _index: Int = fileIndex?.toInt() ?: -1
 

@@ -65,7 +65,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
     });
   }
 
-  // This function is triggered by the Native Host side whenever a video byte-stream data is sent
+  // This function is triggered by the Native Host side whenever a video byte-stream data is sent.
   @override
   void sendVideo(Stream stream) {
     if (stream.data != null && _videoFeedFile != null) {

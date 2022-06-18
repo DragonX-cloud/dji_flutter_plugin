@@ -25,6 +25,7 @@ It currently supports the following features:
 - Get Media Files List
 - Download Media File by Index
 - Delete Media File by Index
+- Live Video Feed (Raw H264 Byte Stream)
 
 Streaming is not yet supported, but in progress.
 
@@ -251,9 +252,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
   }
   ...
 ```
-#### SetStatus
-Once we defined our private properties that we wish to get from the Drone, let's override the SetStatus method.  
-**The SetStatus method is triggered by the native host side of the plugin whenever the Drone status is changed.**
+#### setStatus
+Once we defined our private properties that we wish to get from the Drone, let's override the `setStatus()` method.  
+**The `setStatus()` method is triggered by the native host side of the plugin whenever the Drone status is changed.**
+
+Example:
 ```
 @override
 void setStatus(Drone drone) async {
@@ -768,6 +771,43 @@ Future<void> _delete() async {
       error: e,
       name: kLogKindDjiFlutterPlugin,
     );
+  }
+}
+```
+
+#### Dji.videoFeedStart
+Starts the DJI Video Feeder.
+Triggers the DJI Camera Preview and streams raw H264 byte-stream to the `DjiFlutterApi.sendVideo(Stream stream)` method.
+The `Stream` class has a `data` property of type `Uint8List` optional.
+The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).
+
+Example:
+```
+static Future<void> videoFeedStart() async {
+  await _api?.videoFeedStart();
+}
+```
+
+#### Dji.videoFeedStop
+Stops the DJI Video Feeder.
+
+Example:
+
+```
+static Future<void> videoFeedStop() async {
+  await _api?.videoFeedStop();
+}
+```
+
+#### sendVideo
+**The `sendVideo()` method is triggered by the native host side of the plugin whenever a video byte-stream is sent.**
+
+Example:
+```
+@override
+void sendVideo(Stream stream) {
+  if (stream.data != null && _videoFeedFile != null) {
+    _videoFeedSink?.add(stream.data!);
   }
 }
 ```

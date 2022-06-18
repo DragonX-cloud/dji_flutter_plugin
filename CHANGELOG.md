@@ -3,6 +3,7 @@
 ## 1.0.0-dev.17
 - Added methods to start and stop the live video feed (a.k.a "preview") of the DJI SDK. Once started, the DJI SDK produces a raw h264 byte-stream from the camera of the drone (Primary Physical Source) and `sendVideo()` method is triggered on the Flutter side, receiving a stream of data (bytes).
 - Update the example accordingly, and used FFmpeg-kit plugin to pipe the video stream in real-time and output an HLS (or MP4) that can be video in near-real-time by the Flutter VLC Video Player.
+- Upgraded Pigeon to latest (v3.1.6)
 
 ## 1.0.0-dev.16
 - Updated readme with the latest new methods examples.
