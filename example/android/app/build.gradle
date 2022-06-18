@@ -49,7 +49,7 @@ android {
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
 
-        //multiDexEnabled true
+        multiDexEnabled true
 
         ndk {
             // On x86 devices that run Android API 23 or above, if the application is targeted with API 23 or
@@ -64,14 +64,14 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig signingConfigs.debug
 
-            shrinkResources true
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // shrinkResources true
+            // minifyEnabled true
+            // proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
         debug {
-            shrinkResources false
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+            // shrinkResources false
+            // minifyEnabled true
+            // proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
 
@@ -85,7 +85,7 @@ flutter {
 }
 
 dependencies {
-    //implementation "androidx.multidex:multidex:2.0.1"
+    implementation "androidx.multidex:multidex:2.0.1"
     implementation "androidx.core:core-ktx:1.8.0"
     implementation "androidx.appcompat:appcompat:1.4.2"
     implementation "com.google.android.material:material:1.6.1"

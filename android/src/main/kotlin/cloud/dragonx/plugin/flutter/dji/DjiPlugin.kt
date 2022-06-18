@@ -7,7 +7,7 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import androidx.annotation.NonNull
-//import androidx.multidex.MultiDex
+import androidx.multidex.MultiDex
 import com.secneo.sdk.Helper
 import dji.common.battery.BatteryState
 import dji.common.camera.SettingsDefinitions
@@ -78,12 +78,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     fltDjiFlutterApi = Messages.DjiFlutterApi(flutterPluginBinding.binaryMessenger)
 
     this.djiPluginContext = flutterPluginBinding.applicationContext
-
-    // Preparing the Video Feed Listener
-    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
-    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-      _fltSendVideo(bytes)
-    }
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
@@ -100,8 +94,14 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     this.djiPluginActivity = binding.activity
 
     // [ ! ] DJI SDK Must be "installed" using this function, before any method of DJI SDK is used.
-    //MultiDex.install(this.djiPluginContext)
+    MultiDex.install(this.djiPluginContext)
     Helper.install(this.djiPluginActivity.application)
+
+    // Preparing the Video Feed Listener
+    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
+    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+      _fltSendVideo(bytes)
+    }
   }
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     onAttachedToActivity(binding)
