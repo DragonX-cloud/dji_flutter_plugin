@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="cloud.dragonx.plugin.flutter.djiExample">
+    package="cloud.dragonx.plugin.flutter.dji_example">
     <!-- Permissions and features -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
@@ -25,7 +25,7 @@
         android:required="true" />
 
     <!-- android:name="androidx.multidex.MultiDexApplication" -->
-    <!-- android:name="cloud.dragonx.plugin.flutter.djiExample.MainApplication" -->
+    <!-- android:name="cloud.dragonx.plugin.flutter.dji_example.MainApplication" -->
     <application
         android:label="dji_example"
         android:icon="@mipmap/ic_launcher">
@@ -39,7 +39,7 @@
         <!-- End of DJI SDK -->
 
         <activity
-            android:name="cloud.dragonx.plugin.flutter.djiExample.MainActivity"
+            android:name="cloud.dragonx.plugin.flutter.dji_example.MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

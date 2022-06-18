@@ -47,7 +47,7 @@ android {
         minSdkVersion 19
         targetSdkVersion 32
 
-        multiDexEnabled true
+//        multiDexEnabled true
 
         ndk {
             // On x86 devices that run Android API 23 or above, if the application is targeted with API 23 or
@@ -109,7 +109,7 @@ dependencies {
     // https://stackoverflow.com/questions/58281124/layout-constraintbottom-totopof-not-found
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 
-    implementation "androidx.multidex:multidex:2.0.1"
+//    implementation "androidx.multidex:multidex:2.0.1"
     implementation "androidx.appcompat:appcompat:1.4.2"
     implementation "com.google.android.material:material:1.6.1"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
