@@ -1,6 +1,4 @@
-  package cloud.dragonx.plugin.flutter.dji
-
-//import dji.midware.util.ContextUtil.getContext
+package cloud.dragonx.plugin.flutter.dji
 
 import android.Manifest
 import android.app.Activity
@@ -36,6 +34,7 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
+import dji.sdk.camera.Camera
 import dji.sdk.camera.VideoFeeder
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -96,12 +95,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     // [ ! ] DJI SDK Must be "installed" using this function, before any method of DJI SDK is used.
     MultiDex.install(this.djiPluginContext)
     Helper.install(this.djiPluginActivity.application)
-
-    // Preparing the Video Feed Listener
-    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
-    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-      _fltSendVideo(bytes)
-    }
   }
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     onAttachedToActivity(binding)
@@ -757,14 +750,24 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
+    // Preparing the Video Feed Listener
+    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
+    if (videoDataListener == null) {
+      Log.d(TAG, "Initializing Video Feeder - Adding Video Data Listener")
+      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+        _fltSendVideo(bytes)
+      }
+    }
     videoDataListener?.let {
       VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
+      Log.d(TAG, "Video feed started")
     }
   }
 
   override fun videoFeedStop() {
     videoDataListener?.let {
       VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
+      Log.d(TAG, "Video feed stopped")
     }
   }
 

@@ -1,4 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="cloud.dragonx.plugin.flutter.dji_example">
     <!-- Permissions and features -->
     <uses-permission android:name="android.permission.BLUETOOTH" />
@@ -11,35 +12,35 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <!--    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
-    <uses-feature
-        android:name="android.hardware.usb.host"
-        android:required="false" />
-    <uses-feature
-        android:name="android.hardware.usb.accessory"
-        android:required="true" />
+    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+    <uses-feature android:name="android.hardware.usb.accessory" android:required="true" />
 
     <!-- android:name="androidx.multidex.MultiDexApplication" -->
     <!-- android:name="cloud.dragonx.plugin.flutter.dji_example.MainApplication" -->
     <application
         android:label="dji_example"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:extractNativeLibs="true"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning">
 
        <!-- Start of DJI SDK -->
        <uses-library android:name="com.android.future.usb.accessory" />
        <uses-library android:name="org.apache.http.legacy" android:required="false" />
+       
        <meta-data
            android:name="com.dji.sdk.API_KEY"
            android:value="23acf68f822be3f065e6f538" />
         <!-- End of DJI SDK -->
 
+        <!-- android:name="cloud.dragonx.plugin.flutter.dji_example.MainActivity"-->
         <activity
-            android:name="cloud.dragonx.plugin.flutter.dji_example.MainActivity"
+            android:name=".MainActivity"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"

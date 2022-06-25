@@ -1,0 +1,2 @@
+Ldji/dji/sdk/camera/VideoFeeder.class
+Ldji/dji/sdk/camera/VideoFeeder$VideoDataListener.class

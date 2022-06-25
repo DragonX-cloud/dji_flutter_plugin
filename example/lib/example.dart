@@ -10,20 +10,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dji/dji.dart';
 import 'constants.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+// import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
+// import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+// import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 // import 'package:path_provider/path_provider.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
 
   @override
-  _ExampleWidgetState createState() => _ExampleWidgetState();
+  ExampleWidgetState createState() => ExampleWidgetState();
 }
 
-class _ExampleWidgetState extends State<ExampleWidget>
-    implements DjiFlutterApi {
+class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   String _droneStatus = 'Disconnected';
   String _droneBatteryPercent = '0';
@@ -35,7 +34,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
-  VlcPlayerController? _vlcController;
+  // VlcPlayerController? _vlcController;
   int? _ffmpegKitSessionId;
   File? _videoFeedFile;
   IOSink? _videoFeedSink;
@@ -70,6 +69,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
   void sendVideo(Stream stream) {
     if (stream.data != null && _videoFeedFile != null) {
       _videoFeedSink?.add(stream.data!);
+
+      developer.log(
+        'sendVideo trigerred - stream data length: ${stream.data?.length}',
+        name: kLogKindDjiFlutterPlugin,
+      );
     }
   }
 
@@ -521,120 +525,122 @@ class _ExampleWidgetState extends State<ExampleWidget>
         name: kLogKindDjiFlutterPlugin,
       );
 
-      FFmpegKitConfig.registerNewFFmpegPipe().then((inputPipe) async {
-        if (inputPipe == null) {
-          developer.log(
-            'Video Feed Start failed - no Input Pipe',
-            name: kLogKindDjiFlutterPlugin,
-          );
+      await Dji.videoFeedStart();
 
-          return;
-        }
+      // FFmpegKitConfig.registerNewFFmpegPipe().then((inputPipe) async {
+      //   if (inputPipe == null) {
+      //     developer.log(
+      //       'Video Feed Start failed - no Input Pipe',
+      //       name: kLogKindDjiFlutterPlugin,
+      //     );
 
-        final String videoFeedPath = inputPipe;
-        _videoFeedFile = File(videoFeedPath);
+      //     return;
+      //   }
 
-        FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
-          if (outputPipe == null) {
-            developer.log(
-              'Video Feed Start failed - no Output Pipe',
-              name: kLogKindDjiFlutterPlugin,
-            );
+      //   final String videoFeedPath = inputPipe;
+      //   _videoFeedFile = File(videoFeedPath);
 
-            return;
-          }
+      //   FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
+      //     if (outputPipe == null) {
+      //       developer.log(
+      //         'Video Feed Start failed - no Output Pipe',
+      //         name: kLogKindDjiFlutterPlugin,
+      //       );
 
-          // We must close the output pipe here, otherwise the FFMPEG convertion won't start.
-          FFmpegKitConfig.closeFFmpegPipe(outputPipe);
+      //       return;
+      //     }
 
-          // Opening the video feed file (input pipe) for writing.
-          _videoFeedSink = _videoFeedFile?.openWrite();
+      //     // We must close the output pipe here, otherwise the FFMPEG convertion won't start.
+      //     FFmpegKitConfig.closeFFmpegPipe(outputPipe);
 
-          // Starting the video feed
-          await Dji.videoFeedStart();
+      //     // Opening the video feed file (input pipe) for writing.
+      //     _videoFeedSink = _videoFeedFile?.openWrite();
 
-          // Initializing the VLC Video Player.
-          setState(() {
-            _vlcController ??= VlcPlayerController.file(
-              File(outputPipe),
-              autoInitialize: true,
-              autoPlay: false,
-              hwAcc: HwAcc.auto,
-              options: VlcPlayerOptions(
-                video: VlcVideoOptions(
-                  [
-                    VlcVideoOptions.dropLateFrames(true),
-                    VlcVideoOptions.skipFrames(true),
-                  ],
-                ),
-                advanced: VlcAdvancedOptions([
-                  VlcAdvancedOptions.fileCaching(0),
-                  VlcAdvancedOptions.networkCaching(0),
-                  VlcAdvancedOptions.liveCaching(0),
-                  VlcAdvancedOptions.clockSynchronization(0),
-                ]),
-                sout: VlcStreamOutputOptions([
-                  VlcStreamOutputOptions.soutMuxCaching(0),
-                ]),
-                extras: [],
-              ),
-            );
-          });
+      //     // Starting the video feed
+      //     await Dji.videoFeedStart();
 
-          // _vlcController?.addOnInitListener(() async {
-          //   developer.log(
-          //     'VLC Player: addOnInitListener - initialized',
-          //     name: kLogKindDjiFlutterPlugin,
-          //   );
-          // });
+      //     // Initializing the VLC Video Player.
+      //     setState(() {
+      //       _vlcController ??= VlcPlayerController.file(
+      //         File(outputPipe),
+      //         autoInitialize: true,
+      //         autoPlay: false,
+      //         hwAcc: HwAcc.auto,
+      //         options: VlcPlayerOptions(
+      //           video: VlcVideoOptions(
+      //             [
+      //               VlcVideoOptions.dropLateFrames(true),
+      //               VlcVideoOptions.skipFrames(true),
+      //             ],
+      //           ),
+      //           advanced: VlcAdvancedOptions([
+      //             VlcAdvancedOptions.fileCaching(0),
+      //             VlcAdvancedOptions.networkCaching(0),
+      //             VlcAdvancedOptions.liveCaching(0),
+      //             VlcAdvancedOptions.clockSynchronization(0),
+      //           ]),
+      //           sout: VlcStreamOutputOptions([
+      //             VlcStreamOutputOptions.soutMuxCaching(0),
+      //           ]),
+      //           extras: [],
+      //         ),
+      //       );
+      //     });
 
-          // Executing the FFMPEG convertion (from the native DJI SDK H264 Raw Byte Stream to HLS for minimal latency)
-          await FFmpegKit.executeAsync(
-            // https://ffmpeg.org/ffmpeg-formats.html
-            // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
-            '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
-            // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            (session) async {
-              _ffmpegKitSessionId = session.getSessionId();
+      //     // _vlcController?.addOnInitListener(() async {
+      //     //   developer.log(
+      //     //     'VLC Player: addOnInitListener - initialized',
+      //     //     name: kLogKindDjiFlutterPlugin,
+      //     //   );
+      //     // });
 
-              developer.log(
-                'FFmpegKit sessionId: $_ffmpegKitSessionId',
-                name: kLogKindDjiFlutterPlugin,
-              );
-            },
-            (log) {
-              // The logs here are disabled because they cause additional latency for some reason.
-              // if (log.getLevel() < 32) {
-              //   developer.log(
-              //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-              //     name: kLogKindDjiFlutterPlugin,
-              //   );
-              // }
-            },
-            (statistics) async {
-              // The logs here are disabled because they cause additional latency for some reason.
-              // developer.log(
-              //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
+      //     // Executing the FFMPEG convertion (from the native DJI SDK H264 Raw Byte Stream to HLS for minimal latency)
+      //     await FFmpegKit.executeAsync(
+      //       // https://ffmpeg.org/ffmpeg-formats.html
+      //       // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
+      //       '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
+      //       // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
+      //       // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+      //       (session) async {
+      //         _ffmpegKitSessionId = session.getSessionId();
 
-              // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
-              if (statistics.getTime() >= 1 &&
-                  await _vlcController?.isPlaying() == false) {
-                developer.log(
-                  'VLC Player: play',
-                  name: kLogKindDjiFlutterPlugin,
-                );
+      //         developer.log(
+      //           'FFmpegKit sessionId: $_ffmpegKitSessionId',
+      //           name: kLogKindDjiFlutterPlugin,
+      //         );
+      //       },
+      //       (log) {
+      //         // The logs here are disabled because they cause additional latency for some reason.
+      //         // if (log.getLevel() < 32) {
+      //         //   developer.log(
+      //         //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
+      //         //     name: kLogKindDjiFlutterPlugin,
+      //         //   );
+      //         // }
+      //       },
+      //       (statistics) async {
+      //         // The logs here are disabled because they cause additional latency for some reason.
+      //         // developer.log(
+      //         //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
+      //         //   name: kLogKindDjiFlutterPlugin,
+      //         // );
 
-                setState(() {
-                  _vlcController?.play();
-                });
-              }
-            },
-          );
-        });
-      });
+      //         // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
+      //         if (statistics.getTime() >= 1 &&
+      //             await _vlcController?.isPlaying() == false) {
+      //           developer.log(
+      //             'VLC Player: play',
+      //             name: kLogKindDjiFlutterPlugin,
+      //           );
+
+      //           setState(() {
+      //             _vlcController?.play();
+      //           });
+      //         }
+      //       },
+      //     );
+      //   });
+      // });
     } on PlatformException catch (e) {
       developer.log(
         'Video Feed Start PlatformException Error',
@@ -660,9 +666,9 @@ class _ExampleWidgetState extends State<ExampleWidget>
       await Dji.videoFeedStop();
       _videoFeedSink?.close();
 
-      _vlcController?.stop();
-      _vlcController?.dispose();
-      _vlcController = null;
+      // _vlcController?.stop();
+      // _vlcController?.dispose();
+      // _vlcController = null;
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -686,13 +692,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              child: _vlcController != null
-                  ? VlcPlayer(
-                      controller: _vlcController!,
-                      aspectRatio: MediaQuery.of(context).size.width /
-                          (MediaQuery.of(context).size.height * 0.2),
-                    )
-                  : Container(),
+              // child: _vlcController != null
+              //     ? VlcPlayer(
+              //         controller: _vlcController!,
+              //         aspectRatio: MediaQuery.of(context).size.width /
+              //             (MediaQuery.of(context).size.height * 0.2),
+              //       )
+              //     : Container(),
             ),
             Expanded(
               child: Row(
