@@ -69,7 +69,20 @@ class _ExampleWidgetState extends State<ExampleWidget>
   @override
   void sendVideo(Stream stream) {
     if (stream.data != null && _videoFeedFile != null) {
-      _videoFeedSink?.add(stream.data!);
+      // developer.log(
+      //   'sendVideo stream data received: ${stream.data?.length}',
+      //   name: kLogKindDjiFlutterPlugin,
+      // );
+
+      try {
+        _videoFeedSink?.add(stream.data!);
+      } catch (e) {
+        developer.log(
+          'sendVideo videoFeedSink Error',
+          error: e,
+          name: kLogKindDjiFlutterPlugin,
+        );
+      }
     }
   }
 
@@ -593,8 +606,13 @@ class _ExampleWidgetState extends State<ExampleWidget>
             // https://ffmpeg.org/ffmpeg-formats.html
             // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
             '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -s 1280x720 -r 15 -f flv $outputPipe',
+            // '-y -i https://file-examples.com/storage/fe88ac389062b75339ed8be/2017/04/file_example_MP4_1920_18MG.mp4 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -i https://file-examples.com/storage/fe88ac389062b75339ed8be/2017/04/file_example_MP4_1920_18MG.mp4 -s 1280x720 -r 25 -b:v 1M -maxrate 1M -bufsize 512K -an -f hls -hls_flags single_file -hls_time 0 -hls_allow_cache 0 $outputPipe',
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
             // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -i https://file-examples.com/storage/fe88ac389062b75339ed8be/2017/04/file_example_MP4_1920_18MG.mp4 -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -605,22 +623,22 @@ class _ExampleWidgetState extends State<ExampleWidget>
             },
             (log) {
               // The logs here are disabled because they cause additional latency for some reason.
-              // if (log.getLevel() < 32) {
-              //   developer.log(
-              //     'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-              //     name: kLogKindDjiFlutterPlugin,
-              //   );
-              // }
+              if (log.getLevel() < 32) {
+                developer.log(
+                  'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
+                  name: kLogKindDjiFlutterPlugin,
+                );
+              }
             },
             (statistics) async {
               // The logs here are disabled because they cause additional latency for some reason.
-              // developer.log(
-              //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
+              developer.log(
+                'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
+                name: kLogKindDjiFlutterPlugin,
+              );
 
               // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
-              if (statistics.getTime() >= 1 &&
+              if (statistics.getTime() >= 3000 &&
                   await _vlcController?.isPlaying() == false) {
                 developer.log(
                   'VLC Player: play',

@@ -1016,4 +1016,11 @@ https://gist.github.com/T1T4N/0ae90716b0c5d1bea39efe94512e1b72
 
 Swift DJICustomVideoFrameExtractor example: 
 https://github.com/Darko28/DJIML/blob/2499fcc50b64c1d22162753ce442da16c0b2c425/DJIML/DJIMLViewController.swift
+
+HLS explained: 
+https://www.toptal.com/apple/introduction-to-http-live-streaming-hls
+
+Solution for how to enable the VideoDataListener on Android: 
+(search for "codecManager.enabledYuvData(true);")
+https://github.com/dji-sdk/Mobile-SDK-Android/issues/352
 	

@@ -1,3 +1,5 @@
+-printusage dji_proguard_usage.txt
+
 -keepattributes Exceptions,InnerClasses,*Annotation*,Signature,EnclosingMethod
 
 -dontoptimize

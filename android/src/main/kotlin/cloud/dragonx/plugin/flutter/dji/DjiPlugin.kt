@@ -18,9 +18,13 @@ import dji.common.flightcontroller.LocationCoordinate3D
 import dji.common.mission.waypoint.*
 import dji.common.model.LocationCoordinate2D
 import dji.common.util.CommonCallbacks
+import dji.midware.usb.P3.UsbAccessoryService
 import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
 import dji.sdk.base.BaseProduct.ComponentKey
+import dji.sdk.camera.VideoFeeder
+import dji.sdk.codec.DJICodecManager
+import dji.sdk.codec.DJICodecManager.YuvDataCallback
 import dji.sdk.flightcontroller.FlightController
 import dji.sdk.media.DownloadListener
 import dji.sdk.media.MediaFile
@@ -36,7 +40,6 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
-import dji.sdk.camera.VideoFeeder
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -48,7 +51,8 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.nio.ByteBuffer
 
-/** DjiPlugin */
+
+  /** DjiPlugin */
 
 class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /// The MethodChannel that will the communication between Flutter and native Android
@@ -71,6 +75,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
 
   private var videoDataListener: VideoFeeder.VideoDataListener? = null
+  private lateinit var codecManager: DJICodecManager
 //  private lateinit var sourceListener: VideoFeeder.PhysicalSourceListener
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -96,12 +101,6 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     // [ ! ] DJI SDK Must be "installed" using this function, before any method of DJI SDK is used.
     MultiDex.install(this.djiPluginContext)
     Helper.install(this.djiPluginActivity.application)
-
-    // Preparing the Video Feed Listener
-    // Note: this must come here, and not inside the videoFeedStart method, because otherwise it would trigger a "class not found" exception.
-    videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-      _fltSendVideo(bytes)
-    }
   }
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
     onAttachedToActivity(binding)
@@ -757,15 +756,42 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-    videoDataListener?.let {
-      VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
+//    if (videoDataListener == null) {
+//      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+//        _fltSendVideo(bytes)
+//      }
+//    }
+//    videoDataListener?.let {
+//      VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
+//    }
+
+    val primaryVideoFeed = VideoFeeder.getInstance()?.primaryVideoFeed
+    if (primaryVideoFeed != null) {
+      Log.d(TAG, "Primary Video Feed exists - ${primaryVideoFeed.videoSource.name}")
+
+      codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
+      codecManager.enabledYuvData(true);
+      codecManager.yuvDataCallback = YuvDataCallback { mediaFormat, byteBuffer, i, i1, i2 ->
+        //Log.d(TAG, "Got new Yuv frame $i  $i1   $i2")
+      }
+    }
+
+    VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener { bytes, _ ->
+      _fltSendVideo(bytes)
     }
   }
 
   override fun videoFeedStop() {
-    videoDataListener?.let {
-      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
-    }
+//    videoDataListener?.let {
+//      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
+//    }
+
+//    VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
+//      _fltSendVideo(bytes)
+//    }
+
+    VideoFeeder.getInstance()?.primaryVideoFeed?.destroy()
+
   }
 
 }
