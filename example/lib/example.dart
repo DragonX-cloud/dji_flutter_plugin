@@ -10,10 +10,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dji/dji.dart';
 import 'constants.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
-// import 'package:path_provider/path_provider.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
@@ -566,10 +566,17 @@ class _ExampleWidgetState extends State<ExampleWidget>
           // Starting the video feed
           await Dji.videoFeedStart();
 
+          final Directory directory = await getTemporaryDirectory();
+          final String outputPath = '${directory.path}/output_test.m3u8';
+          final File outputFile = File(outputPath);
+          if (await outputFile.exists() == true) {
+            outputFile.delete();
+          }
+
           // Initializing the VLC Video Player.
           setState(() {
             _vlcController ??= VlcPlayerController.file(
-              File(outputPipe),
+              File(outputPath),
               autoInitialize: true,
               autoPlay: false,
               hwAcc: HwAcc.auto,
@@ -601,18 +608,23 @@ class _ExampleWidgetState extends State<ExampleWidget>
           //   );
           // });
 
-          // Executing the FFMPEG convertion (from the native DJI SDK H264 Raw Byte Stream to HLS for minimal latency)
+          bool playing = false;
+
+          // Executing the FFMPEG convertion (from the native DJI SDK YUV420p Rawvideo (or H264 Raw) Byte Stream to HLS for minimal latency)
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
             // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
-            '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -f hls -hls_time 0 -hls_allow_cache 0 $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -s 1280x720 -r 15 -f flv $outputPipe',
-            // '-y -i https://file-examples.com/storage/fe88ac389062b75339ed8be/2017/04/file_example_MP4_1920_18MG.mp4 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -i https://file-examples.com/storage/fe88ac389062b75339ed8be/2017/04/file_example_MP4_1920_18MG.mp4 -s 1280x720 -r 25 -b:v 1M -maxrate 1M -bufsize 512K -an -f hls -hls_flags single_file -hls_time 0 -hls_allow_cache 0 $outputPipe',
+
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -s 640x320 -r 15 -f hls -hls_time 1000ms -hls_list_size 1 -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -s 640x320 -r 15 -f hls -hls_time 1000ms -hls_list_size 1 -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
+
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -i https://file-examples.com/storage/fe88ac389062b75339ed8be/2017/04/file_example_MP4_1920_18MG.mp4 -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov $outputPipe',
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -623,23 +635,24 @@ class _ExampleWidgetState extends State<ExampleWidget>
             },
             (log) {
               // The logs here are disabled because they cause additional latency for some reason.
-              if (log.getLevel() < 32) {
-                developer.log(
-                  'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-                  name: kLogKindDjiFlutterPlugin,
-                );
-              }
+              // if (log.getLevel() < 32) {
+              // developer.log(
+              //   'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
+              //   name: kLogKindDjiFlutterPlugin,
+              // );
+              // }
             },
             (statistics) async {
               // The logs here are disabled because they cause additional latency for some reason.
-              developer.log(
-                'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
-                name: kLogKindDjiFlutterPlugin,
-              );
+              // developer.log(
+              //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
+              //   name: kLogKindDjiFlutterPlugin,
+              // );
 
               // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
-              if (statistics.getTime() >= 3000 &&
-                  await _vlcController?.isPlaying() == false) {
+              if (statistics.getTime() > 500 &&
+                  await _vlcController?.isPlaying() == false &&
+                  playing == false) {
                 developer.log(
                   'VLC Player: play',
                   name: kLogKindDjiFlutterPlugin,
@@ -647,6 +660,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
                 setState(() {
                   _vlcController?.play();
+                  playing = true;
                 });
               }
             },

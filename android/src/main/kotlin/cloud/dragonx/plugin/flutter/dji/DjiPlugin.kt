@@ -5,6 +5,8 @@
 import android.Manifest
 import android.app.Activity
 import android.content.Context
+import android.media.MediaCodecInfo
+import android.media.MediaFormat
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.multidex.MultiDex
@@ -40,6 +42,7 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
+import dji.thirdparty.afinal.core.AsyncTask
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -73,10 +76,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   private var drone: Aircraft? = null
   private var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
   private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
-
-  private var videoDataListener: VideoFeeder.VideoDataListener? = null
   private lateinit var codecManager: DJICodecManager
-//  private lateinit var sourceListener: VideoFeeder.PhysicalSourceListener
 
   override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
@@ -756,42 +756,52 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-//    if (videoDataListener == null) {
-//      videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-//        _fltSendVideo(bytes)
-//      }
-//    }
-//    videoDataListener?.let {
-//      VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
-//    }
+    // When I tried to use `VideoFeeder.VideoDataListener` I encountered a class-not-found issue, and couldn't resolve it no matter what I tried.
+    // So the following cannot be used.
+    // Instead, I enabled the YuvDataCallback and somehow that allow the addVideoDataListener to work.
+    // And so I couldn't initialize a VideoDataLister. That's why the following block is commented out.
+    //if (videoDataListener == null) {
+    //  videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+    //    _fltSendVideo(bytes)
+    //  }
+    //}
+    //videoDataListener?.let {
+    //  VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
+    //}
 
-    val primaryVideoFeed = VideoFeeder.getInstance()?.primaryVideoFeed
-    if (primaryVideoFeed != null) {
-      Log.d(TAG, "Primary Video Feed exists - ${primaryVideoFeed.videoSource.name}")
-
-      codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
-      codecManager.enabledYuvData(true);
-      codecManager.yuvDataCallback = YuvDataCallback { mediaFormat, byteBuffer, i, i1, i2 ->
-        //Log.d(TAG, "Got new Yuv frame $i  $i1   $i2")
-      }
-    }
-
-    VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener { bytes, _ ->
+    // In order for the `VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener` to work
+    // we must enable the `codecManager.enabledYuvData(true)`.
+    // Otherwise, the YuvDataCallback won't work.
+    // And also the privaryVideoFeed.addVideoDataLintener won't.
+    // Please note that the videoDataListender callback cannot work in parallel to YuvDataCallback.
+    // If you define both callbacks - only one of them will stream data.
+    // I decided to use the YUV format of the YuvDataCallback (and not the videoDataListener which produces Raw H264), because when
+    // converting the byte-stream on the Flutter side - the H264 byte-stream produced much lower quality than the YUV frames.
+    codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
+    codecManager.enabledYuvData(true);
+    codecManager.yuvDataCallback = YuvDataCallback { format, yuvFrame, dataSize, width, height ->
+      // To stream YUV format (raw video) byte-stream
+      val bytes = ByteArray(dataSize)
+      yuvFrame.get(bytes)
       _fltSendVideo(bytes)
     }
+
+    // [!] Important Note
+    // If we add the video-data-listener below - then the YuvDataCallback will NOT work.
+    // For some reason, they don't work in parallel.
+    //VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener { bytes, _ ->
+    //  // To stream raw H264 byte-stream
+    //  _fltSendVideo(bytes)
+    //}
   }
 
   override fun videoFeedStop() {
-//    videoDataListener?.let {
-//      VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener(it)
-//    }
-
-//    VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
-//      _fltSendVideo(bytes)
-//    }
-
+    codecManager.enabledYuvData(false);
+    codecManager.yuvDataCallback = null
     VideoFeeder.getInstance()?.primaryVideoFeed?.destroy()
-
+    //VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
+    //  _fltSendVideo(bytes)
+    //}
   }
 
 }

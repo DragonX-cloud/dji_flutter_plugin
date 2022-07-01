@@ -76,6 +76,7 @@ android {
     }
 
     packagingOptions {
+        pickFirst "lib/*/libc++_shared.so"
         exclude "META-INF/rxjava.properties"
     }
 }

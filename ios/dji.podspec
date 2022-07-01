@@ -16,7 +16,7 @@ A new flutter plugin project.
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
   s.dependency 'DJI-SDK-iOS', '~> 4.16'
-  s.dependency 'DJI-UXSDK-iOS', '~> 4.14'
+  s.dependency 'DJI-UXSDK-iOS', '~> 4.16'
   s.dependency 'DJIWidget','~> 1.6.6'
   s.platform = :ios, '12.0'
 

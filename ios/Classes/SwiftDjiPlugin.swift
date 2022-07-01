@@ -4,7 +4,7 @@ import DJIWidget
 import Flutter
 import UIKit
 
-public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener {
+public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener, VideoFrameProcessor {
 	
 	static var fltDjiFlutterApi: FLTDjiFlutterApi?
 	let fltDrone = FLTDrone()
@@ -571,17 +571,93 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	public func videoFeedStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
+		
+		DJIVideoPreviewer.instance().type = .none
+		DJIVideoPreviewer.instance().enableHardwareDecode = true
+		DJIVideoPreviewer.instance().enableFastUpload = true
+		DJIVideoPreviewer.instance().encoderType = ._MavicAir
+		DJIVideoPreviewer.instance().registFrameProcessor(self)
+		DJIVideoPreviewer.instance().start()
 	}
 	
 	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
+		
+		DJIVideoPreviewer.instance().close()
+	}
+	
+	public func videoProcessorEnabled() -> Bool {
+		return true
 	}
 	
 	// MARK: - Video Feed Delegate Methods
 	
 	public func videoFeed(_ videoFeed: DJIVideoFeed, didUpdateVideoData videoData: Data) {
 		// Sending the data (H264 Raw byte-stream) to Flutter as Uint8List
-		_fltSendVideo(videoData)
+		//_fltSendVideo(videoData)
+		
+		// Push video buffer into the DJI Video Previewer
+		let videoNSData = videoData as NSData
+		let videoBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: videoNSData.length)
+		videoNSData.getBytes(videoBuffer, length: videoNSData.length)
+		DJIVideoPreviewer.instance().push(videoBuffer, length: Int32(videoNSData.length))
+	}
+	
+	public func videoProcessFrame(_ frame: UnsafeMutablePointer<VideoFrameYUV>!) {
+//		if let buffer = frame.pointee.cv_pixelbuffer_fastupload {
+//			let videoData = Data([UInt8](arrayLiteral: buffer.load(as: UInt8.self)))
+//			_fltSendVideo(videoData)
+//		}
+
+        if frame.pointee.cv_pixelbuffer_fastupload != nil {
+            //  cv_pixelbuffer_fastupload to CVPixelBuffer
+            let cvBuf = unsafeBitCast(frame.pointee.cv_pixelbuffer_fastupload, to: CVPixelBuffer.self)
+            let videoData = Data.from(pixelBuffer: cvBuf)
+			
+			//print("=== DjiPlugin iOS: videoProcessFrame - cv_pixelbuffer_fastupload - videoData: \(videoData)")
+			_fltSendVideo(videoData)
+        } else {
+            // create CVPixelBuffer by your own, createPixelBuffer() is an extension function for VideoFrameYUV
+            let pixelBuffer = createPixelBuffer(fromFrame: frame.pointee)
+            guard let cvBuf = pixelBuffer else { return }
+            let videoData = Data.from(pixelBuffer: cvBuf)
+			
+			//print("=== DjiPlugin iOS: videoProcessFrame - createPixelBuffer - videoData: \(videoData)")
+			_fltSendVideo(videoData)
+        }
+	}
+	
+	func createPixelBuffer(fromFrame frame: VideoFrameYUV) -> CVPixelBuffer? {
+		var initialPixelBuffer: CVPixelBuffer?
+		let _: CVReturn = CVPixelBufferCreate(kCFAllocatorDefault, Int(frame.width), Int(frame.height), kCVPixelFormatType_420YpCbCr8Planar, nil, &initialPixelBuffer)
+		
+		guard let pixelBuffer = initialPixelBuffer,
+			CVPixelBufferLockBaseAddress(pixelBuffer, []) == kCVReturnSuccess
+			else {
+			return nil
+		}
+		
+		let yPlaneWidth = CVPixelBufferGetWidthOfPlane(pixelBuffer, 0)
+		let yPlaneHeight = CVPixelBufferGetHeightOfPlane(pixelBuffer, 0)
+		
+		let uPlaneWidth = CVPixelBufferGetWidthOfPlane(pixelBuffer, 1)
+		let uPlaneHeight = CVPixelBufferGetHeightOfPlane(pixelBuffer, 1)
+		
+		let vPlaneWidth = CVPixelBufferGetWidthOfPlane(pixelBuffer, 2)
+		let vPlaneHeight = CVPixelBufferGetHeightOfPlane(pixelBuffer, 2)
+		
+		let yDestination = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0)
+		memcpy(yDestination, frame.luma, yPlaneWidth * yPlaneHeight)
+		
+		let uDestination = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1)
+		memcpy(uDestination, frame.chromaB, uPlaneWidth * uPlaneHeight)
+		
+		let vDestination = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 2)
+		memcpy(vDestination, frame.chromaR, vPlaneWidth * vPlaneHeight)
+		
+		CVPixelBufferUnlockBaseAddress(pixelBuffer, [])
+		
+		return pixelBuffer
 	}
 
 	// MARK: - DJISDKManager Delegate Methods
