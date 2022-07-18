@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0-dev.19
+- Bumbed version to .19 due to a minor publishing issue (no code change).
+
 ## 1.0.0-dev.18
 - Finalized Android platform video feed updates.
 - Updated both Android and iOS to send rawvideo YUV420p frames (instead of the raw H264) in order to achieve higher quality.
