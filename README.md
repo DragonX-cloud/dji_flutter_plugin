@@ -27,8 +27,6 @@ It currently supports the following features:
 - Delete Media File by Index
 - Live Video Feed (rawvideo YUV420p)
 
-Streaming is not yet supported, but in progress.
-
 ## SETUP
 Before you start using the DJI Flutter plugin, you must first perform some initial setup and configurations as required by DJI SDK.
 
