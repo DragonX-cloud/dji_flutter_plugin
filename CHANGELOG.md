@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0-dev.20
+- Updated readme.
+
 ## 1.0.0-dev.19
 - Bumbed version to .19 due to a minor publishing issue (no code change).
 
