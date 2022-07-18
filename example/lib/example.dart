@@ -12,18 +12,17 @@ import 'package:dji/dji.dart';
 import 'constants.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
 
   @override
-  _ExampleWidgetState createState() => _ExampleWidgetState();
+  ExampleWidgetState createState() => ExampleWidgetState();
 }
 
-class _ExampleWidgetState extends State<ExampleWidget>
-    implements DjiFlutterApi {
+class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   String _droneStatus = 'Disconnected';
   String _droneBatteryPercent = '0';
@@ -610,19 +609,11 @@ class _ExampleWidgetState extends State<ExampleWidget>
 
           bool playing = false;
 
-          // Executing the FFMPEG convertion (from the native DJI SDK YUV420p Rawvideo (or H264 Raw) Byte Stream to HLS for minimal latency)
+          // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
-            // Using "-re" causes the input to stream-in slower, but we want the convertion to be done ASAP, so we don't use it.
-
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -s 640x320 -r 15 -f hls -hls_time 1000ms -hls_list_size 1 -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -flags low_delay -s 640x320 -r 15 -f hls -hls_time 1000ms -hls_list_size 1 -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
             '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
-
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov -an $outputPath',
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
 
             (session) async {
@@ -854,7 +845,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
                             ),
                             DronePropertyRow(
                               label: 'Drone Battery',
-                              value: _droneBatteryPercent + '%',
+                              value: '$_droneBatteryPercent%',
                             ),
                             DronePropertyRow(
                               label: 'Altitude',

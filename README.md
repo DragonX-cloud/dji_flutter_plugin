@@ -25,7 +25,7 @@ It currently supports the following features:
 - Get Media Files List
 - Download Media File by Index
 - Delete Media File by Index
-- Live Video Feed (Raw H264 Byte Stream)
+- Live Video Feed (rawvideo YUV420p)
 
 Streaming is not yet supported, but in progress.
 
@@ -777,7 +777,7 @@ Future<void> _delete() async {
 
 #### Dji.videoFeedStart
 Starts the DJI Video Feeder.
-Triggers the DJI Camera Preview and streams raw H264 byte-stream to the `DjiFlutterApi.sendVideo(Stream stream)` method.
+Triggers the DJI Camera Preview and streams YUV420p rawvideo byte-stream to the `DjiFlutterApi.sendVideo(Stream stream)` method.
 The `Stream` class has a `data` property of type `Uint8List` optional.
 The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).
 
@@ -948,6 +948,9 @@ To output stream by pipe and play:
 ffmpeg -i ./video_feed.mp4 -f mpegts - | ffplay -
 ```
 
+*Note:* 
+The DJI Flutter plugin converts the H264 to YUV420p and so the sendVideo() method streams rawvideo YUV frames (and not H264 raw).
+
 To use FFMPEG in Flutter - use this package: 
 https://pub.dev/packages/ffmpeg_kit_flutter
 
@@ -960,8 +963,7 @@ Tips about FFmpegKit:
 ```
 3. Go into your iOS folder and run `pod install`
 
-
-What is FFMPEG:
+What is FFMPEG: 
 https://medium.com/hamza-solutions/ffmpeg-tool-with-flutter-ac1d68c2fddb
 
 Flutter & MUX: 

@@ -73,6 +73,7 @@ It currently supports the following features:</p>
 <li>Get Media Files List</li>
 <li>Download Media File by Index</li>
 <li>Delete Media File by Index</li>
+<li>Live Video Feed (rawvideo YUV420p)</li>
 </ul>
 <p>Streaming is not yet supported, but in progress.</p>
 <h2 id="setup">SETUP</h2>
@@ -284,9 +285,10 @@ This is handled by the <code>DjiFlutterApi</code> class.</p>
   }
   ...
 </code></pre>
-<h4 id="setstatus">SetStatus</h4>
-<p>Once we defined our private properties that we wish to get from the Drone, let's override the SetStatus method.<br>
-<strong>The SetStatus method is triggered by the native host side of the plugin whenever the Drone status is changed.</strong></p>
+<h4 id="setstatus">setStatus</h4>
+<p>Once we defined our private properties that we wish to get from the Drone, let's override the <code>setStatus()</code> method.<br>
+<strong>The <code>setStatus()</code> method is triggered by the native host side of the plugin whenever the Drone status is changed.</strong></p>
+<p>Example:</p>
 <pre class="language-dart"><code>@override
 void setStatus(Drone drone) async {
   setState(() {
@@ -776,6 +778,33 @@ The <code>getMediaList()</code> must be triggered before using <code>downloadMed
   }
 }
 </code></pre>
+<h4 id="djivideofeedstart">Dji.videoFeedStart</h4>
+<p>Starts the DJI Video Feeder.
+Triggers the DJI Camera Preview and streams YUV420p rawvideo byte-stream to the <code>DjiFlutterApi.sendVideo(Stream stream)</code> method.
+The <code>Stream</code> class has a <code>data</code> property of type <code>Uint8List</code> optional.
+The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).</p>
+<p>Example:</p>
+<pre class="language-dart"><code>static Future&lt;void&gt; videoFeedStart() async {
+  await _api?.videoFeedStart();
+}
+</code></pre>
+<h4 id="djivideofeedstop">Dji.videoFeedStop</h4>
+<p>Stops the DJI Video Feeder.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>static Future&lt;void&gt; videoFeedStop() async {
+  await _api?.videoFeedStop();
+}
+</code></pre>
+<h4 id="sendvideo">sendVideo</h4>
+<p><strong>The <code>sendVideo()</code> method is triggered by the native host side of the plugin whenever a video byte-stream is sent.</strong></p>
+<p>Example:</p>
+<pre class="language-dart"><code>@override
+void sendVideo(Stream stream) {
+  if (stream.data != null &amp;&amp; _videoFeedFile != null) {
+    _videoFeedSink?.add(stream.data!);
+  }
+}
+</code></pre>
 <h2 id="tech-notes">TECH NOTES</h2>
 <h3 id="plugin-creation-notes">Plugin Creation Notes</h3>
 <p>This project was created by the Flutter plugin template using:</p>
@@ -877,6 +906,8 @@ dart pub publish
 <p>To output stream by pipe and play:</p>
 <pre class="language-dart"><code>ffmpeg -i ./video_feed.mp4 -f mpegts - | ffplay -
 </code></pre>
+<p><em>Note:</em> 
+The DJI Flutter plugin converts the H264 to YUV420p and so the sendVideo() method streams rawvideo YUV frames (and not H264 raw).</p>
 <p>To use FFMPEG in Flutter - use this package: 
 <a href="https://pub.dev/packages/ffmpeg_kit_flutter">https://pub.dev/packages/ffmpeg_kit_flutter</a></p>
 <p>Tips about FFmpegKit:</p>
@@ -890,7 +921,7 @@ dart pub publish
 <ol start="3">
 <li>Go into your iOS folder and run <code>pod install</code></li>
 </ol>
-<p>What is FFMPEG:
+<p>What is FFMPEG: 
 <a href="https://medium.com/hamza-solutions/ffmpeg-tool-with-flutter-ac1d68c2fddb">https://medium.com/hamza-solutions/ffmpeg-tool-with-flutter-ac1d68c2fddb</a></p>
 <p>Flutter &amp; MUX: 
 <a href="https://blog.codemagic.io/build-video-streaming-with-flutter-and-mux/">https://blog.codemagic.io/build-video-streaming-with-flutter-and-mux/</a></p>
@@ -931,6 +962,11 @@ How to pipe ffmpeg output to video_player flutter widget:
 <a href="https://gist.github.com/T1T4N/0ae90716b0c5d1bea39efe94512e1b72">https://gist.github.com/T1T4N/0ae90716b0c5d1bea39efe94512e1b72</a></p>
 <p>Swift DJICustomVideoFrameExtractor example: 
 <a href="https://github.com/Darko28/DJIML/blob/2499fcc50b64c1d22162753ce442da16c0b2c425/DJIML/DJIMLViewController.swift">https://github.com/Darko28/DJIML/blob/2499fcc50b64c1d22162753ce442da16c0b2c425/DJIML/DJIMLViewController.swift</a></p>
+<p>HLS explained: 
+<a href="https://www.toptal.com/apple/introduction-to-http-live-streaming-hls">https://www.toptal.com/apple/introduction-to-http-live-streaming-hls</a></p>
+<p>Solution for how to enable the VideoDataListener on Android: 
+(search for "codecManager.enabledYuvData(true);")
+<a href="https://github.com/dji-sdk/Mobile-SDK-Android/issues/352">https://github.com/dji-sdk/Mobile-SDK-Android/issues/352</a></p>
 </section>
 
 
@@ -993,7 +1029,7 @@ How to pipe ffmpeg output to video_player flutter widget:
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.17
+      1.0.0-dev.18
   </span>
 
   

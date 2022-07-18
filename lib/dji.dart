@@ -394,7 +394,7 @@ class Dji {
 
   /// Starts the DJI Video Feeder.
   ///
-  /// Triggers the DJI Camera Preview and streams raw H264 byte-stream to the `DjiFlutterApi.sendVideo(Stream stream)` method.
+  /// Triggers the DJI Camera Preview and streams rawvideo YUV420p byte-stream to the `DjiFlutterApi.sendVideo(Stream stream)` method.
   /// The `Stream` class has a `data` property of type `Uint8List` optional.
   /// The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).
   static Future<void> videoFeedStart() async {

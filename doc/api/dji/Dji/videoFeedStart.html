@@ -61,7 +61,8 @@
     
 <section class="desc markdown">
   <p>Starts the DJI Video Feeder.</p>
-<p>Triggers the DJI Camera Preview and streams raw H264 byte-stream to the sendVideo() method.
+<p>Triggers the DJI Camera Preview and streams rawvideo YUV420p byte-stream to the <code>DjiFlutterApi.sendVideo(Stream stream)</code> method.
+The <code>Stream</code> class has a <code>data</code> property of type <code>Uint8List</code> optional.
 The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).</p>
 </section>
 
@@ -143,7 +144,7 @@ The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (s
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.17
+      1.0.0-dev.18
   </span>
 
   
