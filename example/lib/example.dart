@@ -608,11 +608,12 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           // });
 
           bool playing = false;
+          int hlsTimeDurationInMs = 1000;
 
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
-            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -hls_allow_cache 0 -an $outputPath',
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
 
@@ -640,12 +641,14 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               //   name: kLogKindDjiFlutterPlugin,
               // );
 
-              // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
-              if (statistics.getTime() > 500 &&
+              // For .hls, using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're also checking for .getTime() >= X (where X must be equal or greater than the hls_time split) and checking whether the video is already playing.
+              // For .mp4, we can also use .getBitrate() > 20 to detect when it's a proper time to start playing.
+              if (statistics.getVideoFrameNumber() > 0 &&
+                  statistics.getTime() > hlsTimeDurationInMs &&
                   await _vlcController?.isPlaying() == false &&
                   playing == false) {
                 developer.log(
-                  'VLC Player: play',
+                  'VLC Player: play $outputPath',
                   name: kLogKindDjiFlutterPlugin,
                 );
 
