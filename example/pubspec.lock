@@ -163,6 +163,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.0"
+  local_assets_server:
+    dependency: "direct main"
+    description:
+      name: local_assets_server
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.2+12"
   matcher:
     dependency: transitive
     description:
@@ -184,6 +191,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.7.0"
+  mime:
+    dependency: transitive
+    description:
+      name: mime
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.2"
   path:
     dependency: transitive
     description:

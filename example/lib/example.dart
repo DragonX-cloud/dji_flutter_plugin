@@ -17,6 +17,7 @@ import 'package:path_provider/path_provider.dart';
 // import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 // import 'package:native_video_view/native_video_view.dart';
 import 'package:better_player/better_player.dart';
+import 'package:local_assets_server/local_assets_server.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
@@ -43,8 +44,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   int? _ffmpegKitSessionId;
   File? _videoFeedFile;
   IOSink? _videoFeedSink;
-  File? _videoFeedFileEndResult;
-  Uint8List? _liveStream;
+  // File? _videoFeedFileEndResult;
+  String outputFileName = 'output_test.m3u8';
+  String? localServerUrl;
 
   @override
   void initState() {
@@ -82,7 +84,6 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
       try {
         _videoFeedSink?.add(stream.data!);
-        _liveStream = stream.data!;
       } catch (e) {
         developer.log(
           'sendVideo videoFeedSink Error',
@@ -597,14 +598,30 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           await Dji.videoFeedStart();
 
           final Directory directory = await getTemporaryDirectory();
-          final String outputPath = '${directory.path}/output_test.m3u8';
-          // final String outputPath = '${directory.path}/output_test.mp4';
+          final String outputPath = '${directory.path}/$outputFileName';
           final File outputFile = File(outputPath);
           if (await outputFile.exists() == true) {
             outputFile.delete();
           }
 
-          _videoFeedFileEndResult = outputFile;
+          // _videoFeedFileEndResult = outputFile;
+
+          // Setting up the local server
+          final server = LocalAssetsServer(
+            address: InternetAddress.loopbackIPv4,
+            assetsBasePath: '',
+            rootDir: Directory(directory.path),
+            port: 8080,
+            logger: const DebugLogger(),
+          );
+
+          await server.serve();
+          localServerUrl = 'http://${server.address.address}:${server.port}';
+
+          developer.log(
+            'Server Address $localServerUrl',
+            name: kLogKindDjiFlutterPlugin,
+          );
 
           // Initializing the VLC Video Player.
           // setState(() {
@@ -649,19 +666,18 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           //   );
           // });
 
-          bool playing = false;
-
           // Using HLS Base URL to include a full URL (file:///) inside the .m3u8 file.
-          final hlsBaseUrl = directory.uri.toString();
-          developer.log(
-            'FFMpeg HLS Base URL $hlsBaseUrl}',
-            name: kLogKindDjiFlutterPlugin,
-          );
+          // final hlsBaseUrl = directory.uri.toString();
+          // developer.log(
+          //   'FFMpeg HLS Base URL $hlsBaseUrl}',
+          //   name: kLogKindDjiFlutterPlugin,
+          // );
 
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
-            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time+delete_segments -hls_allow_cache 0 -hls_base_url $hlsBaseUrl -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time+delete_segments -hls_allow_cache 0 -hls_base_url $hlsBaseUrl -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
 
@@ -733,45 +749,45 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               //   });
               // }
 
-              // if (statistics.getTime() >= 500 &&
-              //     _betterPlayerController == null) {
-              //   developer.log(
-              //     'BetterPlayer Video - Play outputPath $outputPath',
-              //     name: kLogKindDjiFlutterPlugin,
-              //   );
+              if (statistics.getTime() >= 500 &&
+                  _betterPlayerController == null) {
+                developer.log(
+                  'BetterPlayer Video - Play outputPath $outputPath',
+                  name: kLogKindDjiFlutterPlugin,
+                );
 
-              //   setState(() {
-              //     // The following doesn't work because the BetterPlayer / Native Video View are unable to play local HLS file
-              //     // Nor is it able to play an .mp4 file while it's still being written.
-              //     // The only player that managed to play local HLS files was the VLC Player.
+                setState(() {
+                  // The following doesn't work because the BetterPlayer / Native Video View are unable to play local HLS file
+                  // Nor is it able to play an .mp4 file while it's still being written.
+                  // The only player that managed to play local HLS files was the VLC Player.
 
-              //     _betterPlayerController = BetterPlayerController(
-              //       const BetterPlayerConfiguration(
-              //         autoPlay: true,
-              //       ),
-              //       betterPlayerDataSource: BetterPlayerDataSource(
-              //         BetterPlayerDataSourceType.file,
-              //         outputPath,
-              //         liveStream: true,
-              //       ),
-              //     );
+                  _betterPlayerController = BetterPlayerController(
+                    const BetterPlayerConfiguration(
+                      autoPlay: true,
+                    ),
+                    betterPlayerDataSource: BetterPlayerDataSource(
+                      BetterPlayerDataSourceType.network,
+                      '$localServerUrl/$outputFileName',
+                      liveStream: true,
+                    ),
+                  );
 
-              //     // _betterPlayerController
-              //     //     ?.setupDataSource(
-              //     //   BetterPlayerDataSource.file(outputPath),
-              //     // )
-              //     //     .then((_) {
-              //     //   _betterPlayerController?.play();
-              //     // }).onError((error, stackTrace) {
-              //     //   developer.log(
-              //     //     'BetterPlayer Video - Error',
-              //     //     name: kLogKindDjiFlutterPlugin,
-              //     //     error: error,
-              //     //     stackTrace: stackTrace,
-              //     //   );
-              //     // });
-              //   });
-              // }
+                  // _betterPlayerController
+                  //     ?.setupDataSource(
+                  //   BetterPlayerDataSource.file(outputPath),
+                  // )
+                  //     .then((_) {
+                  //   _betterPlayerController?.play();
+                  // }).onError((error, stackTrace) {
+                  //   developer.log(
+                  //     'BetterPlayer Video - Error',
+                  //     name: kLogKindDjiFlutterPlugin,
+                  //     error: error,
+                  //     stackTrace: stackTrace,
+                  //   );
+                  // });
+                });
+              }
             },
           );
         });
@@ -811,28 +827,29 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
       // The BetterPlayer / Native Video View are unable to play local HLS file or .mp4 file while it's being written.
       // So only the following works - after we stop the incoming video stream - we can play the end-result file.
-      if (_betterPlayerController == null && _videoFeedFile != null) {
-        final video = _videoFeedFileEndResult!.uri.toString();
+      // if (_betterPlayerController == null && _videoFeedFile != null) {
+      //   // final video = _videoFeedFileEndResult!.uri.toString();
+      //   final video = '$localServerUrl/$outputFileName';
 
-        developer.log(
-          'BetterPlayer Video - Play after ffmpeg ended: $video',
-          name: kLogKindDjiFlutterPlugin,
-        );
+      //   developer.log(
+      //     'BetterPlayer Video - Play after ffmpeg ended: $video',
+      //     name: kLogKindDjiFlutterPlugin,
+      //   );
 
-        setState(() {
-          _betterPlayerController = BetterPlayerController(
-            const BetterPlayerConfiguration(
-              autoPlay: true,
-            ),
-            betterPlayerDataSource: BetterPlayerDataSource(
-              BetterPlayerDataSourceType.file,
-              video,
-              liveStream: false,
-              // videoFormat: BetterPlayerVideoFormat.ss,
-            ),
-          );
-        });
-      }
+      //   setState(() {
+      //     _betterPlayerController = BetterPlayerController(
+      //       const BetterPlayerConfiguration(
+      //         autoPlay: true,
+      //       ),
+      //       betterPlayerDataSource: BetterPlayerDataSource(
+      //         BetterPlayerDataSourceType.network,
+      //         video,
+      //         liveStream: true,
+      //         // videoFormat: BetterPlayerVideoFormat.ss,
+      //       ),
+      //     );
+      //   });
+      // }
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
