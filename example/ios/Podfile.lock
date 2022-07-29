@@ -1,4 +1,11 @@
 PODS:
+  - better_player (0.0.1):
+    - Cache (~> 6.0.0)
+    - Flutter
+    - GCDWebServer
+    - HLSCachingReverseProxyServer
+    - PINCache
+  - Cache (6.0.0)
   - dji (1.0.0):
     - DJI-SDK-iOS (~> 4.16)
     - DJI-UXSDK-iOS (~> 4.16)
@@ -15,41 +22,62 @@ PODS:
     - ffmpeg-kit-ios-full-gpl (= 4.5.1)
     - Flutter
   - Flutter (1.0.0)
-  - flutter_vlc_player (3.0.3):
-    - Flutter
-    - MobileVLCKit (~> 3.4)
-  - MobileVLCKit (3.4.0)
+  - GCDWebServer (3.5.4):
+    - GCDWebServer/Core (= 3.5.4)
+  - GCDWebServer/Core (3.5.4)
+  - HLSCachingReverseProxyServer (0.1.0):
+    - GCDWebServer (~> 3.5)
+    - PINCache (>= 3.0.1-beta.3)
   - path_provider_ios (0.0.1):
+    - Flutter
+  - PINCache (3.0.3):
+    - PINCache/Arc-exception-safe (= 3.0.3)
+    - PINCache/Core (= 3.0.3)
+  - PINCache/Arc-exception-safe (3.0.3):
+    - PINCache/Core
+  - PINCache/Core (3.0.3):
+    - PINOperation (~> 1.2.1)
+  - PINOperation (1.2.1)
+  - wakelock (0.0.1):
     - Flutter
 
 DEPENDENCIES:
+  - better_player (from `.symlinks/plugins/better_player/ios`)
   - dji (from `.symlinks/plugins/dji/ios`)
   - ffmpeg_kit_flutter_full_gpl (from `.symlinks/plugins/ffmpeg_kit_flutter_full_gpl/ios`)
   - Flutter (from `Flutter`)
-  - flutter_vlc_player (from `.symlinks/plugins/flutter_vlc_player/ios`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
+  - wakelock (from `.symlinks/plugins/wakelock/ios`)
 
 SPEC REPOS:
   trunk:
+    - Cache
     - DJI-SDK-iOS
     - DJI-UXSDK-iOS
     - DJIWidget
     - ffmpeg-kit-ios-full-gpl
-    - MobileVLCKit
+    - GCDWebServer
+    - HLSCachingReverseProxyServer
+    - PINCache
+    - PINOperation
 
 EXTERNAL SOURCES:
+  better_player:
+    :path: ".symlinks/plugins/better_player/ios"
   dji:
     :path: ".symlinks/plugins/dji/ios"
   ffmpeg_kit_flutter_full_gpl:
     :path: ".symlinks/plugins/ffmpeg_kit_flutter_full_gpl/ios"
   Flutter:
     :path: Flutter
-  flutter_vlc_player:
-    :path: ".symlinks/plugins/flutter_vlc_player/ios"
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
+  wakelock:
+    :path: ".symlinks/plugins/wakelock/ios"
 
 SPEC CHECKSUMS:
+  better_player: 2406bfe8175203c7a46fa15f9d778d73b12e1646
+  Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
   dji: 1d340c8a5b809059776fa3dbb56107fb9bf1f99e
   DJI-SDK-iOS: 1eea401c947433562e268f9cce25f1ea5c132875
   DJI-UXSDK-iOS: d9f9b0ce3eed694254e41e078f0592b48924c59e
@@ -57,9 +85,12 @@ SPEC CHECKSUMS:
   ffmpeg-kit-ios-full-gpl: 9eb5c2e17ba5dea1b1b83cff35b54918b683b67f
   ffmpeg_kit_flutter_full_gpl: a1dce80f36bb0972ddeb0db314aef924f4a57988
   Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  flutter_vlc_player: a0bd756da5d2456f6d26963976616185a65ec677
-  MobileVLCKit: 20ccee43f7788a94ea1f67179e33d9600779dfd9
+  GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
+  HLSCachingReverseProxyServer: 59935e1e0244ad7f3375d75b5ef46e8eb26ab181
   path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  PINCache: 7a8fc1a691173d21dbddbf86cd515de6efa55086
+  PINOperation: 00c935935f1e8cf0d1e2d6b542e75b88fc3e5e20
+  wakelock: d0fc7c864128eac40eba1617cb5264d9c940b46f
 
 PODFILE CHECKSUM: 0159830b6c81f285f578c4b7f7e7a5b126a21162
 
