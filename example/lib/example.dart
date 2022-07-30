@@ -566,7 +566,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           await Dji.videoFeedStart();
 
           final Directory directory = await getTemporaryDirectory();
-          final String outputPath = '${directory.path}/output_test.m3u8';
+          final String outputPath = '${directory.path}/output.m3u8';
           final File outputFile = File(outputPath);
           if (await outputFile.exists() == true) {
             outputFile.delete();
@@ -613,7 +613,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
-            '-y -f rawvideo -video_size 1280x720 -r 30 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -framerate 30 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
 
