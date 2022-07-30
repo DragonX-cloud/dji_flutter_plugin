@@ -996,6 +996,8 @@ https://superuser.com/questions/1676797/how-to-convince-ffmpeg-that-input-is-raw
 https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format
 How to pipe ffmpeg output to video_player flutter widget: 
 https://github.com/tanersener/flutter-ffmpeg/issues/92
+VLC Latency at start:
+https://code.videolan.org/videolan/vlc/-/issues/26539
 
 https://github.com/tanersener/flutter-ffmpeg/issues/71
 https://programmer.group/basic-usage-of-ffmpeg.html

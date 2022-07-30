@@ -612,7 +612,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
             assetsBasePath: '',
             rootDir: Directory(directory.path),
             port: 8080,
-            logger: const DebugLogger(),
+            // logger: const DebugLogger(),
           );
 
           await server.serve();
@@ -673,14 +673,24 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           //   name: kLogKindDjiFlutterPlugin,
           // );
 
+          const hlsTimeDurationInMs = 500;
+
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time+delete_segments -hls_allow_cache 0 -hls_base_url $hlsBaseUrl -an $outputPath',
-            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -r 30 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time 500ms -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
-            // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // Explanation about -framerate vs. -r vs -fps: https://stackoverflow.com/questions/51143100/framerate-vs-r-vs-filter-fps
 
+            // HLS
+            // '-y -i https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4 -s 640x320 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -r 15 -i $inputPipe -s 640x320 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -hls_allow_cache 0 -an $outputPath',
+
+            // DASH
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -r 15 -i $inputPipe -s 640x320 -r 15 -f dash -seg_duration ${hlsTimeDurationInMs}ms -remove_at_exit 1 -streaming 1 -an $outputPath',
+
+            // MP4
+            // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // '-y -i https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4 -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -700,10 +710,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
             },
             (statistics) async {
               // The logs here are disabled because they cause additional latency for some reason.
-              // developer.log(
-              //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
+              developer.log(
+                'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
+                name: kLogKindDjiFlutterPlugin,
+              );
 
               // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
               // if (statistics.getTime() > 500 &&
@@ -749,7 +759,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               //   });
               // }
 
-              if (statistics.getTime() >= 500 &&
+              if (statistics.getTime() > hlsTimeDurationInMs * 2 &&
+                  // statistics.getBitrate() > 20 &&
                   _betterPlayerController == null) {
                 developer.log(
                   'BetterPlayer Video - Play outputPath $outputPath',
@@ -769,6 +780,17 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                       BetterPlayerDataSourceType.network,
                       '$localServerUrl/$outputFileName',
                       liveStream: true,
+                      bufferingConfiguration:
+                          const BetterPlayerBufferingConfiguration(
+                        minBufferMs: hlsTimeDurationInMs,
+                        maxBufferMs: hlsTimeDurationInMs * 4,
+                        bufferForPlaybackMs: hlsTimeDurationInMs * 2,
+                        bufferForPlaybackAfterRebufferMs:
+                            hlsTimeDurationInMs * 4,
+                      ),
+                      cacheConfiguration: const BetterPlayerCacheConfiguration(
+                        useCache: false,
+                      ),
                     ),
                   );
 
