@@ -582,8 +582,10 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
-		
 		DJIVideoPreviewer.instance().close()
+		DJIVideoPreviewer.instance().clearRender()
+		DJIVideoPreviewer.instance().clearVideoData()
+		DJIVideoPreviewer.instance().unregistFrameProcessor(self)
 	}
 	
 	public func videoProcessorEnabled() -> Bool {

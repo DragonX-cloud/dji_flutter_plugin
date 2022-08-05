@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_session.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -43,9 +44,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   int? _ffmpegKitSessionId;
   File? _videoFeedFile;
   IOSink? _videoFeedSink;
+  String? _localServerUrl;
+  final String _outputFileName = 'output.m3u8';
   // File? _videoFeedFileEndResult;
-  String outputFileName = 'output.m3u8';
-  String? localServerUrl;
 
   @override
   void initState() {
@@ -558,6 +559,31 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   }
 
   Future<void> _videoFeedStart() async {
+    // setState(() {
+    //   _betterPlayerController = BetterPlayerController(
+    //     const BetterPlayerConfiguration(
+    //       autoPlay: true,
+    //     ),
+    //     betterPlayerDataSource: BetterPlayerDataSource(
+    //       BetterPlayerDataSourceType.file,
+    //       '/Users/oren/Library/Developer/CoreSimulator/Devices/7C3B7667-CA77-4249-AA56-ED7B65B9DB16/data/Containers/Data/Application/05D511A9-1B6A-4044-A384-D626F0C45C1A/Library/Caches/output.mp4',
+    //       liveStream: true,
+    //       // bufferingConfiguration:
+    //       //     const BetterPlayerBufferingConfiguration(
+    //       //   minBufferMs: hlsTimeDurationInMs,
+    //       //   maxBufferMs: hlsTimeDurationInMs * 2,
+    //       //   bufferForPlaybackMs: hlsTimeDurationInMs,
+    //       //   bufferForPlaybackAfterRebufferMs:
+    //       //       hlsTimeDurationInMs * 2,
+    //       // ),
+    //       // cacheConfiguration: const BetterPlayerCacheConfiguration(
+    //       //   useCache: false,
+    //       // ),
+    //     ),
+    //   );
+    // });
+    // return;
+
     try {
       developer.log(
         'Video Feed Start requested',
@@ -593,11 +619,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           // Opening the video feed file (input pipe) for writing.
           _videoFeedSink = _videoFeedFile?.openWrite();
 
-          // Starting the video feed
-          await Dji.videoFeedStart();
-
           final Directory directory = await getTemporaryDirectory();
-          final String outputPath = '${directory.path}/$outputFileName';
+          final String outputPath = '${directory.path}/$_outputFileName';
           final File outputFile = File(outputPath);
           if (await outputFile.exists() == true) {
             outputFile.delete();
@@ -605,22 +628,24 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
           // _videoFeedFileEndResult = outputFile;
 
-          // Setting up the local server
-          final server = LocalAssetsServer(
-            address: InternetAddress.loopbackIPv4,
-            assetsBasePath: '',
-            rootDir: Directory(directory.path),
-            port: 8080,
-            // logger: const DebugLogger(),
-          );
+          if (_localServerUrl == null) {
+            // Setting up the local server
+            final server = LocalAssetsServer(
+              address: InternetAddress.loopbackIPv4,
+              assetsBasePath: '',
+              rootDir: Directory(directory.path),
+              port: 8080,
+              // logger: const DebugLogger(),
+            );
 
-          await server.serve();
-          localServerUrl = 'http://${server.address.address}:${server.port}';
+            await server.serve();
+            _localServerUrl = 'http://${server.address.address}:${server.port}';
 
-          developer.log(
-            'Server Address $localServerUrl',
-            name: kLogKindDjiFlutterPlugin,
-          );
+            developer.log(
+              'Server Address $_localServerUrl',
+              name: kLogKindDjiFlutterPlugin,
+            );
+          }
 
           // Initializing the VLC Video Player.
           // setState(() {
@@ -672,25 +697,26 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           //   name: kLogKindDjiFlutterPlugin,
           // );
 
-          const hlsTimeDurationInMs = 500;
+          const hlsTimeDurationInMs =
+              2000; // 2s is the default hls_time duration of ffmpeg.
           bool playing = false;
 
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
-          FFmpegKit.executeAsync(
+          await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
             // Explanation about -framerate vs. -r vs -fps: https://stackoverflow.com/questions/51143100/framerate-vs-r-vs-filter-fps
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov -an $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
 
             // HLS
-            // '-y -i https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4 -s 640x320 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -an $outputPath',
-            '-y -f rawvideo -video_size 1280x720 -framerate 25 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -vf fps=15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -an $outputPath',
-
-            // DASH
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -r 15 -i $inputPipe -s 640x320 -r 15 -f dash -seg_duration ${hlsTimeDurationInMs}ms -remove_at_exit 1 -streaming 1 -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -hls_allow_cache 0 -an $outputPath',
+            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time $outputPath',
 
             // MP4
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
-            // '-y -i https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4 -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -i $inputPipe -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart $outputPath',
+
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
 
@@ -759,13 +785,12 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               //   });
               // }
 
-              if (statistics.getTime() > hlsTimeDurationInMs &&
-                  playing == false) {
+              if (statistics.getTime() > 0 && playing == false) {
                 playing = true;
 
-                // await Future.delayed(
-                //   const Duration(milliseconds: hlsTimeDurationInMs),
-                // );
+                await Future.delayed(
+                  const Duration(milliseconds: hlsTimeDurationInMs),
+                );
 
                 developer.log(
                   'BetterPlayer Video - Play outputPath $outputPath',
@@ -783,15 +808,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                     ),
                     betterPlayerDataSource: BetterPlayerDataSource(
                       BetterPlayerDataSourceType.network,
-                      '$localServerUrl/$outputFileName',
+                      '$_localServerUrl/$_outputFileName',
+                      // BetterPlayerDataSourceType.file,
+                      // outputPath,
                       liveStream: true,
                       bufferingConfiguration:
                           const BetterPlayerBufferingConfiguration(
-                        minBufferMs: hlsTimeDurationInMs,
-                        maxBufferMs: hlsTimeDurationInMs * 2,
-                        bufferForPlaybackMs: hlsTimeDurationInMs,
-                        bufferForPlaybackAfterRebufferMs:
-                            hlsTimeDurationInMs * 2,
+                        minBufferMs: 0,
+                        maxBufferMs: 0,
+                        bufferForPlaybackMs: 0,
+                        bufferForPlaybackAfterRebufferMs: 0,
                       ),
                       cacheConfiguration: const BetterPlayerCacheConfiguration(
                         useCache: false,
@@ -814,40 +840,34 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                   //   );
                   // });
                 });
+
+                // await Dji.videoFeedStop();
+                // await Future.delayed(
+                //   const Duration(milliseconds: hlsTimeDurationInMs),
+                // );
+                // await Dji.videoFeedStart();
+
+                // await Future.delayed(
+                //   const Duration(
+                //     milliseconds: hlsTimeDurationInMs,
+                //   ),
+                // );
+                // await _betterPlayerController?.seekTo(
+                //   const Duration(
+                //     milliseconds: hlsTimeDurationInMs * 2,
+                //   ),
+                // );
               }
             },
           );
 
-          // await Future.delayed(
-          //   const Duration(milliseconds: 2000),
-          // );
-          // developer.log(
-          //   'BetterPlayer Video - Play outputPath $outputPath',
-          //   name: kLogKindDjiFlutterPlugin,
-          // );
+          // Starting the video feed
+          await Dji.videoFeedStart();
 
-          // setState(() {
-          //   _betterPlayerController = BetterPlayerController(
-          //     const BetterPlayerConfiguration(
-          //       autoPlay: true,
-          //     ),
-          //     betterPlayerDataSource: BetterPlayerDataSource(
-          //       BetterPlayerDataSourceType.network,
-          //       '$localServerUrl/$outputFileName',
-          //       liveStream: false,
-          //       bufferingConfiguration:
-          //           const BetterPlayerBufferingConfiguration(
-          //         minBufferMs: 0,
-          //         maxBufferMs: hlsTimeDurationInMs * 2,
-          //         bufferForPlaybackMs: 0,
-          //         bufferForPlaybackAfterRebufferMs: 0,
-          //       ),
-          //       cacheConfiguration: const BetterPlayerCacheConfiguration(
-          //         useCache: false,
-          //       ),
-          //     ),
-          //   );
-          // });
+          developer.log(
+            'Video feed started',
+            name: kLogKindDjiFlutterPlugin,
+          );
         });
       });
     } on PlatformException catch (e) {
@@ -889,7 +909,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
       // So only the following works - after we stop the incoming video stream - we can play the end-result file.
       // if (_betterPlayerController == null && _videoFeedFile != null) {
       //   // final video = _videoFeedFileEndResult!.uri.toString();
-      //   final video = '$localServerUrl/$outputFileName';
+      //   final video = '$_localServerUrl/$_outputFileName';
 
       //   developer.log(
       //     'BetterPlayer Video - Play after ffmpeg ended: $video',
