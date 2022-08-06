@@ -712,7 +712,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
             // '-y -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
 
             // HLS
-            '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -threads 0 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.8*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.95*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // '-y -probesize 32 -analyzeduration 0 -fflags nobuffer -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -fflags nobuffer -flags low_delay -avioflags direct -r 25 -vf fps=25 -c:v libx264 -crf 50 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -vsync 2 -copytb 1 -i $inputPipe -avoid_negative_ts disabled -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -hls_allow_cache 0 $outputPath',
