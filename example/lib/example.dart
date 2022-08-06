@@ -697,23 +697,29 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           //   name: kLogKindDjiFlutterPlugin,
           // );
 
-          const hlsTimeDurationInMs =
-              2000; // 2s is the default hls_time duration of ffmpeg.
+          // 2s is the default hls_time duration of ffmpeg.
+          const hlsTimeDurationInMs = 1000;
           bool playing = false;
 
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
+            // https://www.ffmpeg.org/ffmpeg.html
+            // https://ffmpeg.org/ffmpeg-all.html
             // https://ffmpeg.org/ffmpeg-formats.html
             // Explanation about -framerate vs. -r vs -fps: https://stackoverflow.com/questions/51143100/framerate-vs-r-vs-filter-fps
+
             // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov -an $outputPipe',
             // '-y -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
 
             // HLS
-            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -hls_allow_cache 0 -an $outputPath',
-            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time $outputPath',
+            '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -threads 0 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -probesize 32 -analyzeduration 0 -fflags nobuffer -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -fflags nobuffer -flags low_delay -avioflags direct -r 25 -vf fps=25 -c:v libx264 -crf 50 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -vsync 2 -copytb 1 -i $inputPipe -avoid_negative_ts disabled -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -hls_allow_cache 0 $outputPath',
 
             // MP4
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
+            // To force keyframe every 5 seconds use: -force_key_frames expr:gte(t,n_forced*5)
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -i $inputPipe -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
             // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart $outputPath',
 
@@ -815,9 +821,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                       bufferingConfiguration:
                           const BetterPlayerBufferingConfiguration(
                         minBufferMs: 0,
-                        maxBufferMs: 0,
+                        maxBufferMs: hlsTimeDurationInMs,
                         bufferForPlaybackMs: 0,
-                        bufferForPlaybackAfterRebufferMs: 0,
+                        bufferForPlaybackAfterRebufferMs: hlsTimeDurationInMs,
                       ),
                       cacheConfiguration: const BetterPlayerCacheConfiguration(
                         useCache: false,
