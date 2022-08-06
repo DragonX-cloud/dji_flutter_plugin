@@ -994,8 +994,15 @@ https://stackoverflow.com/questions/60988912/loading-video-files-from-device-as-
 
 https://superuser.com/questions/1676797/how-to-convince-ffmpeg-that-input-is-raw-h264
 https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format
+
 How to pipe ffmpeg output to video_player flutter widget: 
 https://github.com/tanersener/flutter-ffmpeg/issues/92
+
+Techniques for reducing FFMPEG streaming latency:
+https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg 
+
+VLC Latency at start:
+https://code.videolan.org/videolan/vlc/-/issues/26539
 
 https://github.com/tanersener/flutter-ffmpeg/issues/71
 https://programmer.group/basic-usage-of-ffmpeg.html

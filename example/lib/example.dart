@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
+import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_session.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -13,7 +14,10 @@ import 'constants.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+// import 'package:flutter_vlc_player/flutter_vlc_player.dart';
+// import 'package:native_video_view/native_video_view.dart';
+import 'package:better_player/better_player.dart';
+import 'package:local_assets_server/local_assets_server.dart';
 
 class ExampleWidget extends StatefulWidget {
   const ExampleWidget({Key? key}) : super(key: key);
@@ -34,10 +38,15 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
-  VlcPlayerController? _vlcController;
+  // VlcPlayerController? _vlcController;
+  // VideoViewController? _nativeVideoViewController;
+  BetterPlayerController? _betterPlayerController;
   int? _ffmpegKitSessionId;
   File? _videoFeedFile;
   IOSink? _videoFeedSink;
+  String? _localServerUrl;
+  final String _outputFileName = 'output.m3u8';
+  // File? _videoFeedFileEndResult;
 
   @override
   void initState() {
@@ -108,6 +117,29 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   }
 
   Future<void> _registerApp() async {
+    // _betterPlayerController = BetterPlayerController(
+    //   const BetterPlayerConfiguration(
+    //     autoPlay: true,
+    //   ),
+    //   betterPlayerDataSource: BetterPlayerDataSource.network(
+    //       'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8'),
+    // );
+
+    // setState(() {
+    //   _nativeVideoViewController
+    //       ?.setVideoSource(
+    //     // outputPath,
+    //     // sourceType: VideoSourceType.file,
+    //     // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    //     'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8',
+    //     sourceType: VideoSourceType.network,
+    //     requestAudioFocus: false,
+    //   )
+    //       .then((_) {
+    //     _nativeVideoViewController?.play();
+    //   });
+    // });
+
     try {
       developer.log(
         'registerApp requested',
@@ -527,6 +559,31 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   }
 
   Future<void> _videoFeedStart() async {
+    // setState(() {
+    //   _betterPlayerController = BetterPlayerController(
+    //     const BetterPlayerConfiguration(
+    //       autoPlay: true,
+    //     ),
+    //     betterPlayerDataSource: BetterPlayerDataSource(
+    //       BetterPlayerDataSourceType.file,
+    //       '/Users/oren/Library/Developer/CoreSimulator/Devices/7C3B7667-CA77-4249-AA56-ED7B65B9DB16/data/Containers/Data/Application/05D511A9-1B6A-4044-A384-D626F0C45C1A/Library/Caches/output.mp4',
+    //       liveStream: true,
+    //       // bufferingConfiguration:
+    //       //     const BetterPlayerBufferingConfiguration(
+    //       //   minBufferMs: hlsTimeDurationInMs,
+    //       //   maxBufferMs: hlsTimeDurationInMs * 2,
+    //       //   bufferForPlaybackMs: hlsTimeDurationInMs,
+    //       //   bufferForPlaybackAfterRebufferMs:
+    //       //       hlsTimeDurationInMs * 2,
+    //       // ),
+    //       // cacheConfiguration: const BetterPlayerCacheConfiguration(
+    //       //   useCache: false,
+    //       // ),
+    //     ),
+    //   );
+    // });
+    // return;
+
     try {
       developer.log(
         'Video Feed Start requested',
@@ -562,48 +619,61 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           // Opening the video feed file (input pipe) for writing.
           _videoFeedSink = _videoFeedFile?.openWrite();
 
-          // Starting the video feed
-          await Dji.videoFeedStart();
-
-          developer.log(
-            'Video feed started',
-            name: kLogKindDjiFlutterPlugin,
-          );
-
           final Directory directory = await getTemporaryDirectory();
-          final String outputPath = '${directory.path}/output.m3u8';
+          final String outputPath = '${directory.path}/$_outputFileName';
           final File outputFile = File(outputPath);
           if (await outputFile.exists() == true) {
             outputFile.delete();
           }
 
-          // Initializing the VLC Video Player.
-          setState(() {
-            _vlcController ??= VlcPlayerController.file(
-              File(outputPath),
-              autoInitialize: true,
-              autoPlay: false,
-              hwAcc: HwAcc.auto,
-              options: VlcPlayerOptions(
-                video: VlcVideoOptions(
-                  [
-                    VlcVideoOptions.dropLateFrames(true),
-                    VlcVideoOptions.skipFrames(true),
-                  ],
-                ),
-                advanced: VlcAdvancedOptions([
-                  VlcAdvancedOptions.fileCaching(0),
-                  VlcAdvancedOptions.networkCaching(0),
-                  VlcAdvancedOptions.liveCaching(0),
-                  VlcAdvancedOptions.clockSynchronization(0),
-                ]),
-                sout: VlcStreamOutputOptions([
-                  VlcStreamOutputOptions.soutMuxCaching(0),
-                ]),
-                extras: [],
-              ),
+          // _videoFeedFileEndResult = outputFile;
+
+          if (_localServerUrl == null) {
+            // Setting up the local server
+            final server = LocalAssetsServer(
+              address: InternetAddress.loopbackIPv4,
+              assetsBasePath: '',
+              rootDir: Directory(directory.path),
+              port: 8080,
+              // logger: const DebugLogger(),
             );
-          });
+
+            await server.serve();
+            _localServerUrl = 'http://${server.address.address}:${server.port}';
+
+            developer.log(
+              'Server Address $_localServerUrl',
+              name: kLogKindDjiFlutterPlugin,
+            );
+          }
+
+          // Initializing the VLC Video Player.
+          // setState(() {
+          //   _vlcController ??= VlcPlayerController.file(
+          //     File(outputPath),
+          //     autoInitialize: true,
+          //     autoPlay: false,
+          //     hwAcc: HwAcc.auto,
+          //     options: VlcPlayerOptions(
+          //       video: VlcVideoOptions(
+          //         [
+          //           VlcVideoOptions.dropLateFrames(true),
+          //           VlcVideoOptions.skipFrames(true),
+          //         ],
+          //       ),
+          //       advanced: VlcAdvancedOptions([
+          //         VlcAdvancedOptions.fileCaching(0),
+          //         VlcAdvancedOptions.networkCaching(0),
+          //         VlcAdvancedOptions.liveCaching(0),
+          //         VlcAdvancedOptions.clockSynchronization(0),
+          //       ]),
+          //       sout: VlcStreamOutputOptions([
+          //         VlcStreamOutputOptions.soutMuxCaching(0),
+          //       ]),
+          //       extras: [],
+          //     ),
+          //   );
+          // });
 
           // _vlcController?.addOnInitListener(() async {
           //   developer.log(
@@ -612,16 +682,47 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           //   );
           // });
 
+          // setState(() {
+          //   _betterPlayerController = BetterPlayerController(
+          //     const BetterPlayerConfiguration(
+          //       autoPlay: false,
+          //     ),
+          //   );
+          // });
+
+          // Using HLS Base URL to include a full URL (file:///) inside the .m3u8 file.
+          // final hlsBaseUrl = directory.uri.toString();
+          // developer.log(
+          //   'FFMpeg HLS Base URL $hlsBaseUrl}',
+          //   name: kLogKindDjiFlutterPlugin,
+          // );
+
           bool playing = false;
           // 2s is the default hls_time duration of ffmpeg, but we use 1s because it makes the VLC Player start faster.
-          int hlsTimeDurationInMs = 1000;
+          const hlsTimeDurationInMs = 1000;
 
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
+            // https://www.ffmpeg.org/ffmpeg.html
+            // https://ffmpeg.org/ffmpeg-all.html
             // https://ffmpeg.org/ffmpeg-formats.html
-            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // Explanation about -framerate vs. -r vs -fps: https://stackoverflow.com/questions/51143100/framerate-vs-r-vs-filter-fps
+
+            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov -an $outputPipe',
+            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+
+            // HLS
+            '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.8*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.95*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -probesize 32 -analyzeduration 0 -fflags nobuffer -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -fflags nobuffer -flags low_delay -avioflags direct -r 25 -vf fps=25 -c:v libx264 -crf 50 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -vsync 2 -copytb 1 -i $inputPipe -avoid_negative_ts disabled -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -hls_allow_cache 0 $outputPath',
+
+            // MP4
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 25 -vf fps=25 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // To force keyframe every 5 seconds use: -force_key_frames expr:gte(t,n_forced*5)
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -i $inputPipe -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart $outputPath',
 
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
@@ -647,23 +748,132 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               //   name: kLogKindDjiFlutterPlugin,
               // );
 
-              // For .hls, using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're also checking for .getTime() >= X (where X must be equal or greater than the hls_time split) and checking whether the video is already playing.
-              // For .mp4, we can also use .getBitrate() > 20 to detect when it's a proper time to start playing.
-              if (statistics.getTime() > hlsTimeDurationInMs &&
-                  await _vlcController?.isPlaying() == false &&
-                  playing == false) {
+              // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
+              // if (statistics.getTime() > 500 &&
+              //     await _vlcController?.isPlaying() == false &&
+              //     playing == false) {
+              //   developer.log(
+              //     'VLC Player: play',
+              //     name: kLogKindDjiFlutterPlugin,
+              //   );
+
+              //   setState(() {
+              //     _vlcController?.play();
+              //     playing = true;
+              //   });
+              // }
+
+              // if (statistics.getTime() >= 500 &&
+              //     _nativeVideoViewController?.videoFile == null) {
+              //   setState(() {
+              //     _nativeVideoViewController
+              //         ?.setVideoSource(
+              //       outputPath,
+              //       sourceType: VideoSourceType.file,
+              //       // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+              //       // sourceType: VideoSourceType.network,
+              //       requestAudioFocus: false,
+              //     )
+              //         .then((_) {
+              //       developer.log(
+              //         'NativeVideoView - Play',
+              //         name: kLogKindDjiFlutterPlugin,
+              //       );
+
+              //       _nativeVideoViewController?.play();
+              //     }).onError((error, stackTrace) {
+              //       developer.log(
+              //         'NativeVideoView - Error',
+              //         name: kLogKindDjiFlutterPlugin,
+              //         error: error,
+              //         stackTrace: stackTrace,
+              //       );
+              //     });
+              //   });
+              // }
+
+              if (statistics.getTime() > 0 && playing == false) {
                 playing = true;
 
-                setState(() {
-                  _vlcController?.play();
-                });
+                await Future.delayed(
+                  const Duration(milliseconds: hlsTimeDurationInMs),
+                );
 
                 developer.log(
-                  'VLC Player: play $outputPath',
+                  'BetterPlayer Video - Play outputPath $outputPath',
                   name: kLogKindDjiFlutterPlugin,
                 );
+
+                setState(() {
+                  // The following doesn't work because the BetterPlayer / Native Video View are unable to play local HLS file
+                  // Nor is it able to play an .mp4 file while it's still being written.
+                  // The only player that managed to play local HLS files was the VLC Player.
+
+                  _betterPlayerController = BetterPlayerController(
+                    const BetterPlayerConfiguration(
+                      autoPlay: true,
+                    ),
+                    betterPlayerDataSource: BetterPlayerDataSource(
+                      BetterPlayerDataSourceType.network,
+                      '$_localServerUrl/$_outputFileName',
+                      // BetterPlayerDataSourceType.file,
+                      // outputPath,
+                      liveStream: true,
+                      bufferingConfiguration:
+                          const BetterPlayerBufferingConfiguration(
+                        minBufferMs: 0,
+                        maxBufferMs: hlsTimeDurationInMs,
+                        bufferForPlaybackMs: 0,
+                        bufferForPlaybackAfterRebufferMs: hlsTimeDurationInMs,
+                      ),
+                      cacheConfiguration: const BetterPlayerCacheConfiguration(
+                        useCache: false,
+                      ),
+                    ),
+                  );
+
+                  // _betterPlayerController
+                  //     ?.setupDataSource(
+                  //   BetterPlayerDataSource.file(outputPath),
+                  // )
+                  //     .then((_) {
+                  //   _betterPlayerController?.play();
+                  // }).onError((error, stackTrace) {
+                  //   developer.log(
+                  //     'BetterPlayer Video - Error',
+                  //     name: kLogKindDjiFlutterPlugin,
+                  //     error: error,
+                  //     stackTrace: stackTrace,
+                  //   );
+                  // });
+                });
+
+                // await Dji.videoFeedStop();
+                // await Future.delayed(
+                //   const Duration(milliseconds: hlsTimeDurationInMs),
+                // );
+                // await Dji.videoFeedStart();
+
+                // await Future.delayed(
+                //   const Duration(
+                //     milliseconds: hlsTimeDurationInMs,
+                //   ),
+                // );
+                // await _betterPlayerController?.seekTo(
+                //   const Duration(
+                //     milliseconds: hlsTimeDurationInMs * 2,
+                //   ),
+                // );
               }
             },
+          );
+
+          // Starting the video feed
+          await Dji.videoFeedStart();
+
+          developer.log(
+            'Video feed started',
+            name: kLogKindDjiFlutterPlugin,
           );
         });
       });
@@ -692,9 +902,41 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
       await Dji.videoFeedStop();
       _videoFeedSink?.close();
 
-      _vlcController?.stop();
-      _vlcController?.dispose();
-      _vlcController = null;
+      FFmpegKit.cancel(_ffmpegKitSessionId);
+
+      // _vlcController?.stop();
+      // _vlcController?.dispose();
+      // _vlcController = null;
+
+      // _nativeVideoViewController?.stop();
+
+      _betterPlayerController?.pause();
+
+      // The BetterPlayer / Native Video View are unable to play local HLS file or .mp4 file while it's being written.
+      // So only the following works - after we stop the incoming video stream - we can play the end-result file.
+      // if (_betterPlayerController == null && _videoFeedFile != null) {
+      //   // final video = _videoFeedFileEndResult!.uri.toString();
+      //   final video = '$_localServerUrl/$_outputFileName';
+
+      //   developer.log(
+      //     'BetterPlayer Video - Play after ffmpeg ended: $video',
+      //     name: kLogKindDjiFlutterPlugin,
+      //   );
+
+      //   setState(() {
+      //     _betterPlayerController = BetterPlayerController(
+      //       const BetterPlayerConfiguration(
+      //         autoPlay: true,
+      //       ),
+      //       betterPlayerDataSource: BetterPlayerDataSource(
+      //         BetterPlayerDataSourceType.network,
+      //         video,
+      //         liveStream: true,
+      //         // videoFormat: BetterPlayerVideoFormat.ss,
+      //       ),
+      //     );
+      //   });
+      // }
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -718,11 +960,45 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              child: _vlcController != null
-                  ? VlcPlayer(
-                      controller: _vlcController!,
-                      aspectRatio: MediaQuery.of(context).size.width /
-                          (MediaQuery.of(context).size.height * 0.2),
+              // child: _vlcController != null
+              //     ? VlcPlayer(
+              //         controller: _vlcController!,
+              //         aspectRatio: MediaQuery.of(context).size.width /
+              //             (MediaQuery.of(context).size.height * 0.2),
+              //       )
+              //     : Container(),
+
+              // child: NativeVideoView(
+              //   keepAspectRatio: false,
+              //   showMediaController: false,
+              //   enableVolumeControl: false,
+              //   onCreated: (controller) {
+              //     _nativeVideoViewController = controller;
+              //   },
+              //   onPrepared: (controller, info) {
+              //     developer.log(
+              //       'NativeVideoView - Prepared',
+              //       name: kLogKindDjiFlutterPlugin,
+              //     );
+              //     // controller.play();
+              //   },
+              //   onError: (controller, what, extra, message) {
+              //     developer.log(
+              //       'NativeVideoView - Error ($what | $extra | $message)',
+              //       name: kLogKindDjiFlutterPlugin,
+              //     );
+              //   },
+              //   onCompletion: (controller) {
+              //     developer.log(
+              //       'NativeVideoView - Video ended',
+              //       name: kLogKindDjiFlutterPlugin,
+              //     );
+              //   },
+              // ),
+
+              child: _betterPlayerController != null
+                  ? BetterPlayer(
+                      controller: _betterPlayerController!,
                     )
                   : Container(),
             ),
