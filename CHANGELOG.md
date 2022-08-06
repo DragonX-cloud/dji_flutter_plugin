@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0-dev.21
+- Fixed an issue with proper disposal (close) of the DJI Previewer.
+- Adjusted the HLS properties and VLC Player timing for better performance.
+
 ## 1.0.0-dev.20
 - Updated readme.
 

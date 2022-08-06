@@ -565,6 +565,11 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           // Starting the video feed
           await Dji.videoFeedStart();
 
+          developer.log(
+            'Video feed started',
+            name: kLogKindDjiFlutterPlugin,
+          );
+
           final Directory directory = await getTemporaryDirectory();
           final String outputPath = '${directory.path}/output.m3u8';
           final File outputFile = File(outputPath);
@@ -608,14 +613,15 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           // });
 
           bool playing = false;
-          int hlsTimeDurationInMs = 500;
+          // 2s is the default hls_time duration of ffmpeg, but we use 1s because it makes the VLC Player start faster.
+          int hlsTimeDurationInMs = 1000;
 
           // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
           await FFmpegKit.executeAsync(
             // https://ffmpeg.org/ffmpeg-formats.html
-            '-y -f rawvideo -video_size 1280x720 -framerate 30 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 15 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
+            '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -r 15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
+            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x360 -r 25 -vf fps=25 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
 
             (session) async {
               _ffmpegKitSessionId = session.getSessionId();
@@ -643,19 +649,19 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
               // For .hls, using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're also checking for .getTime() >= X (where X must be equal or greater than the hls_time split) and checking whether the video is already playing.
               // For .mp4, we can also use .getBitrate() > 20 to detect when it's a proper time to start playing.
-              if (statistics.getVideoFrameNumber() > 0 &&
-                  statistics.getTime() > hlsTimeDurationInMs &&
+              if (statistics.getTime() > hlsTimeDurationInMs &&
                   await _vlcController?.isPlaying() == false &&
                   playing == false) {
+                playing = true;
+
+                setState(() {
+                  _vlcController?.play();
+                });
+
                 developer.log(
                   'VLC Player: play $outputPath',
                   name: kLogKindDjiFlutterPlugin,
                 );
-
-                setState(() {
-                  _vlcController?.play();
-                  playing = true;
-                });
               }
             },
           );
