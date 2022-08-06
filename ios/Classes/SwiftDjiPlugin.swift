@@ -141,6 +141,36 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
+	// MARK: - Virtual Sticks Methods
+	
+	func updateVirtualSticks() {
+		var virtualStickControlData: DJIVirtualStickFlightControlData = DJIVirtualStickFlightControlData()
+        virtualStickControlData.pitch = Float(0.0)
+        virtualStickControlData.roll = Float(0.0)
+        virtualStickControlData.yaw = Float(0.0)
+        virtualStickControlData.verticalThrottle = Float(0.0)
+        
+        guard let _droneFlightController = drone?.flightController else {
+			print("=== DjiPlugin iOS: updateVirtualSticks - No Flight Controller")
+			return
+		}
+		
+		// Setting the drone's flight control parameters for easy Virtual Stick usage
+		_droneFlightController.isVirtualStickAdvancedModeEnabled = true
+		_droneFlightController.rollPitchCoordinateSystem = DJIVirtualStickFlightCoordinateSystem.body
+		_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.velocity
+		_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angularVelocity
+		_droneFlightController.rollPitchControlMode = DJIVirtualStickRollPitchControlMode.velocity
+		
+		if (_droneFlightController.isVirtualStickControlModeAvailable() == false) {
+			print("=== DjiPlugin iOS: updateVirtualSticks - virtual stick control mode is not available")
+			return
+		} else {
+			//print("=== DjiPlugin iOS: updateVirtualSticks - mThrottle: TBD...")
+			_droneFlightController.send(virtualStickControlData, withCompletion: nil)
+        }
+    }
+	
 	// MARK: - Timeline Methods
 
 	public func startFlightJson(_ flightJson: String, error _: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
@@ -154,7 +184,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			startFlightTimeline(f)
 		}
 	}
-
+	
 	func startFlightTimeline(_ flight: Flight) {
 		guard let timeline = flight.timeline, timeline.count > 0 else {
 			print("=== DjiPlugin iOS: startFlightTimeline - timeline List is empty")
