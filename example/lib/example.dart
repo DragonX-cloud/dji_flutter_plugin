@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
-import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_session.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -697,6 +696,14 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
           //   name: kLogKindDjiFlutterPlugin,
           // );
 
+          // Starting the video feed
+          await Dji.videoFeedStart();
+
+          developer.log(
+            'Video feed started',
+            name: kLogKindDjiFlutterPlugin,
+          );
+
           bool playing = false;
           // 2s is the default hls_time duration of ffmpeg, but we use 1s because it makes the VLC Player start faster.
           const hlsTimeDurationInMs = 1000;
@@ -713,10 +720,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
             // HLS
             '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.8*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
-            // '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.95*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // '-y -probesize 32 -analyzeduration 0 -fflags nobuffer -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -fflags nobuffer -flags low_delay -avioflags direct -r 25 -vf fps=25 -c:v libx264 -crf 50 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
             // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -vsync 2 -copytb 1 -i $inputPipe -avoid_negative_ts disabled -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
-            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time -hls_allow_cache 0 $outputPath',
+            // '-y  -probesize 32 -analyzeduration 0 -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.8*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time $outputPath',
 
             // MP4
             // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
@@ -792,11 +798,14 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               //   });
               // }
 
-              if (statistics.getTime() > 0 && playing == false) {
+              // This delay is required in order to let enough time for the video files to be accessible for reading by the player.
+              if (statistics.getTime() > hlsTimeDurationInMs &&
+                  playing == false) {
                 playing = true;
 
+                // We must add another second (although the reason for this is unknown, as in Debug mode the additional 1s is not necessary, but in release-mode it is...)
                 await Future.delayed(
-                  const Duration(milliseconds: hlsTimeDurationInMs),
+                  const Duration(milliseconds: 1000),
                 );
 
                 developer.log(
@@ -866,14 +875,6 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                 // );
               }
             },
-          );
-
-          // Starting the video feed
-          await Dji.videoFeedStart();
-
-          developer.log(
-            'Video feed started',
-            name: kLogKindDjiFlutterPlugin,
           );
         });
       });
