@@ -944,9 +944,13 @@ The DJI Flutter plugin converts the H264 to YUV420p and so the sendVideo() metho
 <a href="https://github.com/tanersener/flutter-ffmpeg/issues/126">https://github.com/tanersener/flutter-ffmpeg/issues/126</a>
 <a href="https://stackoverflow.com/questions/60988912/loading-video-files-from-device-as-bytedata-flutter">https://stackoverflow.com/questions/60988912/loading-video-files-from-device-as-bytedata-flutter</a></p>
 <p><a href="https://superuser.com/questions/1676797/how-to-convince-ffmpeg-that-input-is-raw-h264">https://superuser.com/questions/1676797/how-to-convince-ffmpeg-that-input-is-raw-h264</a>
-<a href="https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format">https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format</a>
-How to pipe ffmpeg output to video_player flutter widget: 
+<a href="https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format">https://stackoverflow.com/questions/64737547/flutter-dart-rewriting-image-in-the-same-format</a></p>
+<p>How to pipe ffmpeg output to video_player flutter widget: 
 <a href="https://github.com/tanersener/flutter-ffmpeg/issues/92">https://github.com/tanersener/flutter-ffmpeg/issues/92</a></p>
+<p>Techniques for reducing FFMPEG streaming latency:
+<a href="https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg">https://stackoverflow.com/questions/16658873/how-to-minimize-the-delay-in-a-live-streaming-with-ffmpeg</a></p>
+<p>VLC Latency at start:
+<a href="https://code.videolan.org/videolan/vlc/-/issues/26539">https://code.videolan.org/videolan/vlc/-/issues/26539</a></p>
 <p><a href="https://github.com/tanersener/flutter-ffmpeg/issues/71">https://github.com/tanersener/flutter-ffmpeg/issues/71</a>
 <a href="https://programmer.group/basic-usage-of-ffmpeg.html">https://programmer.group/basic-usage-of-ffmpeg.html</a>
 <a href="https://github.com/dart-lang/sdk/issues/32191">https://github.com/dart-lang/sdk/issues/32191</a>
@@ -966,6 +970,18 @@ How to pipe ffmpeg output to video_player flutter widget:
 <p>Solution for how to enable the VideoDataListener on Android: 
 (search for "codecManager.enabledYuvData(true);")
 <a href="https://github.com/dji-sdk/Mobile-SDK-Android/issues/352">https://github.com/dji-sdk/Mobile-SDK-Android/issues/352</a></p>
+<h3 id="android-issue-with-the-better_player-plugin">Android issue with the better_player plugin</h3>
+<p>If you encounter the following error while trying to build the Android example project:</p>
+<pre class="language-dart"><code>Could not find com.mapbox.mapboxsdk:mapbox-android-accounts:0.7.0.
+</code></pre>
+<p>Add <code>jcenter()</code> to your android/build.gradle file:</p>
+<pre class="language-dart"><code>allprojects {
+    repositories {
+        ...
+        jcenter()
+    }
+}
+</code></pre>
 </section>
 
 
@@ -1028,7 +1044,7 @@ How to pipe ffmpeg output to video_player flutter widget:
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.21
+      1.0.0-dev.22
   </span>
 
   
