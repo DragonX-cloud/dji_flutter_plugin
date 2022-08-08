@@ -28,7 +28,8 @@
     <!-- android:name="cloud.dragonx.plugin.flutter.dji_example.MainApplication" -->
     <application
         android:label="dji_example"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true"> <!-- Required for the Video Player -->
 
        <!-- Start of DJI SDK -->
        <uses-library android:name="com.android.future.usb.accessory" />

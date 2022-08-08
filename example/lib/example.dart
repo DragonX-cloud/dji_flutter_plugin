@@ -830,10 +830,11 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                       liveStream: true,
                       bufferingConfiguration:
                           const BetterPlayerBufferingConfiguration(
-                        minBufferMs: 0,
+                        minBufferMs:
+                            100, // The plugin refuses this value to be lower or equal to the bufferForPlaybackMs and bufferForPlaybackAfterRebufferMs
                         maxBufferMs: hlsTimeDurationInMs,
                         bufferForPlaybackMs: 0,
-                        bufferForPlaybackAfterRebufferMs: hlsTimeDurationInMs,
+                        bufferForPlaybackAfterRebufferMs: 0,
                       ),
                       cacheConfiguration: const BetterPlayerCacheConfiguration(
                         useCache: false,
