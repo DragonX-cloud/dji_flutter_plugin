@@ -1030,4 +1030,20 @@ https://www.toptal.com/apple/introduction-to-http-live-streaming-hls
 Solution for how to enable the VideoDataListener on Android: 
 (search for "codecManager.enabledYuvData(true);")
 https://github.com/dji-sdk/Mobile-SDK-Android/issues/352
+
+### Android issue with the better_player plugin
+If you encounter the following error while trying to build the Android example project:
+```
+Could not find com.mapbox.mapboxsdk:mapbox-android-accounts:0.7.0.
+```
+
+Add `jcenter()` to your android/build.gradle file:
+```
+allprojects {
+    repositories {
+        ...
+        jcenter()
+    }
+}
+```
 	
