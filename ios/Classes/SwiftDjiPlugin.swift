@@ -141,7 +141,22 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
+	// MARK: - Mobile Remote Controller
+	public func mobileRemoteControllerEnabled(_ enabled: NSNumber, leftStickHorizontal: NSNumber, leftStickVertical: NSNumber, rightStickHorizontal: NSNumber, rightStickVertical: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		// the `enabled` property is redundant at this point, but it's here as a placeholder for possible usage in the future.
+		
+		if (drone?.mobileRemoteController?.isConnected == true) {
+			drone?.mobileRemoteController?.leftStickHorizontal = Float(truncating: leftStickHorizontal)
+			drone?.mobileRemoteController?.leftStickVertical = Float(truncating: leftStickVertical)
+			drone?.mobileRemoteController?.rightStickHorizontal = Float(truncating: rightStickHorizontal)
+			drone?.mobileRemoteController?.rightStickVertical = Float(truncating: rightStickVertical)
+		} else {
+			print("=== DjiPlugin iOS: mobileRemoteController - isConnected FALSE")
+		}
+	}
+	
 	// MARK: - Virtual Sticks Methods
+	
 	public func virtualStickEnabled(_ enabled: NSNumber, pitch: NSNumber, roll: NSNumber, yaw: NSNumber, verticalThrottle: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		var virtualStickControlData: DJIVirtualStickFlightControlData = DJIVirtualStickFlightControlData()
 		
@@ -150,7 +165,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			return
 		}
 		
-		_droneFlightController.setVirtualStickModeEnabled(true, withCompletion: { (error: Error?) in
+		_droneFlightController.setVirtualStickModeEnabled(enabled as! Bool, withCompletion: { (error: Error?) in
 			if (error != nil) {
 				print("=== DjiPlugin iOS: Enable Virtual Stick failed with error - \(String(describing: error?.localizedDescription))")
 				self._fltSetStatus("Virtual Stick Failed")
@@ -162,7 +177,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 				// Setting the drone's flight control parameters for easy Virtual Stick usage
 				_droneFlightController.setFlightOrientationMode(DJIFlightOrientationMode.aircraftHeading) // Mandatory for Virtual Stick Control Mode to be available.
-				_droneFlightController.isVirtualStickAdvancedModeEnabled = enabled as! Bool
+				//_droneFlightController.isVirtualStickAdvancedModeEnabled = true
 				_droneFlightController.rollPitchCoordinateSystem = DJIVirtualStickFlightCoordinateSystem.body
 				_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.velocity
 				_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angularVelocity

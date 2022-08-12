@@ -37,6 +37,11 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
+  double _leftStickHorizontal = 0.0;
+  double _leftStickVertical = 0.0;
+  double _rightStickHorizontal = 0.0;
+  double _rightStickVertical = 0.0;
+
   double _virtualStickPitch = 0.0;
   double _virtualStickRoll = 0.0;
   double _virtualStickYaw = 0.0;
@@ -467,6 +472,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
     }
+  }
+
+  Future<void> _updateMobileRemoteController() async {
+    await Dji.mobileRemoteController(
+      enabled: true,
+      leftStickHorizontal: _leftStickHorizontal,
+      leftStickVertical: _leftStickVertical,
+      rightStickHorizontal: _rightStickHorizontal,
+      rightStickVertical: _rightStickVertical,
+    );
   }
 
   Future<void> _updateVirtualStick() async {
@@ -1177,69 +1192,173 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                               label: 'Yaw',
                               value: _droneYaw,
                             ),
-                            const SizedBox(height: kSpacer * 2),
-                            const Text(
-                              'Pitch',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Slider(
-                              value: _virtualStickPitch,
-                              onChanged: (value) {
-                                setState(() {
-                                  _virtualStickPitch = value;
-                                  _updateVirtualStick();
-                                });
-                              },
-                            ),
                             const SizedBox(height: kSpacer),
-                            const Text(
-                              'Roll',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                            DefaultTabController(
+                              length: 2,
+                              child: Column(
+                                children: [
+                                  const TabBar(
+                                    tabs: [
+                                      Tab(
+                                          icon: Icon(
+                                        Icons.wifi,
+                                        color: Colors.black,
+                                      )),
+                                      Tab(
+                                          icon: Icon(
+                                        Icons.radio,
+                                        color: Colors.black,
+                                      )),
+                                    ],
+                                  ),
+                                  const SizedBox(height: kSpacer),
+                                  SizedBox(
+                                    height: 300.0,
+                                    child: TabBarView(
+                                      children: [
+                                        Column(
+                                          children: [
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Left Stick Horizontal',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _leftStickHorizontal,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _leftStickHorizontal = value;
+                                                  _updateMobileRemoteController();
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Left Stick Vertical',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _leftStickVertical,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _leftStickVertical = value;
+                                                  _updateMobileRemoteController();
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Right Stick Horizontal',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _rightStickHorizontal,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _rightStickHorizontal = value;
+                                                  _updateMobileRemoteController();
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Right Stick Vertical',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _rightStickVertical,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _rightStickVertical = value;
+                                                  _updateMobileRemoteController();
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                        Column(
+                                          children: [
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Pitch',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _virtualStickPitch,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _virtualStickPitch = value;
+                                                  _updateVirtualStick();
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Roll',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _virtualStickRoll,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _virtualStickRoll = value;
+                                                  _updateVirtualStick();
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Yaw',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value: _virtualStickYaw,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _virtualStickYaw = value;
+                                                  _updateVirtualStick();
+                                                });
+                                              },
+                                            ),
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Vertical Throttle',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Slider(
+                                              value:
+                                                  _virtualStickVerticalThrottle,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _virtualStickVerticalThrottle =
+                                                      value;
+                                                  _updateVirtualStick();
+                                                });
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                            Slider(
-                              value: _virtualStickRoll,
-                              onChanged: (value) {
-                                setState(() {
-                                  _virtualStickRoll = value;
-                                  _updateVirtualStick();
-                                });
-                              },
-                            ),
-                            const SizedBox(height: kSpacer),
-                            const Text(
-                              'Yaw',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Slider(
-                              value: _virtualStickYaw,
-                              onChanged: (value) {
-                                setState(() {
-                                  _virtualStickYaw = value;
-                                  _updateVirtualStick();
-                                });
-                              },
-                            ),
-                            const SizedBox(height: kSpacer),
-                            const Text(
-                              'Vertical Throttle',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Slider(
-                              value: _virtualStickVerticalThrottle,
-                              onChanged: (value) {
-                                setState(() {
-                                  _virtualStickVerticalThrottle = value;
-                                  _updateVirtualStick();
-                                });
-                              },
                             ),
                           ],
                         ),

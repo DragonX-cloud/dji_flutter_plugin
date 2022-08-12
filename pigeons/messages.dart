@@ -41,6 +41,13 @@ abstract class DjiHostApi {
   void takeOff();
   void land();
   void start(String flightJson);
+  void mobileRemoteController(
+    bool enabled,
+    double leftStickHorizontal,
+    double leftStickVertical,
+    double rightStickHorizontal,
+    double rightStickVertical,
+  );
   void virtualStick(
     bool enabled,
     double pitch,

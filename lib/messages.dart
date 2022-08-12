@@ -410,6 +410,28 @@ class DjiHostApi {
     }
   }
 
+  Future<void> mobileRemoteController(bool arg_enabled, double arg_leftStickHorizontal, double arg_leftStickVertical, double arg_rightStickHorizontal, double arg_rightStickVertical) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.DjiHostApi.mobileRemoteController', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object?>[arg_enabled, arg_leftStickHorizontal, arg_leftStickVertical, arg_rightStickHorizontal, arg_rightStickVertical]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
+    }
+  }
+
   Future<void> virtualStick(bool arg_enabled, double arg_pitch, double arg_roll, double arg_yaw, double arg_verticalThrottle) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.DjiHostApi.virtualStick', codec, binaryMessenger: _binaryMessenger);

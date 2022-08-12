@@ -365,9 +365,30 @@ class Dji {
     await _api?.start(jsonEncode(flightJson));
   }
 
+  /// Update Mobile Remote Controller Sticks Data
+  ///
+  /// Controls the mobile remote controller - an on-screen sticks controller.
+  /// Available when the drone is connected via Wifi.
+  static Future<void> mobileRemoteController({
+    required bool enabled,
+    required double leftStickHorizontal,
+    required double leftStickVertical,
+    required double rightStickHorizontal,
+    required double rightStickVertical,
+  }) async {
+    await _api?.mobileRemoteController(
+      enabled,
+      leftStickHorizontal,
+      leftStickVertical,
+      rightStickHorizontal,
+      rightStickVertical,
+    );
+  }
+
   /// Update Virtual Stick flight controller data
   ///
   /// Control whether the virtual-stick mode is [enabled], and the [pitch], [roll], [yaw] and [verticalThrottle] of the Virtual Stick flight controller.
+  /// Available only when the drone is connected to the physical remote controller.
   static Future<void> virtualStick({
     required bool enabled,
     required double pitch,
@@ -375,7 +396,13 @@ class Dji {
     required double yaw,
     required double verticalThrottle,
   }) async {
-    await _api?.virtualStick(enabled, pitch, roll, yaw, verticalThrottle);
+    await _api?.virtualStick(
+      enabled,
+      pitch,
+      roll,
+      yaw,
+      verticalThrottle,
+    );
   }
 
   /// Get the media files list from the Drone (SD card).

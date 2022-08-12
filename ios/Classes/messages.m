@@ -427,6 +427,30 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
   {
     FlutterBasicMessageChannel *channel =
       [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.DjiHostApi.mobileRemoteController"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()        ];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(mobileRemoteControllerEnabled:leftStickHorizontal:leftStickVertical:rightStickHorizontal:rightStickVertical:error:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(mobileRemoteControllerEnabled:leftStickHorizontal:leftStickVertical:rightStickHorizontal:rightStickVertical:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_enabled = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_leftStickHorizontal = GetNullableObjectAtIndex(args, 1);
+        NSNumber *arg_leftStickVertical = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_rightStickHorizontal = GetNullableObjectAtIndex(args, 3);
+        NSNumber *arg_rightStickVertical = GetNullableObjectAtIndex(args, 4);
+        FlutterError *error;
+        [api mobileRemoteControllerEnabled:arg_enabled leftStickHorizontal:arg_leftStickHorizontal leftStickVertical:arg_leftStickVertical rightStickHorizontal:arg_rightStickHorizontal rightStickVertical:arg_rightStickVertical error:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
         initWithName:@"dev.flutter.pigeon.DjiHostApi.virtualStick"
         binaryMessenger:binaryMessenger
         codec:FLTDjiHostApiGetCodec()        ];

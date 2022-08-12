@@ -387,6 +387,7 @@ public class Messages {
     void takeOff();
     void land();
     void start(@NonNull String flightJson);
+    void mobileRemoteController(@NonNull Boolean enabled, @NonNull Double leftStickHorizontal, @NonNull Double leftStickVertical, @NonNull Double rightStickHorizontal, @NonNull Double rightStickVertical);
     void virtualStick(@NonNull Boolean enabled, @NonNull Double pitch, @NonNull Double roll, @NonNull Double yaw, @NonNull Double verticalThrottle);
     @NonNull List<Media> getMediaList();
     @NonNull String downloadMedia(@NonNull Long fileIndex);
@@ -566,6 +567,46 @@ public class Messages {
                 throw new NullPointerException("flightJsonArg unexpectedly null.");
               }
               api.start(flightJsonArg);
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.mobileRemoteController", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              Boolean enabledArg = (Boolean)args.get(0);
+              if (enabledArg == null) {
+                throw new NullPointerException("enabledArg unexpectedly null.");
+              }
+              Double leftStickHorizontalArg = (Double)args.get(1);
+              if (leftStickHorizontalArg == null) {
+                throw new NullPointerException("leftStickHorizontalArg unexpectedly null.");
+              }
+              Double leftStickVerticalArg = (Double)args.get(2);
+              if (leftStickVerticalArg == null) {
+                throw new NullPointerException("leftStickVerticalArg unexpectedly null.");
+              }
+              Double rightStickHorizontalArg = (Double)args.get(3);
+              if (rightStickHorizontalArg == null) {
+                throw new NullPointerException("rightStickHorizontalArg unexpectedly null.");
+              }
+              Double rightStickVerticalArg = (Double)args.get(4);
+              if (rightStickVerticalArg == null) {
+                throw new NullPointerException("rightStickVerticalArg unexpectedly null.");
+              }
+              api.mobileRemoteController(enabledArg, leftStickHorizontalArg, leftStickVerticalArg, rightStickHorizontalArg, rightStickVerticalArg);
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {
