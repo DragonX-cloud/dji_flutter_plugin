@@ -623,6 +623,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		DJIVideoPreviewer.instance().encoderType = ._MavicAir
 		DJIVideoPreviewer.instance().registFrameProcessor(self)
 		DJIVideoPreviewer.instance().start()
+		
+		_fltSetStatus("Video Feed Started")
 	}
 	
 	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
@@ -631,6 +633,8 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		DJIVideoPreviewer.instance().clearRender()
 		DJIVideoPreviewer.instance().clearVideoData()
 		DJIVideoPreviewer.instance().unregistFrameProcessor(self)
+		
+		_fltSetStatus("Video Feed Stopped")
 	}
 	
 	public func videoProcessorEnabled() -> Bool {
