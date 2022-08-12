@@ -307,7 +307,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         altitude: double.tryParse(_droneAltitude) ?? 0,
       );
 
-      if (droneHomeLocation.latitude != 0 && droneHomeLocation.longitude != 0) {
+      if (droneHomeLocation.latitude == 0 || droneHomeLocation.longitude == 0) {
         developer.log(
             'Invalid drone\'s home location - unable to start the flight',
             name: kLogKindDjiFlutterPlugin);
