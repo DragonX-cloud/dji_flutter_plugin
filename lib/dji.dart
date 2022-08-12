@@ -365,6 +365,19 @@ class Dji {
     await _api?.start(jsonEncode(flightJson));
   }
 
+  /// Update Virtual Stick flight controller data
+  ///
+  /// Control whether the virtual-stick mode is [enabled], and the [pitch], [roll], [yaw] and [verticalThrottle] of the Virtual Stick flight controller.
+  static Future<void> virtualStick({
+    required bool enabled,
+    required double pitch,
+    required double roll,
+    required double yaw,
+    required double verticalThrottle,
+  }) async {
+    await _api?.virtualStick(enabled, pitch, roll, yaw, verticalThrottle);
+  }
+
   /// Get the media files list from the Drone (SD card).
   ///
   /// Returns a list of Media files.

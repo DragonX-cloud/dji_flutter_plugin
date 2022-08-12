@@ -41,6 +41,13 @@ abstract class DjiHostApi {
   void takeOff();
   void land();
   void start(String flightJson);
+  void virtualStick(
+    bool enabled,
+    double pitch,
+    double roll,
+    double yaw,
+    double verticalThrottle,
+  );
   List<Media> getMediaList();
   String downloadMedia(int fileIndex);
   bool deleteMedia(int fileIndex);

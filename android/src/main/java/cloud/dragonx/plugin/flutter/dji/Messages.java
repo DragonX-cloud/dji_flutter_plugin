@@ -387,6 +387,7 @@ public class Messages {
     void takeOff();
     void land();
     void start(@NonNull String flightJson);
+    void virtualStick(@NonNull Boolean enabled, @NonNull Double pitch, @NonNull Double roll, @NonNull Double yaw, @NonNull Double verticalThrottle);
     @NonNull List<Media> getMediaList();
     @NonNull String downloadMedia(@NonNull Long fileIndex);
     @NonNull Boolean deleteMedia(@NonNull Long fileIndex);
@@ -565,6 +566,46 @@ public class Messages {
                 throw new NullPointerException("flightJsonArg unexpectedly null.");
               }
               api.start(flightJsonArg);
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.virtualStick", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              Boolean enabledArg = (Boolean)args.get(0);
+              if (enabledArg == null) {
+                throw new NullPointerException("enabledArg unexpectedly null.");
+              }
+              Double pitchArg = (Double)args.get(1);
+              if (pitchArg == null) {
+                throw new NullPointerException("pitchArg unexpectedly null.");
+              }
+              Double rollArg = (Double)args.get(2);
+              if (rollArg == null) {
+                throw new NullPointerException("rollArg unexpectedly null.");
+              }
+              Double yawArg = (Double)args.get(3);
+              if (yawArg == null) {
+                throw new NullPointerException("yawArg unexpectedly null.");
+              }
+              Double verticalThrottleArg = (Double)args.get(4);
+              if (verticalThrottleArg == null) {
+                throw new NullPointerException("verticalThrottleArg unexpectedly null.");
+              }
+              api.virtualStick(enabledArg, pitchArg, rollArg, yawArg, verticalThrottleArg);
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {

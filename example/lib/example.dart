@@ -37,6 +37,11 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   String _dronePitch = '0.0';
   String _droneYaw = '0.0';
 
+  double _virtualStickPitch = 0.0;
+  double _virtualStickRoll = 0.0;
+  double _virtualStickYaw = 0.0;
+  double _virtualStickVerticalThrottle = 0.0;
+
   // VlcPlayerController? _vlcController;
   // VideoViewController? _nativeVideoViewController;
   BetterPlayerController? _betterPlayerController;
@@ -462,6 +467,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
     }
+  }
+
+  Future<void> _updateVirtualStick() async {
+    await Dji.virtualStick(
+      enabled: true,
+      pitch: _virtualStickPitch,
+      roll: _virtualStickRoll,
+      yaw: _virtualStickYaw,
+      verticalThrottle: _virtualStickVerticalThrottle,
+    );
   }
 
   Future<List<Media?>?> _getMediaList() async {
@@ -1161,6 +1176,70 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                             DronePropertyRow(
                               label: 'Yaw',
                               value: _droneYaw,
+                            ),
+                            const SizedBox(height: kSpacer * 2),
+                            const Text(
+                              'Pitch',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Slider(
+                              value: _virtualStickPitch,
+                              onChanged: (value) {
+                                setState(() {
+                                  _virtualStickPitch = value;
+                                  _updateVirtualStick();
+                                });
+                              },
+                            ),
+                            const SizedBox(height: kSpacer),
+                            const Text(
+                              'Roll',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Slider(
+                              value: _virtualStickRoll,
+                              onChanged: (value) {
+                                setState(() {
+                                  _virtualStickRoll = value;
+                                  _updateVirtualStick();
+                                });
+                              },
+                            ),
+                            const SizedBox(height: kSpacer),
+                            const Text(
+                              'Yaw',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Slider(
+                              value: _virtualStickYaw,
+                              onChanged: (value) {
+                                setState(() {
+                                  _virtualStickYaw = value;
+                                  _updateVirtualStick();
+                                });
+                              },
+                            ),
+                            const SizedBox(height: kSpacer),
+                            const Text(
+                              'Vertical Throttle',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Slider(
+                              value: _virtualStickVerticalThrottle,
+                              onChanged: (value) {
+                                setState(() {
+                                  _virtualStickVerticalThrottle = value;
+                                  _updateVirtualStick();
+                                });
+                              },
                             ),
                           ],
                         ),

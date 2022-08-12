@@ -142,26 +142,26 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	// MARK: - Virtual Sticks Methods
-	
-	func updateVirtualSticks() {
+	public func virtualStickEnabled(_ enabled: NSNumber, pitch: NSNumber, roll: NSNumber, yaw: NSNumber, verticalThrottle: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		var virtualStickControlData: DJIVirtualStickFlightControlData = DJIVirtualStickFlightControlData()
-        virtualStickControlData.pitch = Float(0.0)
-        virtualStickControlData.roll = Float(0.0)
-        virtualStickControlData.yaw = Float(0.0)
-        virtualStickControlData.verticalThrottle = Float(0.0)
-        
+		
         guard let _droneFlightController = drone?.flightController else {
 			print("=== DjiPlugin iOS: updateVirtualSticks - No Flight Controller")
 			return
 		}
 		
+		virtualStickControlData.pitch = Float(truncating: pitch)
+		virtualStickControlData.roll = Float(truncating: roll)
+		virtualStickControlData.yaw = Float(truncating: yaw)
+		virtualStickControlData.verticalThrottle = Float(truncating: verticalThrottle)
+
 		// Setting the drone's flight control parameters for easy Virtual Stick usage
-		_droneFlightController.isVirtualStickAdvancedModeEnabled = true
+		_droneFlightController.isVirtualStickAdvancedModeEnabled = enabled as! Bool
 		_droneFlightController.rollPitchCoordinateSystem = DJIVirtualStickFlightCoordinateSystem.body
 		_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.velocity
 		_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angularVelocity
 		_droneFlightController.rollPitchControlMode = DJIVirtualStickRollPitchControlMode.velocity
-		
+
 		if (_droneFlightController.isVirtualStickControlModeAvailable() == false) {
 			print("=== DjiPlugin iOS: updateVirtualSticks - virtual stick control mode is not available")
 			return
@@ -169,7 +169,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			//print("=== DjiPlugin iOS: updateVirtualSticks - mThrottle: TBD...")
 			_droneFlightController.send(virtualStickControlData, withCompletion: nil)
         }
-    }
+	}
 	
 	// MARK: - Timeline Methods
 

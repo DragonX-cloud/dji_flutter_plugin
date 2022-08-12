@@ -427,6 +427,30 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
   {
     FlutterBasicMessageChannel *channel =
       [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.DjiHostApi.virtualStick"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()        ];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(virtualStickEnabled:pitch:roll:yaw:verticalThrottle:error:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(virtualStickEnabled:pitch:roll:yaw:verticalThrottle:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_enabled = GetNullableObjectAtIndex(args, 0);
+        NSNumber *arg_pitch = GetNullableObjectAtIndex(args, 1);
+        NSNumber *arg_roll = GetNullableObjectAtIndex(args, 2);
+        NSNumber *arg_yaw = GetNullableObjectAtIndex(args, 3);
+        NSNumber *arg_verticalThrottle = GetNullableObjectAtIndex(args, 4);
+        FlutterError *error;
+        [api virtualStickEnabled:arg_enabled pitch:arg_pitch roll:arg_roll yaw:arg_yaw verticalThrottle:arg_verticalThrottle error:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
         initWithName:@"dev.flutter.pigeon.DjiHostApi.getMediaList"
         binaryMessenger:binaryMessenger
         codec:FLTDjiHostApiGetCodec()        ];
