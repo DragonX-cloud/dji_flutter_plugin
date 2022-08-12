@@ -150,25 +150,40 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			return
 		}
 		
-		virtualStickControlData.pitch = Float(truncating: pitch)
-		virtualStickControlData.roll = Float(truncating: roll)
-		virtualStickControlData.yaw = Float(truncating: yaw)
-		virtualStickControlData.verticalThrottle = Float(truncating: verticalThrottle)
+		_droneFlightController.setVirtualStickModeEnabled(true, withCompletion: { (error: Error?) in
+			if (error != nil) {
+				print("=== DjiPlugin iOS: Enable Virtual Stick failed with error - \(String(describing: error?.localizedDescription))")
+				self._fltSetStatus("Virtual Stick Failed")
+			} else {
+				virtualStickControlData.pitch = Float(truncating: pitch)
+				virtualStickControlData.roll = Float(truncating: roll)
+				virtualStickControlData.yaw = Float(truncating: yaw)
+				virtualStickControlData.verticalThrottle = Float(truncating: verticalThrottle)
 
-		// Setting the drone's flight control parameters for easy Virtual Stick usage
-		_droneFlightController.isVirtualStickAdvancedModeEnabled = enabled as! Bool
-		_droneFlightController.rollPitchCoordinateSystem = DJIVirtualStickFlightCoordinateSystem.body
-		_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.velocity
-		_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angularVelocity
-		_droneFlightController.rollPitchControlMode = DJIVirtualStickRollPitchControlMode.velocity
-
-		if (_droneFlightController.isVirtualStickControlModeAvailable() == false) {
-			print("=== DjiPlugin iOS: updateVirtualSticks - virtual stick control mode is not available")
-			return
-		} else {
-			//print("=== DjiPlugin iOS: updateVirtualSticks - mThrottle: TBD...")
-			_droneFlightController.send(virtualStickControlData, withCompletion: nil)
-        }
+				// Setting the drone's flight control parameters for easy Virtual Stick usage
+				_droneFlightController.setFlightOrientationMode(DJIFlightOrientationMode.aircraftHeading) // Mandatory for Virtual Stick Control Mode to be available.
+				_droneFlightController.isVirtualStickAdvancedModeEnabled = enabled as! Bool
+				_droneFlightController.rollPitchCoordinateSystem = DJIVirtualStickFlightCoordinateSystem.body
+				_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.velocity
+				_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angularVelocity
+				_droneFlightController.rollPitchControlMode = DJIVirtualStickRollPitchControlMode.velocity
+				
+				if (_droneFlightController.isVirtualStickControlModeAvailable() == false) {
+					print("=== DjiPlugin iOS: Virtual Stick control mode is not available")
+					return
+				} else {
+					//print("=== DjiPlugin iOS: updateVirtualSticks - mThrottle: TBD...")
+					_droneFlightController.send(virtualStickControlData, withCompletion: { (error: Error?) in
+						if (error != nil) {
+							print("=== DjiPlugin iOS: Virtual Stick send failed with error - \(String(describing: error?.localizedDescription))")
+							self._fltSetStatus("Virtual Stick Failed")
+						} else {
+							self._fltSetStatus("Virtual Stick")
+						}
+					})
+				}
+			}
+		})
 	}
 	
 	// MARK: - Timeline Methods
