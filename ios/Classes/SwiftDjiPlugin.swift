@@ -150,18 +150,21 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			drone?.mobileRemoteController?.leftStickVertical = Float(truncating: leftStickVertical)
 			drone?.mobileRemoteController?.rightStickHorizontal = Float(truncating: rightStickHorizontal)
 			drone?.mobileRemoteController?.rightStickVertical = Float(truncating: rightStickVertical)
+			self._fltSetStatus("Mobile Remote")
 		} else {
-			print("=== DjiPlugin iOS: mobileRemoteController - isConnected FALSE")
+			print("=== DjiPlugin iOS: Mobile Remote - isConnected FALSE")
+			self._fltSetStatus("Mobile Remote Failed")
 		}
 	}
 	
-	// MARK: - Virtual Sticks Methods
+	// MARK: - Virtual Stick Methods
 	
 	public func virtualStickEnabled(_ enabled: NSNumber, pitch: NSNumber, roll: NSNumber, yaw: NSNumber, verticalThrottle: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		var virtualStickControlData: DJIVirtualStickFlightControlData = DJIVirtualStickFlightControlData()
 		
         guard let _droneFlightController = drone?.flightController else {
-			print("=== DjiPlugin iOS: updateVirtualSticks - No Flight Controller")
+			print("=== DjiPlugin iOS: Virtual Stick - No Flight Controller")
+			_fltSetStatus("Virtual Stick Failed")
 			return
 		}
 		
@@ -185,6 +188,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				
 				if (_droneFlightController.isVirtualStickControlModeAvailable() == false) {
 					print("=== DjiPlugin iOS: Virtual Stick control mode is not available")
+					self._fltSetStatus("Virtual Stick Failed")
 					return
 				} else {
 					//print("=== DjiPlugin iOS: updateVirtualSticks - mThrottle: TBD...")

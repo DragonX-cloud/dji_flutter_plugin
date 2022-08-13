@@ -1222,11 +1222,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Left Stick Horizontal',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _leftStickHorizontal,
+                                              min: -1.0,
+                                              max: 1.0,
+                                              divisions: 20,
+                                              label: _leftStickHorizontal
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _leftStickHorizontal = value;
@@ -1238,11 +1243,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Left Stick Vertical',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _leftStickVertical,
+                                              min: -1.0,
+                                              max: 1.0,
+                                              divisions: 20,
+                                              label: _leftStickVertical
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _leftStickVertical = value;
@@ -1254,11 +1264,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Right Stick Horizontal',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _rightStickHorizontal,
+                                              min: -1.0,
+                                              max: 1.0,
+                                              divisions: 20,
+                                              label: _rightStickHorizontal
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _rightStickHorizontal = value;
@@ -1270,11 +1285,16 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Right Stick Vertical',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _rightStickVertical,
+                                              min: -1.0,
+                                              max: 1.0,
+                                              divisions: 20,
+                                              label: _rightStickVertical
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _rightStickVertical = value;
@@ -1290,7 +1310,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Pitch',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
@@ -1306,7 +1326,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Roll',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
@@ -1322,7 +1342,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Yaw',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
@@ -1338,7 +1358,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const Text(
                                               'Vertical Throttle',
                                               style: TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
