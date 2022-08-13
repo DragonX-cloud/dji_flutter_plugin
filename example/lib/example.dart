@@ -1198,17 +1198,20 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                               child: Column(
                                 children: [
                                   const TabBar(
+                                    labelColor: Colors.black,
                                     tabs: [
                                       Tab(
+                                          text: 'Wifi',
                                           icon: Icon(
-                                        Icons.wifi,
-                                        color: Colors.black,
-                                      )),
+                                            Icons.wifi,
+                                            color: Colors.black,
+                                          )),
                                       Tab(
+                                          text: 'Remote',
                                           icon: Icon(
-                                        Icons.radio,
-                                        color: Colors.black,
-                                      )),
+                                            Icons.radio,
+                                            color: Colors.black,
+                                          )),
                                     ],
                                   ),
                                   const SizedBox(height: kSpacer),
@@ -1218,9 +1221,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                       children: [
                                         Column(
                                           children: [
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Left Stick Horizontal',
+                                              'Left Stick Horizontal (Heading)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
@@ -1239,9 +1241,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 });
                                               },
                                             ),
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Left Stick Vertical',
+                                              'Left Stick Vertical (Up/Down)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
@@ -1260,9 +1261,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 });
                                               },
                                             ),
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Right Stick Horizontal',
+                                              'Right Stick Horizontal (Left/Right)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
@@ -1281,9 +1281,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 });
                                               },
                                             ),
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Right Stick Vertical',
+                                              'Right Stick Vertical (Forward/Backward)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
@@ -1306,15 +1305,19 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                         ),
                                         Column(
                                           children: [
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Pitch',
+                                              'Pitch (Backward/Forward)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _virtualStickPitch,
+                                              min: -45.0,
+                                              max: 45.0,
+                                              divisions: 90,
+                                              label: _virtualStickPitch
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _virtualStickPitch = value;
@@ -1322,15 +1325,19 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 });
                                               },
                                             ),
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Roll',
+                                              'Roll (Left/Right)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _virtualStickRoll,
+                                              min: -45.0,
+                                              max: 45.0,
+                                              divisions: 90,
+                                              label: _virtualStickRoll
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _virtualStickRoll = value;
@@ -1338,15 +1345,19 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 });
                                               },
                                             ),
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Yaw',
+                                              'Yaw (Heading)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
                                             ),
                                             Slider(
                                               value: _virtualStickYaw,
+                                              min: -180.0,
+                                              max: 180.0,
+                                              divisions: 360,
+                                              label: _virtualStickYaw
+                                                  .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _virtualStickYaw = value;
@@ -1354,9 +1365,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 });
                                               },
                                             ),
-                                            const SizedBox(height: kSpacer),
                                             const Text(
-                                              'Vertical Throttle',
+                                              'Vertical Throttle (Up/Down)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
@@ -1364,6 +1374,12 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             Slider(
                                               value:
                                                   _virtualStickVerticalThrottle,
+                                              min: 0,
+                                              max: 120,
+                                              divisions: 120,
+                                              label:
+                                                  _virtualStickVerticalThrottle
+                                                      .toStringAsFixed(2),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _virtualStickVerticalThrottle =

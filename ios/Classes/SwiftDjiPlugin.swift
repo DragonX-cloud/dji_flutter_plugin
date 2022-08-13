@@ -142,6 +142,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	}
 	
 	// MARK: - Mobile Remote Controller
+	
 	public func mobileRemoteControllerEnabled(_ enabled: NSNumber, leftStickHorizontal: NSNumber, leftStickVertical: NSNumber, rightStickHorizontal: NSNumber, rightStickVertical: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		// the `enabled` property is redundant at this point, but it's here as a placeholder for possible usage in the future.
 		
@@ -182,9 +183,9 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				_droneFlightController.setFlightOrientationMode(DJIFlightOrientationMode.aircraftHeading) // Mandatory for Virtual Stick Control Mode to be available.
 				//_droneFlightController.isVirtualStickAdvancedModeEnabled = true
 				_droneFlightController.rollPitchCoordinateSystem = DJIVirtualStickFlightCoordinateSystem.body
-				_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.velocity
-				_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angularVelocity
-				_droneFlightController.rollPitchControlMode = DJIVirtualStickRollPitchControlMode.velocity
+				_droneFlightController.rollPitchControlMode = DJIVirtualStickRollPitchControlMode.angle
+				_droneFlightController.yawControlMode = DJIVirtualStickYawControlMode.angle
+				_droneFlightController.verticalControlMode = DJIVirtualStickVerticalControlMode.position
 				
 				if (_droneFlightController.isVirtualStickControlModeAvailable() == false) {
 					print("=== DjiPlugin iOS: Virtual Stick control mode is not available")
@@ -203,6 +204,26 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 				}
 			}
 		})
+	}
+	
+	// MARK: - Gimbal Rotation
+	
+	public func gimbalRotate(_ rotate: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		if (drone?.gimbal?.isConnected == true) {
+			let djiGimbalRotation = DJIGimbalRotation.init(pitchValue: 45.0, rollValue: nil, yawValue: nil, time: 2, mode: .absoluteAngle, ignore: true)
+			drone?.gimbal?.setMode(DJIGimbalMode.yawFollow)
+			drone?.gimbal?.rotate(with: djiGimbalRotation, completion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Gimbal Rotate failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Gimbal Failed")
+				} else {
+					self._fltSetStatus("Gimbal Rotated")
+				}
+			})
+		} else {
+			print("=== DjiPlugin iOS: Gimbal - isConnected FALSE")
+			self._fltSetStatus("Gimbal Failed")
+		}
 	}
 	
 	// MARK: - Timeline Methods
