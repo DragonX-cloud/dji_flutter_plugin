@@ -55,6 +55,9 @@ abstract class DjiHostApi {
     double yaw,
     double verticalThrottle,
   );
+  void gimbalRotatePitch(
+    double degrees,
+  );
   List<Media> getMediaList();
   String downloadMedia(int fileIndex);
   bool deleteMedia(int fileIndex);

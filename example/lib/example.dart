@@ -47,6 +47,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   double _virtualStickYaw = 0.0;
   double _virtualStickVerticalThrottle = 0.0;
 
+  double _gimbalPitchInDegrees = 0.0;
+
   // VlcPlayerController? _vlcController;
   // VideoViewController? _nativeVideoViewController;
   BetterPlayerController? _betterPlayerController;
@@ -491,6 +493,12 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
       roll: _virtualStickRoll,
       yaw: _virtualStickYaw,
       verticalThrottle: _virtualStickVerticalThrottle,
+    );
+  }
+
+  Future<void> _updateGimbalRotatePitch() async {
+    await Dji.gimbalRotatePitch(
+      degrees: _gimbalPitchInDegrees,
     );
   }
 
@@ -1194,7 +1202,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                             ),
                             const SizedBox(height: kSpacer),
                             DefaultTabController(
-                              length: 2,
+                              length: 3,
                               child: Column(
                                 children: [
                                   const TabBar(
@@ -1212,6 +1220,12 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             Icons.radio,
                                             color: Colors.black,
                                           )),
+                                      Tab(
+                                          text: 'Gimbal',
+                                          icon: Icon(
+                                            Icons.camera,
+                                            color: Colors.black,
+                                          )),
                                     ],
                                   ),
                                   const SizedBox(height: kSpacer),
@@ -1221,6 +1235,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                       children: [
                                         Column(
                                           children: [
+                                            const SizedBox(height: kSpacer),
                                             const Text(
                                               'Left Stick Horizontal (Heading)',
                                               style: TextStyle(
@@ -1282,7 +1297,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               },
                                             ),
                                             const Text(
-                                              'Right Stick Vertical (Forward/Backward)',
+                                              'Right Stick Vertical (Forward/Back)',
                                               style: TextStyle(
                                                 fontSize: 10.0,
                                               ),
@@ -1305,6 +1320,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                         ),
                                         Column(
                                           children: [
+                                            const SizedBox(height: kSpacer),
                                             const Text(
                                               'Pitch (Backward/Forward)',
                                               style: TextStyle(
@@ -1390,6 +1406,29 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                           ],
                                         ),
+                                        Column(children: [
+                                          const SizedBox(height: kSpacer),
+                                          const Text(
+                                            'Gimbal Pitch in Degrees',
+                                            style: TextStyle(
+                                              fontSize: 10.0,
+                                            ),
+                                          ),
+                                          Slider(
+                                            value: _gimbalPitchInDegrees,
+                                            min: -90.0,
+                                            max: 0,
+                                            divisions: 90,
+                                            label: _gimbalPitchInDegrees
+                                                .toStringAsFixed(2),
+                                            onChanged: (value) {
+                                              setState(() {
+                                                _gimbalPitchInDegrees = value;
+                                                _updateGimbalRotatePitch();
+                                              });
+                                            },
+                                          ),
+                                        ]),
                                       ],
                                     ),
                                   ),

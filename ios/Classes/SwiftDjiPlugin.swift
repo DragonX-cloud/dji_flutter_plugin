@@ -206,12 +206,13 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		})
 	}
 	
-	// MARK: - Gimbal Rotation
+	// MARK: - Gimbal Methods
 	
-	public func gimbalRotate(_ rotate: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	public func gimbalRotatePitchDegrees(_ degrees: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
 		if (drone?.gimbal?.isConnected == true) {
-			let djiGimbalRotation = DJIGimbalRotation.init(pitchValue: 45.0, rollValue: nil, yawValue: nil, time: 2, mode: .absoluteAngle, ignore: true)
-			drone?.gimbal?.setMode(DJIGimbalMode.yawFollow)
+			//drone?.gimbal?.setMode(DJIGimbalMode.yawFollow)
+			
+			let djiGimbalRotation = DJIGimbalRotation.init(pitchValue: degrees, rollValue: nil, yawValue: nil, time: 1.0 as TimeInterval, mode: .absoluteAngle, ignore: true)
 			drone?.gimbal?.rotate(with: djiGimbalRotation, completion: { (error: Error?) in
 				if (error != nil) {
 					print("=== DjiPlugin iOS: Gimbal Rotate failed with error - \(String(describing: error?.localizedDescription))")

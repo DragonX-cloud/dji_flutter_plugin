@@ -405,6 +405,18 @@ class Dji {
     );
   }
 
+  /// Update Gimbal pitch value in degrees
+  ///
+  /// Controls the Gimbal pitch in [degrees] (-90..0) in Absolute Mode.
+  /// An angle of "0" degrees is aligned with the drone's "nose" (heading), and -90 degrees is the gimbal pointing the camera all the way down.
+  static Future<void> gimbalRotatePitch({
+    required double degrees,
+  }) async {
+    await _api?.gimbalRotatePitch(
+      degrees,
+    );
+  }
+
   /// Get the media files list from the Drone (SD card).
   ///
   /// Returns a list of Media files.

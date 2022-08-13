@@ -475,6 +475,26 @@ void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLT
   {
     FlutterBasicMessageChannel *channel =
       [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.DjiHostApi.gimbalRotatePitch"
+        binaryMessenger:binaryMessenger
+        codec:FLTDjiHostApiGetCodec()        ];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(gimbalRotatePitchDegrees:error:)], @"FLTDjiHostApi api (%@) doesn't respond to @selector(gimbalRotatePitchDegrees:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        NSNumber *arg_degrees = GetNullableObjectAtIndex(args, 0);
+        FlutterError *error;
+        [api gimbalRotatePitchDegrees:arg_degrees error:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
         initWithName:@"dev.flutter.pigeon.DjiHostApi.getMediaList"
         binaryMessenger:binaryMessenger
         codec:FLTDjiHostApiGetCodec()        ];

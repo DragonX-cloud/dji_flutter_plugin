@@ -389,6 +389,7 @@ public class Messages {
     void start(@NonNull String flightJson);
     void mobileRemoteController(@NonNull Boolean enabled, @NonNull Double leftStickHorizontal, @NonNull Double leftStickVertical, @NonNull Double rightStickHorizontal, @NonNull Double rightStickVertical);
     void virtualStick(@NonNull Boolean enabled, @NonNull Double pitch, @NonNull Double roll, @NonNull Double yaw, @NonNull Double verticalThrottle);
+    void gimbalRotatePitch(@NonNull Double degrees);
     @NonNull List<Media> getMediaList();
     @NonNull String downloadMedia(@NonNull Long fileIndex);
     @NonNull Boolean deleteMedia(@NonNull Long fileIndex);
@@ -647,6 +648,30 @@ public class Messages {
                 throw new NullPointerException("verticalThrottleArg unexpectedly null.");
               }
               api.virtualStick(enabledArg, pitchArg, rollArg, yawArg, verticalThrottleArg);
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.gimbalRotatePitch", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              ArrayList<Object> args = (ArrayList<Object>)message;
+              Double degreesArg = (Double)args.get(0);
+              if (degreesArg == null) {
+                throw new NullPointerException("degreesArg unexpectedly null.");
+              }
+              api.gimbalRotatePitch(degreesArg);
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {
