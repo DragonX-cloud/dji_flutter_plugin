@@ -63,6 +63,8 @@ abstract class DjiHostApi {
   bool deleteMedia(int fileIndex);
   void videoFeedStart();
   void videoFeedStop();
+  // void videoRecordStart();
+  // void videoRecordStop();
 }
 
 @FlutterApi()

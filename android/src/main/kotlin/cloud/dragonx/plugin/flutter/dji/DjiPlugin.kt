@@ -16,7 +16,12 @@ import dji.common.camera.SettingsDefinitions
 import dji.common.error.DJICameraError
 import dji.common.error.DJIError
 import dji.common.error.DJISDKError
+import dji.common.flightcontroller.FlightOrientationMode
 import dji.common.flightcontroller.LocationCoordinate3D
+import dji.common.flightcontroller.virtualstick.*
+import dji.common.gimbal.GimbalMode
+import dji.common.gimbal.Rotation
+import dji.common.gimbal.RotationMode
 import dji.common.mission.waypoint.*
 import dji.common.model.LocationCoordinate2D
 import dji.common.util.CommonCallbacks
@@ -343,6 +348,108 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       Log.d(TAG,"Landing Failed - No Flight Controller")
     }
   }
+
+  /** Mobile Remote Controller **/
+  // https://github.com/dji-sdk/Mobile-SDK-Android/blob/241af9a45b2753873c601b3988192bb202ed4c30/Sample%20Code/app/src/main/java/com/dji/sdk/sample/demo/mobileremotecontroller/MobileRemoteControllerView.java
+
+  override fun mobileRemoteController(
+    enabled: Boolean,
+    leftStickHorizontal: Double,
+    leftStickVertical: Double,
+    rightStickHorizontal: Double,
+    rightStickVertical: Double
+  ) {
+    if (drone?.mobileRemoteController?.isConnected == true) {
+      drone?.mobileRemoteController?.leftStickHorizontal = leftStickHorizontal.toFloat()
+      drone?.mobileRemoteController?.leftStickVertical = leftStickVertical.toFloat()
+      drone?.mobileRemoteController?.rightStickHorizontal = rightStickHorizontal.toFloat()
+      drone?.mobileRemoteController?.rightStickVertical = rightStickVertical.toFloat()
+      _fltSetStatus("Mobile Remote")
+    } else {
+      Log.d(TAG, "Mobile Remote - isConnected FALSE")
+      _fltSetStatus("Mobile Remote Failed")
+    }
+  }
+
+  /** Virtual Stick Methods **/
+  // https://github.com/dji-sdk/Mobile-SDK-Android/blob/master/Sample%20Code/app/src/main/java/com/dji/sdk/sample/demo/flightcontroller/VirtualStickView.java
+
+  override fun virtualStick(
+    enabled: Boolean,
+    pitch: Double,
+    roll: Double,
+    yaw: Double,
+    verticalThrottle: Double
+  ) {
+    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
+    if (_droneFlightController == null) {
+      Log.d(TAG, "Virtual Stick - No Flight Controller")
+      _fltSetStatus("Virtual Stick Failed")
+      return
+    }
+
+    _droneFlightController.setVirtualStickModeEnabled(true) { error ->
+      if (error != null) {
+        Log.d(TAG, "Enable Virtual Stick failed with error" + error.description)
+        _fltSetStatus("Virtual Stick Failed")
+      } else {
+        val virtualStickControlData = FlightControlData(pitch.toFloat(), roll.toFloat(), yaw.toFloat(), verticalThrottle.toFloat())
+        // Setting the drone's flight control parameters for easy Virtual Stick usage
+        _droneFlightController.setFlightOrientationMode(FlightOrientationMode.AIRCRAFT_HEADING) { error ->
+          // Mandatory for Virtual Stick Control Mode to be available.
+          if (error != null) {
+            Log.d(TAG, "Virtual Stick - setFlightOrientationMode (as FlightOrientationMode.AIRCRAFT_HEADING) failed with error" + error.description)
+            _fltSetStatus("Virtual Stick Failed")
+          }
+        } // Mandatory for Virtual Stick Control Mode to be available.
+        //_droneFlightController.isVirtualStickAdvancedModeEnabled = true
+        _droneFlightController.rollPitchCoordinateSystem = FlightCoordinateSystem.BODY
+        _droneFlightController.rollPitchControlMode = RollPitchControlMode.ANGLE
+        _droneFlightController.yawControlMode = YawControlMode.ANGLE
+        _droneFlightController.verticalControlMode = VerticalControlMode.POSITION
+
+        if (!_droneFlightController.isVirtualStickControlModeAvailable) {
+          Log.d(TAG, "Virtual Stick control mode is not available")
+          _fltSetStatus("Virtual Stick Failed")
+        } else {
+          _droneFlightController.sendVirtualStickFlightControlData(virtualStickControlData) { error ->
+            if (error != null) {
+              Log.d(TAG, "Virtual Stick send failed with error" + error.description)
+              _fltSetStatus("Virtual Stick Failed")
+            } else {
+              _fltSetStatus("Virtual Stick")
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /** Gimbal Methods **/
+
+  override fun gimbalRotatePitch(degrees: Double) {
+    if (drone?.gimbal?.isConnected == true) {
+      //drone?.gimbal?.setMode(GimbalMode.YAW_FOLLOW)
+      val djiGimbalRotation = Rotation.Builder().pitch(degrees.toFloat()).mode(RotationMode.ABSOLUTE_ANGLE)
+        .yaw(Rotation.NO_ROTATION)
+        .roll(Rotation.NO_ROTATION)
+        .time(1.0)
+        .build()
+      drone?.gimbal?.rotate(djiGimbalRotation) { error ->
+        if (error != null) {
+          Log.d(TAG, "Gimbal Rotate failed with error" + error.description)
+          _fltSetStatus("Gimbal Failed")
+        } else {
+          _fltSetStatus("Gimbal Rotated")
+        }
+      }
+    } else {
+      Log.d(TAG, "Gimbal - isConnected FALSE")
+      _fltSetStatus("Gimbal Failed")
+    }
+  }
+
+  /** Timeline Methods **/
 
   override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
