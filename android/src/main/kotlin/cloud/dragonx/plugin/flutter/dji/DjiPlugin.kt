@@ -744,10 +744,9 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           Log.d(TAG, "Download media started")
 
           val selectedMedia = mediaFileList[_index]
-          val isPhoto =
-            selectedMedia.mediaType == MediaFile.MediaType.JPEG || selectedMedia.mediaType == MediaFile.MediaType.TIFF
-          var previousOffset: UInt = 0u
-          var fileData: ByteBuffer?
+          //val isPhoto = selectedMedia.mediaType == MediaFile.MediaType.JPEG || selectedMedia.mediaType == MediaFile.MediaType.TIFF
+          //var previousOffset: UInt = 0u
+          //var fileData: ByteBuffer?
           var currentProgress = -1
 
           val destDownloadDir = File(djiPluginContext.getExternalFilesDir(null)?.path.toString() + "/dji_media/")
@@ -879,7 +878,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     // I decided to use the YUV format of the YuvDataCallback (and not the videoDataListener which produces Raw H264), because when
     // converting the byte-stream on the Flutter side - the H264 byte-stream produced much lower quality than the YUV frames.
     codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
-    codecManager.enabledYuvData(true);
+    codecManager.enabledYuvData(true)
     codecManager.yuvDataCallback = YuvDataCallback { format, yuvFrame, dataSize, width, height ->
       // To stream YUV format (raw video) byte-stream
       val bytes = ByteArray(dataSize)
@@ -897,7 +896,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   }
 
   override fun videoFeedStop() {
-    codecManager.enabledYuvData(false);
+    codecManager.enabledYuvData(false)
     codecManager.yuvDataCallback = null
     VideoFeeder.getInstance()?.primaryVideoFeed?.destroy()
     //VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
