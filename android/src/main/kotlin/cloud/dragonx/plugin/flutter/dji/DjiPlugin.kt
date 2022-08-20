@@ -1,12 +1,8 @@
-  package cloud.dragonx.plugin.flutter.dji
-
-//import dji.midware.util.ContextUtil.getContext
+package cloud.dragonx.plugin.flutter.dji
 
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.media.MediaCodecInfo
-import android.media.MediaFormat
 import android.util.Log
 import androidx.annotation.NonNull
 import androidx.multidex.MultiDex
@@ -19,7 +15,6 @@ import dji.common.error.DJISDKError
 import dji.common.flightcontroller.FlightOrientationMode
 import dji.common.flightcontroller.LocationCoordinate3D
 import dji.common.flightcontroller.virtualstick.*
-import dji.common.gimbal.GimbalMode
 import dji.common.gimbal.Rotation
 import dji.common.gimbal.RotationMode
 import dji.common.mission.waypoint.*
@@ -47,7 +42,6 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
-import dji.thirdparty.afinal.core.AsyncTask
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -312,7 +306,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
                 fltDjiFlutterApi?.setStatus(fltDrone) {}
               })
 
-              //Log.d(TAG, "Drone Battery Delegate successfuly configured")
+              //Log.d(TAG, "Drone Battery Delegate successfully configured")
             })
         } catch (ignored: Exception) {
           Log.d(TAG, "Drone Battery Delegate Error - No Battery Object")
@@ -879,8 +873,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     // In order for the `VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener` to work
     // we must enable the `codecManager.enabledYuvData(true)`.
     // Otherwise, the YuvDataCallback won't work.
-    // And also the privaryVideoFeed.addVideoDataLintener won't.
-    // Please note that the videoDataListender callback cannot work in parallel to YuvDataCallback.
+    // And also the primaryVideoFeed.addVideoDataListener won't.
+    // Please note that the videoDataListener callback cannot work in parallel to YuvDataCallback.
     // If you define both callbacks - only one of them will stream data.
     // I decided to use the YUV format of the YuvDataCallback (and not the videoDataListener which produces Raw H264), because when
     // converting the byte-stream on the Flutter side - the H264 byte-stream produced much lower quality than the YUV frames.
