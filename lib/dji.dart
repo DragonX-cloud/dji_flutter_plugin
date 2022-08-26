@@ -365,7 +365,7 @@ class Dji {
     await _api?.start(jsonEncode(flightJson));
   }
 
-  /// Update Mobile Remote Controller Sticks Data
+  /// Update Mobile Remote Controller Sticks Data (via Wifi)
   ///
   /// Controls the mobile remote controller - an on-screen sticks controller.
   /// Available when the drone is connected via Wifi.
@@ -385,7 +385,7 @@ class Dji {
     );
   }
 
-  /// Update Virtual Stick flight controller data
+  /// Update Virtual Stick flight controller data (via physical remote controller)
   ///
   /// Control whether the virtual-stick mode is [enabled], and the [pitch], [roll], [yaw] and [verticalThrottle] of the Virtual Stick flight controller.
   /// Available only when the drone is connected to the physical remote controller.
@@ -457,5 +457,17 @@ class Dji {
   ///
   static Future<void> videoFeedStop() async {
     await _api?.videoFeedStop();
+  }
+
+  /// Starts the DJI Video Recorder.
+  ///
+  static Future<void> videoRecordStart() async {
+    await _api?.videoRecordStart();
+  }
+
+  /// Stops the DJI Video Recorder.
+  ///
+  static Future<void> videoRecordStop() async {
+    await _api?.videoRecordStop();
   }
 }

@@ -16,12 +16,15 @@ It currently supports the following features:
 - Connect / Disconnect
 - Takeoff
 - Land
-- Timeline:
+- Start Timeline:
 	- Takeoff
 	- Land
 	- Take a picture
 	- Start/Stop video
 	- Waypoints Mission
+- Mobile Remote Controller (Wifi)
+- Virtual Stick (Physical Remote)
+- Gimbal Rotate (Pitch)
 - Get Media Files List
 - Download Media File by Index
 - Delete Media File by Index
@@ -143,7 +146,7 @@ Below the `<application>` tag and above the `<activity>` tag, add the following 
 
 ##### 3. Update android/app/build.gradle
 Open the android/app/build.grade file and update the following:
-- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).  
+- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 32.
 Also, **add and make sure multiDexEnabled is set to TRUE**:
 ```
 android {
@@ -151,7 +154,7 @@ android {
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 32
         ...
 
         multiDexEnabled true
@@ -655,6 +658,56 @@ Future<void> _start() async {
 ##### Notes
 - The waypoint-mission maxFlightSpeed can get a maximum value of 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
 - If you don't specify the `gimbalPitch`, the Flutter DJI Plugin will automatically calculate the Gimbal (Camera) angle to point to the Point of Interest.
+
+#### Dji.mobileRemoteController
+Update Mobile Remote Controller Sticks Data (via Wifi).
+Controls the mobile remote controller - an on-screen sticks controller.
+Available only when the drone is connected via Wifi.
+
+Example:
+```
+Future<void> _updateMobileRemoteController() async {
+  await Dji.mobileRemoteController(
+    enabled: true,
+    leftStickHorizontal: _leftStickHorizontal,
+    leftStickVertical: _leftStickVertical,
+    rightStickHorizontal: _rightStickHorizontal,
+    rightStickVertical: _rightStickVertical,
+  );
+}
+```
+
+#### Dji.virtualStick
+Update Virtual Stick flight controller data (via physical remote controller).
+Control whether the virtual-stick mode is [enabled], and the [pitch], [roll], [yaw] and [verticalThrottle] of the Virtual Stick flight controller.
+Available only when the drone is connected to the physical remote controller.
+
+Example:
+```
+Future<void> _updateVirtualStick() async {
+  await Dji.virtualStick(
+    enabled: true,
+    pitch: _virtualStickPitch,
+    roll: _virtualStickRoll,
+    yaw: _virtualStickYaw,
+    verticalThrottle: _virtualStickVerticalThrottle,
+  );
+}
+```
+
+#### Dji.gimbalRotatePitch
+Update Gimbal pitch value in degrees.
+Controls the Gimbal pitch in [degrees] (-90..0) in Absolute Mode.
+An angle of "0" degrees is aligned with the drone's "nose" (heading), and -90 degrees is the gimbal pointing the camera all the way down.
+
+Example:
+```
+Future<void> _updateGimbalRotatePitch() async {
+  await Dji.gimbalRotatePitch(
+    degrees: _gimbalPitchInDegrees,
+  );
+}
+```
 
 #### Dji.getMediaList
 Get the media files list from the Drone (SD card).

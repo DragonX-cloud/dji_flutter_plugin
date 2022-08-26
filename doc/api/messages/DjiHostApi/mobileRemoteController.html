@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="description" content="API docs for the videoFeedStop method from the DjiHostApi class, for the Dart programming language.">
-  <title>videoFeedStop method - DjiHostApi class - messages library - Dart API</title>
+  <meta name="description" content="API docs for the mobileRemoteController method from the DjiHostApi class, for the Dart programming language.">
+  <title>mobileRemoteController method - DjiHostApi class - messages library - Dart API</title>
 
 
   
@@ -32,9 +32,9 @@
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../messages/messages-library.html">messages</a></li>
     <li><a href="../../messages/DjiHostApi-class.html">DjiHostApi</a></li>
-    <li class="self-crumb">videoFeedStop method</li>
+    <li class="self-crumb">mobileRemoteController method</li>
   </ol>
-  <div class="self-name">videoFeedStop</div>
+  <div class="self-name">mobileRemoteController</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
@@ -45,7 +45,7 @@
 
   <div id="dartdoc-main-content" class="main-content">
       <div>
-<h1><span class="kind-method">videoFeedStop</span> method 
+<h1><span class="kind-method">mobileRemoteController</span> method 
     <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
 </h1></div>
 
@@ -53,7 +53,12 @@
       
 
 <span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
-<span class="name ">videoFeedStop</span>(<wbr>)
+<span class="name ">mobileRemoteController</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="mobileRemoteController-param-arg_enabled"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">arg_enabled</span>, </span></li>
+<li><span class="parameter" id="mobileRemoteController-param-arg_leftStickHorizontal"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">arg_leftStickHorizontal</span>, </span></li>
+<li><span class="parameter" id="mobileRemoteController-param-arg_leftStickVertical"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">arg_leftStickVertical</span>, </span></li>
+<li><span class="parameter" id="mobileRemoteController-param-arg_rightStickHorizontal"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">arg_rightStickHorizontal</span>, </span></li>
+<li><span class="parameter" id="mobileRemoteController-param-arg_rightStickVertical"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">arg_rightStickVertical</span></span></li>
+</ol>)
 
       
 
@@ -64,11 +69,11 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; videoFeedStop() async {
+  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; mobileRemoteController(bool arg_enabled, double arg_leftStickHorizontal, double arg_leftStickVertical, double arg_rightStickHorizontal, double arg_rightStickVertical) async {
   final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-      &#39;dev.flutter.pigeon.DjiHostApi.videoFeedStop&#39;, codec, binaryMessenger: _binaryMessenger);
+      &#39;dev.flutter.pigeon.DjiHostApi.mobileRemoteController&#39;, codec, binaryMessenger: _binaryMessenger);
   final Map&lt;Object?, Object?&gt;? replyMap =
-      await channel.send(null) as Map&lt;Object?, Object?&gt;?;
+      await channel.send(&lt;Object?&gt;[arg_enabled, arg_leftStickHorizontal, arg_leftStickVertical, arg_rightStickHorizontal, arg_rightStickVertical]) as Map&lt;Object?, Object?&gt;?;
   if (replyMap == null) {
     throw PlatformException(
       code: &#39;channel-error&#39;,
@@ -101,7 +106,7 @@
   <li><a href="../../index.html">dji</a></li>
   <li><a href="../../messages/messages-library.html">messages</a></li>
   <li><a href="../../messages/DjiHostApi-class.html">DjiHostApi</a></li>
-  <li class="self-crumb">videoFeedStop method</li>
+  <li class="self-crumb">mobileRemoteController method</li>
 </ol>
 
 

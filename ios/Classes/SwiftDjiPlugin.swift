@@ -682,6 +682,54 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		return true
 	}
 	
+	public func videoRecordStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Video record start failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Record Start Failed")
+				} else {
+					_droneCamera.startRecordVideo() { (error: Error?) in
+						if (error != nil) {
+							print("=== DjiPlugin iOS: Video record start failed with error - \(String(describing: error?.localizedDescription))")
+							self._fltSetStatus("Record Start Failed")
+						} else {
+							print("=== DjiPlugin iOS: Video record started")
+							self._fltSetStatus("Record Started")
+						}
+					}
+				}
+			})
+		} else {
+			print("=== DjiPlugin iOS: Video record start failed - no Camera object")
+			_fltSetStatus("Record Start Failed")
+		}
+	}
+	
+	public func videoRecordStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Video record stop failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Record Stop Failed")
+				} else {
+					_droneCamera.stopRecordVideo() { (error: Error?) in
+						if (error != nil) {
+							print("=== DjiPlugin iOS: Video record stop failed with error - \(String(describing: error?.localizedDescription))")
+							self._fltSetStatus("Record Stop Failed")
+						} else {
+							print("=== DjiPlugin iOS: Video record stopped")
+							self._fltSetStatus("Record Stopped")
+						}
+					}
+				}
+			})
+		} else {
+			print("=== DjiPlugin iOS: Video record stop failed - no Camera object")
+			_fltSetStatus("Record Stop Failed")
+		}
+	}
+	
 	// MARK: - Video Feed Delegate Methods
 	
 	public func videoFeed(_ videoFeed: DJIVideoFeed, didUpdateVideoData videoData: Data) {

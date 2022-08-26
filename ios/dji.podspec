@@ -15,10 +15,10 @@ A new flutter plugin project.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'DJI-SDK-iOS', '~> 4.16'
+  s.dependency 'DJI-SDK-iOS', '~> 4.16.1'
   s.dependency 'DJI-UXSDK-iOS', '~> 4.16'
   s.dependency 'DJIWidget','~> 1.6.6'
-  s.platform = :ios, '12.0'
+  s.platform = :ios, '15.0'
 
   # Flutter.framework does not contain a i386 or arm64 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64 i386' }

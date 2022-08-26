@@ -7,11 +7,11 @@ PODS:
     - PINCache
   - Cache (6.0.0)
   - dji (1.0.0):
-    - DJI-SDK-iOS (~> 4.16)
+    - DJI-SDK-iOS (~> 4.16.1)
     - DJI-UXSDK-iOS (~> 4.16)
     - DJIWidget (~> 1.6.6)
     - Flutter
-  - DJI-SDK-iOS (4.16)
+  - DJI-SDK-iOS (4.16.1)
   - DJI-UXSDK-iOS (4.16)
   - DJIWidget (1.6.6)
   - ffmpeg-kit-ios-full-gpl (4.5.1)
@@ -78,8 +78,8 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   better_player: 2406bfe8175203c7a46fa15f9d778d73b12e1646
   Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
-  dji: 1d340c8a5b809059776fa3dbb56107fb9bf1f99e
-  DJI-SDK-iOS: 1eea401c947433562e268f9cce25f1ea5c132875
+  dji: eb081a7b00216eb5e6b7a3481da0d95052a706c9
+  DJI-SDK-iOS: 0da4b3c60b12070ca18cda7bccc29fbb99977d27
   DJI-UXSDK-iOS: d9f9b0ce3eed694254e41e078f0592b48924c59e
   DJIWidget: c5bb70aeb7deb9b0a99e5e63539ac249db4fab67
   ffmpeg-kit-ios-full-gpl: 9eb5c2e17ba5dea1b1b83cff35b54918b683b67f

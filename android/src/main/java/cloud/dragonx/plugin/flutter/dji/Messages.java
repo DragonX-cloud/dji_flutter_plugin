@@ -395,6 +395,8 @@ public class Messages {
     @NonNull Boolean deleteMedia(@NonNull Long fileIndex);
     void videoFeedStart();
     void videoFeedStop();
+    void videoRecordStart();
+    void videoRecordStop();
 
     /** The codec used by DjiHostApi. */
     static MessageCodec<Object> getCodec() {
@@ -777,6 +779,44 @@ public class Messages {
             Map<String, Object> wrapped = new HashMap<>();
             try {
               api.videoFeedStop();
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.videoRecordStart", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              api.videoRecordStart();
+              wrapped.put("result", null);
+            }
+            catch (Error | RuntimeException exception) {
+              wrapped.put("error", wrapError(exception));
+            }
+            reply.reply(wrapped);
+          });
+        } else {
+          channel.setMessageHandler(null);
+        }
+      }
+      {
+        BasicMessageChannel<Object> channel =
+            new BasicMessageChannel<>(binaryMessenger, "dev.flutter.pigeon.DjiHostApi.videoRecordStop", getCodec());
+        if (api != null) {
+          channel.setMessageHandler((message, reply) -> {
+            Map<String, Object> wrapped = new HashMap<>();
+            try {
+              api.videoRecordStop();
               wrapped.put("result", null);
             }
             catch (Error | RuntimeException exception) {

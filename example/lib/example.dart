@@ -986,6 +986,14 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
     }
   }
 
+  Future<void> _videoRecordStart() async {
+    await Dji.videoRecordStart();
+  }
+
+  Future<void> _videoRecordStop() async {
+    await Dji.videoRecordStop();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -1426,6 +1434,42 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                 _gimbalPitchInDegrees = value;
                                                 _updateGimbalRotatePitch();
                                               });
+                                            },
+                                          ),
+                                          OutlinedButton(
+                                            key: const Key('startVideoRecord'),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.fiber_manual_record,
+                                                ),
+                                                SizedBox(
+                                                  width: kSpacer / 2,
+                                                ),
+                                                Text('Start Recording'),
+                                              ],
+                                            ),
+                                            onPressed: () async {
+                                              await _videoRecordStart();
+                                            },
+                                          ),
+                                          OutlinedButton(
+                                            key: const Key('stoptVideoRecord'),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(
+                                                  Icons.stop,
+                                                ),
+                                                SizedBox(
+                                                  width: kSpacer / 2,
+                                                ),
+                                                Text('Stop Recording'),
+                                              ],
+                                            ),
+                                            onPressed: () async {
+                                              await _videoRecordStop();
                                             },
                                           ),
                                         ]),

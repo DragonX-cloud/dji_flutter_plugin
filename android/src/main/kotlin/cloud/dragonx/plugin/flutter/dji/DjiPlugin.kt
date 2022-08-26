@@ -904,6 +904,56 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     //}
   }
 
+  override fun videoRecordStart() {
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
+        if (error != null) {
+          Log.d(TAG, "Video record start failed with error: " + error.description)
+          _fltSetStatus("Record Start Failed")
+        } else {
+          _droneCamera.startRecordVideo { error ->
+            if (error != null) {
+              Log.d(TAG, "Video record start failed with error: " + error.description)
+              _fltSetStatus("Record Start Failed")
+            } else {
+              Log.d(TAG, "Video record stared")
+              _fltSetStatus("Record Started")
+            }
+          }
+        }
+      }
+    } else {
+      Log.d(TAG, "Video record start failed - no Camera object")
+      _fltSetStatus("Record Start Failed")
+    }
+  }
+
+  override fun videoRecordStop() {
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
+        if (error != null) {
+          Log.d(TAG, "Video record stop failed with error: " + error.description)
+          _fltSetStatus("Record Stop Failed")
+        } else {
+          _droneCamera.startRecordVideo { error ->
+            if (error != null) {
+              Log.d(TAG, "Video record stop failed with error: " + error.description)
+              _fltSetStatus("Record Stop Failed")
+            } else {
+              Log.d(TAG, "Video record stopped")
+              _fltSetStatus("Record Stopped")
+            }
+          }
+        }
+      }
+    } else {
+      Log.d(TAG, "Video record stop failed - no Camera object")
+      _fltSetStatus("Record Stop Failed")
+    }
+  }
+
 }
 
 /** Flight Classes */

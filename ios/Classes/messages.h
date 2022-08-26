@@ -85,6 +85,8 @@ NSObject<FlutterMessageCodec> *FLTDjiHostApiGetCodec(void);
 - (nullable NSNumber *)deleteMediaFileIndex:(NSNumber *)fileIndex error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)videoFeedStartWithError:(FlutterError *_Nullable *_Nonnull)error;
 - (void)videoFeedStopWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (void)videoRecordStartWithError:(FlutterError *_Nullable *_Nonnull)error;
+- (void)videoRecordStopWithError:(FlutterError *_Nullable *_Nonnull)error;
 @end
 
 extern void FLTDjiHostApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject<FLTDjiHostApi> *_Nullable api);

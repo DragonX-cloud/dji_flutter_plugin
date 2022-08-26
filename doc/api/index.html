@@ -61,7 +61,7 @@ It currently supports the following features:</p>
 <li>Connect / Disconnect</li>
 <li>Takeoff</li>
 <li>Land</li>
-<li>Timeline:
+<li>Start Timeline:
 <ul>
 <li>Takeoff</li>
 <li>Land</li>
@@ -70,6 +70,9 @@ It currently supports the following features:</p>
 <li>Waypoints Mission</li>
 </ul>
 </li>
+<li>Mobile Remote Controller (Wifi)</li>
+<li>Virtual Stick (Physical Remote)</li>
+<li>Gimbal Rotate (Pitch)</li>
 <li>Get Media Files List</li>
 <li>Download Media File by Index</li>
 <li>Delete Media File by Index</li>
@@ -669,6 +672,47 @@ If you want the first waypoint to be 30 degrees to your right, at a distance of 
 <li>The waypoint-mission maxFlightSpeed can get a maximum value of 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.</li>
 <li>If you don't specify the <code>gimbalPitch</code>, the Flutter DJI Plugin will automatically calculate the Gimbal (Camera) angle to point to the Point of Interest.</li>
 </ul>
+<h4 id="djimobileremotecontroller">Dji.mobileRemoteController</h4>
+<p>Update Mobile Remote Controller Sticks Data (via Wifi).
+Controls the mobile remote controller - an on-screen sticks controller.
+Available only when the drone is connected via Wifi.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _updateMobileRemoteController() async {
+  await Dji.mobileRemoteController(
+    enabled: true,
+    leftStickHorizontal: _leftStickHorizontal,
+    leftStickVertical: _leftStickVertical,
+    rightStickHorizontal: _rightStickHorizontal,
+    rightStickVertical: _rightStickVertical,
+  );
+}
+</code></pre>
+<h4 id="djivirtualstick">Dji.virtualStick</h4>
+<p>Update Virtual Stick flight controller data (via physical remote controller).
+Control whether the virtual-stick mode is <code>enabled</code>, and the <code>pitch</code>, <code>roll</code>, <code>yaw</code> and <code>verticalThrottle</code> of the Virtual Stick flight controller.
+Available only when the drone is connected to the physical remote controller.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _updateVirtualStick() async {
+  await Dji.virtualStick(
+    enabled: true,
+    pitch: _virtualStickPitch,
+    roll: _virtualStickRoll,
+    yaw: _virtualStickYaw,
+    verticalThrottle: _virtualStickVerticalThrottle,
+  );
+}
+</code></pre>
+<h4 id="djigimbalrotatepitch">Dji.gimbalRotatePitch</h4>
+<p>Update Gimbal pitch value in degrees.
+Controls the Gimbal pitch in <a href="https://pub.dev/documentation/vector_math/2.1.2/vector_math/degrees.html">degrees</a> (-90..0) in Absolute Mode.
+An angle of "0" degrees is aligned with the drone's "nose" (heading), and -90 degrees is the gimbal pointing the camera all the way down.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _updateGimbalRotatePitch() async {
+  await Dji.gimbalRotatePitch(
+    degrees: _gimbalPitchInDegrees,
+  );
+}
+</code></pre>
 <h4 id="djigetmedialist">Dji.getMediaList</h4>
 <p>Get the media files list from the Drone (SD card).
 The <code>Dji.getMediaList</code> Returns a list of Media files. 

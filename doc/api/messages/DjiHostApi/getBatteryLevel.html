@@ -66,8 +66,7 @@
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">Future&lt;Battery&gt; getBatteryLevel() async {
   final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-      &#39;dev.flutter.pigeon.DjiHostApi.getBatteryLevel&#39;, codec,
-      binaryMessenger: _binaryMessenger);
+      &#39;dev.flutter.pigeon.DjiHostApi.getBatteryLevel&#39;, codec, binaryMessenger: _binaryMessenger);
   final Map&lt;Object?, Object?&gt;? replyMap =
       await channel.send(null) as Map&lt;Object?, Object?&gt;?;
   if (replyMap == null) {
@@ -76,8 +75,7 @@
       message: &#39;Unable to establish connection on channel.&#39;,
     );
   } else if (replyMap[&#39;error&#39;] != null) {
-    final Map&lt;Object?, Object?&gt; error =
-        (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
+    final Map&lt;Object?, Object?&gt; error = (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
     throw PlatformException(
       code: (error[&#39;code&#39;] as String?)!,
       message: error[&#39;message&#39;] as String?,
@@ -134,7 +132,9 @@
     <li><a href="../../messages/DjiHostApi/getBatteryLevel.html">getBatteryLevel</a></li>
     <li><a href="../../messages/DjiHostApi/getMediaList.html">getMediaList</a></li>
     <li><a href="../../messages/DjiHostApi/getPlatformVersion.html">getPlatformVersion</a></li>
+    <li><a href="../../messages/DjiHostApi/gimbalRotatePitch.html">gimbalRotatePitch</a></li>
     <li><a href="../../messages/DjiHostApi/land.html">land</a></li>
+    <li><a href="../../messages/DjiHostApi/mobileRemoteController.html">mobileRemoteController</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
     <li><a href="../../messages/DjiHostApi/registerApp.html">registerApp</a></li>
     <li><a href="../../messages/DjiHostApi/start.html">start</a></li>
@@ -142,6 +142,9 @@
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
     <li><a href="../../messages/DjiHostApi/videoFeedStart.html">videoFeedStart</a></li>
     <li><a href="../../messages/DjiHostApi/videoFeedStop.html">videoFeedStop</a></li>
+    <li><a href="../../messages/DjiHostApi/videoRecordStart.html">videoRecordStart</a></li>
+    <li><a href="../../messages/DjiHostApi/videoRecordStop.html">videoRecordStop</a></li>
+    <li><a href="../../messages/DjiHostApi/virtualStick.html">virtualStick</a></li>
 
     <li class="section-title inherited"><a href="../../messages/DjiHostApi-class.html#operators">Operators</a></li>
     <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></li>

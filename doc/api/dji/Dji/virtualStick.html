@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="description" content="API docs for the deleteMedia method from the Dji class, for the Dart programming language.">
-  <title>deleteMedia method - Dji class - dji library - Dart API</title>
+  <meta name="description" content="API docs for the virtualStick method from the Dji class, for the Dart programming language.">
+  <title>virtualStick method - Dji class - dji library - Dart API</title>
 
 
   
@@ -32,9 +32,9 @@
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../dji/dji-library.html">dji</a></li>
     <li><a href="../../dji/Dji-class.html">Dji</a></li>
-    <li class="self-crumb">deleteMedia method</li>
+    <li class="self-crumb">virtualStick method</li>
   </ol>
-  <div class="self-name">deleteMedia</div>
+  <div class="self-name">virtualStick</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
@@ -45,15 +45,19 @@
 
   <div id="dartdoc-main-content" class="main-content">
       <div>
-<h1><span class="kind-method">deleteMedia</span> method 
+<h1><span class="kind-method">virtualStick</span> method 
     <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
 </h1></div>
 
     <section class="multi-line-signature">
       
 
-<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span>&gt;</span></span>
-<span class="name ">deleteMedia</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="deleteMedia-param-fileIndex"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">fileIndex</span></span></li>
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+<span class="name ">virtualStick</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="virtualStick-param-enabled">{<span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">enabled</span>, </span></li>
+<li><span class="parameter" id="virtualStick-param-pitch"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">pitch</span>, </span></li>
+<li><span class="parameter" id="virtualStick-param-roll"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">roll</span>, </span></li>
+<li><span class="parameter" id="virtualStick-param-yaw"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">yaw</span>, </span></li>
+<li><span class="parameter" id="virtualStick-param-verticalThrottle"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">verticalThrottle</span>}</span></li>
 </ol>)
 
       
@@ -61,18 +65,29 @@
     </section>
     
 <section class="desc markdown">
-  <p>Deletes a specific media file from the Drone's SD card (by Index).</p>
-<p>The <code>fileIndex</code> is used to locate the relevant file from the Media List and delete it.
-The <a href="../../dji/Dji/getMediaList.html">getMediaList()</a> must be triggered before using <a href="../../dji/Dji/deleteMedia.html">deleteMedia()</a>.</p>
+  <p>Update Virtual Stick flight controller data (via physical remote controller)</p>
+<p>Control whether the virtual-stick mode is <code>enabled</code>, and the <code>pitch</code>, <code>roll</code>, <code>yaw</code> and <code>verticalThrottle</code> of the Virtual Stick flight controller.
+Available only when the drone is connected to the physical remote controller.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static Future&lt;bool?&gt; deleteMedia(int fileIndex) async {
-  final success = await _api?.deleteMedia(fileIndex);
-  return success;
+  <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; virtualStick({
+  required bool enabled,
+  required double pitch,
+  required double roll,
+  required double yaw,
+  required double verticalThrottle,
+}) async {
+  await _api?.virtualStick(
+    enabled,
+    pitch,
+    roll,
+    yaw,
+    verticalThrottle,
+  );
 }</code></pre>
 </section>
 
@@ -90,7 +105,7 @@ The <a href="../../dji/Dji/getMediaList.html">getMediaList()</a> must be trigger
   <li><a href="../../index.html">dji</a></li>
   <li><a href="../../dji/dji-library.html">dji</a></li>
   <li><a href="../../dji/Dji-class.html">Dji</a></li>
-  <li class="self-crumb">deleteMedia method</li>
+  <li class="self-crumb">virtualStick method</li>
 </ol>
 
 

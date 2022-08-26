@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
-  <meta name="description" content="API docs for the deleteMedia method from the Dji class, for the Dart programming language.">
-  <title>deleteMedia method - Dji class - dji library - Dart API</title>
+  <meta name="description" content="API docs for the gimbalRotatePitch method from the Dji class, for the Dart programming language.">
+  <title>gimbalRotatePitch method - Dji class - dji library - Dart API</title>
 
 
   
@@ -32,9 +32,9 @@
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../dji/dji-library.html">dji</a></li>
     <li><a href="../../dji/Dji-class.html">Dji</a></li>
-    <li class="self-crumb">deleteMedia method</li>
+    <li class="self-crumb">gimbalRotatePitch method</li>
   </ol>
-  <div class="self-name">deleteMedia</div>
+  <div class="self-name">gimbalRotatePitch</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
@@ -45,15 +45,15 @@
 
   <div id="dartdoc-main-content" class="main-content">
       <div>
-<h1><span class="kind-method">deleteMedia</span> method 
+<h1><span class="kind-method">gimbalRotatePitch</span> method 
     <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
 </h1></div>
 
     <section class="multi-line-signature">
       
 
-<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span>&gt;</span></span>
-<span class="name ">deleteMedia</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="deleteMedia-param-fileIndex"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">fileIndex</span></span></li>
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-async/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter">void</span>&gt;</span></span>
+<span class="name ">gimbalRotatePitch</span>(<wbr><ol class="parameter-list"><li><span class="parameter" id="gimbalRotatePitch-param-degrees">{<span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">degrees</span>}</span></li>
 </ol>)
 
       
@@ -61,18 +61,21 @@
     </section>
     
 <section class="desc markdown">
-  <p>Deletes a specific media file from the Drone's SD card (by Index).</p>
-<p>The <code>fileIndex</code> is used to locate the relevant file from the Media List and delete it.
-The <a href="../../dji/Dji/getMediaList.html">getMediaList()</a> must be triggered before using <a href="../../dji/Dji/deleteMedia.html">deleteMedia()</a>.</p>
+  <p>Update Gimbal pitch value in degrees</p>
+<p>Controls the Gimbal pitch in <code>degrees</code> (-90..0) in Absolute Mode.
+An angle of "0" degrees is aligned with the drone's "nose" (heading), and -90 degrees is the gimbal pointing the camera all the way down.</p>
 </section>
 
 
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">static Future&lt;bool?&gt; deleteMedia(int fileIndex) async {
-  final success = await _api?.deleteMedia(fileIndex);
-  return success;
+  <pre class="language-dart"><code class="language-dart">static Future&lt;void&gt; gimbalRotatePitch({
+  required double degrees,
+}) async {
+  await _api?.gimbalRotatePitch(
+    degrees,
+  );
 }</code></pre>
 </section>
 
@@ -90,7 +93,7 @@ The <a href="../../dji/Dji/getMediaList.html">getMediaList()</a> must be trigger
   <li><a href="../../index.html">dji</a></li>
   <li><a href="../../dji/dji-library.html">dji</a></li>
   <li><a href="../../dji/Dji-class.html">Dji</a></li>
-  <li class="self-crumb">deleteMedia method</li>
+  <li class="self-crumb">gimbalRotatePitch method</li>
 </ol>
 
 
