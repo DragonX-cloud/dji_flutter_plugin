@@ -656,26 +656,51 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	// MARK: - Video Feed Methods
 	
 	public func videoFeedStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Video feed start failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Video Start Failed")
+				} else {
+					DJISDKManager.videoFeeder()?.primaryVideoFeed.add(self, with: nil)
 		
-		DJIVideoPreviewer.instance().type = .none
-		DJIVideoPreviewer.instance().enableHardwareDecode = true
-		DJIVideoPreviewer.instance().enableFastUpload = true
-		DJIVideoPreviewer.instance().encoderType = ._MavicAir
-		DJIVideoPreviewer.instance().registFrameProcessor(self)
-		DJIVideoPreviewer.instance().start()
-		
-		_fltSetStatus("Video Feed Started")
+					DJIVideoPreviewer.instance().type = .none
+					DJIVideoPreviewer.instance().enableHardwareDecode = true
+					DJIVideoPreviewer.instance().enableFastUpload = true
+					DJIVideoPreviewer.instance().encoderType = ._MavicAir
+					DJIVideoPreviewer.instance().registFrameProcessor(self)
+					DJIVideoPreviewer.instance().start()
+					
+					print("=== DjiPlugin iOS: Video feed started")
+					self._fltSetStatus("Video Started")
+				}
+			})
+		} else {
+			print("=== DjiPlugin iOS: Video record start failed - no Camera object")
+			_fltSetStatus("Video Start Failed")
+		}
 	}
 	
 	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
-		DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
-		DJIVideoPreviewer.instance().close()
-		DJIVideoPreviewer.instance().clearRender()
-		DJIVideoPreviewer.instance().clearVideoData()
-		DJIVideoPreviewer.instance().unregistFrameProcessor(self)
-		
-		_fltSetStatus("Video Feed Stopped")
+		if let _droneCamera = drone?.camera {
+			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
+				if (error != nil) {
+					print("=== DjiPlugin iOS: Video feed stop failed with error - \(String(describing: error?.localizedDescription))")
+					self._fltSetStatus("Video Stop Failed")
+				} else {
+					DJISDKManager.videoFeeder()?.primaryVideoFeed.removeAllListeners()
+					DJIVideoPreviewer.instance().close()
+					DJIVideoPreviewer.instance().clearRender()
+					DJIVideoPreviewer.instance().clearVideoData()
+					DJIVideoPreviewer.instance().unregistFrameProcessor(self)
+					
+					self._fltSetStatus("Video Stopped")
+				}
+			})
+		} else {
+			print("=== DjiPlugin iOS: Video feed stop failed - no Camera object")
+			_fltSetStatus("Video Stop Failed")
+		}
 	}
 	
 	public func videoProcessorEnabled() -> Bool {

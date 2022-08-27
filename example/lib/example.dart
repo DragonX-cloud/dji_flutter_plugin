@@ -1258,10 +1258,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _leftStickHorizontal
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _leftStickHorizontal = value;
-                                                  _updateMobileRemoteController();
-                                                });
+                                                _leftStickHorizontal = value;
+                                              },
+                                              onChangeEnd: (value) {
+                                                _updateMobileRemoteController();
                                               },
                                             ),
                                             const Text(
@@ -1278,10 +1278,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _leftStickVertical
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _leftStickVertical = value;
-                                                  _updateMobileRemoteController();
-                                                });
+                                                _leftStickVertical = value;
+                                              },
+                                              onChangeEnd: (value) {
+                                                _updateMobileRemoteController();
                                               },
                                             ),
                                             const Text(
@@ -1298,10 +1298,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _rightStickHorizontal
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _rightStickHorizontal = value;
-                                                  _updateMobileRemoteController();
-                                                });
+                                                _rightStickHorizontal = value;
+                                              },
+                                              onChangeEnd: (value) {
+                                                _updateMobileRemoteController();
                                               },
                                             ),
                                             const Text(
@@ -1318,10 +1318,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _rightStickVertical
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _rightStickVertical = value;
-                                                  _updateMobileRemoteController();
-                                                });
+                                                _rightStickVertical = value;
+                                              },
+                                              onChangeEnd: (value) {
+                                                _updateMobileRemoteController();
                                               },
                                             ),
                                           ],
@@ -1343,10 +1343,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _virtualStickPitch
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _virtualStickPitch = value;
-                                                  _updateVirtualStick();
-                                                });
+                                                _virtualStickPitch = value;
+                                                _updateVirtualStick();
                                               },
                                             ),
                                             const Text(
@@ -1363,10 +1361,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _virtualStickRoll
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _virtualStickRoll = value;
-                                                  _updateVirtualStick();
-                                                });
+                                                _virtualStickRoll = value;
+                                                _updateVirtualStick();
                                               },
                                             ),
                                             const Text(
@@ -1383,10 +1379,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                               label: _virtualStickYaw
                                                   .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _virtualStickYaw = value;
-                                                  _updateVirtualStick();
-                                                });
+                                                _virtualStickYaw = value;
+                                                _updateVirtualStick();
                                               },
                                             ),
                                             const Text(
@@ -1405,11 +1399,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                                   _virtualStickVerticalThrottle
                                                       .toStringAsFixed(2),
                                               onChanged: (value) {
-                                                setState(() {
-                                                  _virtualStickVerticalThrottle =
-                                                      value;
-                                                  _updateVirtualStick();
-                                                });
+                                                _virtualStickVerticalThrottle =
+                                                    value;
+                                                _updateVirtualStick();
                                               },
                                             ),
                                           ],
@@ -1430,10 +1422,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             label: _gimbalPitchInDegrees
                                                 .toStringAsFixed(2),
                                             onChanged: (value) {
-                                              setState(() {
-                                                _gimbalPitchInDegrees = value;
-                                                _updateGimbalRotatePitch();
-                                              });
+                                              _gimbalPitchInDegrees = value;
+                                            },
+                                            onChangeEnd: (value) {
+                                              _updateGimbalRotatePitch();
                                             },
                                           ),
                                           OutlinedButton(

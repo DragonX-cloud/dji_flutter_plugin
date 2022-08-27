@@ -856,52 +856,81 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-    // When I tried to use `VideoFeeder.VideoDataListener` I encountered a class-not-found issue, and couldn't resolve it no matter what I tried.
-    // So the following cannot be used.
-    // Instead, I enabled the YuvDataCallback and somehow that allow the addVideoDataListener to work.
-    // And so I couldn't initialize a VideoDataLister. That's why the following block is commented out.
-    //if (videoDataListener == null) {
-    //  videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-    //    _fltSendVideo(bytes)
-    //  }
-    //}
-    //videoDataListener?.let {
-    //  VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
-    //}
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
+        if (error != null) {
+          Log.d(TAG, "Video feed start failed with error: " + error.description)
+          _fltSetStatus("Video Start Failed")
+        } else {
+          // When I tried to use `VideoFeeder.VideoDataListener` I encountered a class-not-found issue, and couldn't resolve it no matter what I tried.
+          // So the following cannot be used.
+          // Instead, I enabled the YuvDataCallback and somehow that allow the addVideoDataListener to work.
+          // And so I couldn't initialize a VideoDataLister. That's why the following block is commented out.
+          //if (videoDataListener == null) {
+          //  videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
+          //    _fltSendVideo(bytes)
+          //  }
+          //}
+          //videoDataListener?.let {
+          //  VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
+          //}
 
-    // In order for the `VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener` to work
-    // we must enable the `codecManager.enabledYuvData(true)`.
-    // Otherwise, the YuvDataCallback won't work.
-    // And also the primaryVideoFeed.addVideoDataListener won't.
-    // Please note that the videoDataListener callback cannot work in parallel to YuvDataCallback.
-    // If you define both callbacks - only one of them will stream data.
-    // I decided to use the YUV format of the YuvDataCallback (and not the videoDataListener which produces Raw H264), because when
-    // converting the byte-stream on the Flutter side - the H264 byte-stream produced much lower quality than the YUV frames.
-    codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
-    codecManager.enabledYuvData(true)
-    codecManager.yuvDataCallback = YuvDataCallback { format, yuvFrame, dataSize, width, height ->
-      // To stream YUV format (raw video) byte-stream
-      val bytes = ByteArray(dataSize)
-      yuvFrame.get(bytes)
-      _fltSendVideo(bytes)
+          // In order for the `VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener` to work
+          // we must enable the `codecManager.enabledYuvData(true)`.
+          // Otherwise, the YuvDataCallback won't work.
+          // And also the primaryVideoFeed.addVideoDataListener won't.
+          // Please note that the videoDataListener callback cannot work in parallel to YuvDataCallback.
+          // If you define both callbacks - only one of them will stream data.
+          // I decided to use the YUV format of the YuvDataCallback (and not the videoDataListener which produces Raw H264), because when
+          // converting the byte-stream on the Flutter side - the H264 byte-stream produced much lower quality than the YUV frames.
+          codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
+          codecManager.enabledYuvData(true)
+          codecManager.yuvDataCallback = YuvDataCallback { format, yuvFrame, dataSize, width, height ->
+            // To stream YUV format (raw video) byte-stream
+            val bytes = ByteArray(dataSize)
+            yuvFrame.get(bytes)
+            _fltSendVideo(bytes)
+          }
+
+          // [!] Important Note
+          // If we add the video-data-listener below - then the YuvDataCallback will NOT work.
+          // For some reason, they don't work in parallel.
+          //VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener { bytes, _ ->
+          //  // To stream raw H264 byte-stream
+          //  _fltSendVideo(bytes)
+          //}
+
+          _fltSetStatus("Video Started")
+        }
+      }
+    } else {
+      Log.d(TAG, "Video feed start failed - no Camera object")
+      _fltSetStatus("Video Start Failed")
     }
-
-    // [!] Important Note
-    // If we add the video-data-listener below - then the YuvDataCallback will NOT work.
-    // For some reason, they don't work in parallel.
-    //VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener { bytes, _ ->
-    //  // To stream raw H264 byte-stream
-    //  _fltSendVideo(bytes)
-    //}
   }
 
   override fun videoFeedStop() {
-    codecManager.enabledYuvData(false)
-    codecManager.yuvDataCallback = null
-    VideoFeeder.getInstance()?.primaryVideoFeed?.destroy()
-    //VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
-    //  _fltSendVideo(bytes)
-    //}
+    val _droneCamera = drone?.camera
+    if (_droneCamera != null) {
+      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
+        if (error != null) {
+          Log.d(TAG, "Video feed stop failed with error: " + error.description)
+          _fltSetStatus("Video Stop Failed")
+        } else {
+          codecManager.enabledYuvData(false)
+          codecManager.yuvDataCallback = null
+          VideoFeeder.getInstance()?.primaryVideoFeed?.destroy()
+          //VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
+          //  _fltSendVideo(bytes)
+          //}
+          _fltSetStatus("Video Stopped")
+        }
+      }
+    } else {
+      Log.d(TAG, "Video feed stop failed - no Camera object")
+      _fltSetStatus("Video Stop Failed")
+    }
   }
 
   override fun videoRecordStart() {
