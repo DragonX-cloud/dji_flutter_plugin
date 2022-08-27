@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-dev.23
+- Added mobile-remote-controller methods (relevant when the drone is connected via Wifi).
+- Added virtual-stick methods (relevant when the drone is connected via the physical remote controller).
+- Added gimbal rotate (pitch) method.
+- Added start/stop video recording methods.
+
 ## 1.0.0-dev.22
 - Android Example fine-tunings.
 
