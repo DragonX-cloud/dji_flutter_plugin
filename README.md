@@ -29,6 +29,7 @@ It currently supports the following features:
 - Download Media File by Index
 - Delete Media File by Index
 - Live Video Feed (rawvideo YUV420p)
+- Start/Stop Video Recording
 
 ## SETUP
 Before you start using the DJI Flutter plugin, you must first perform some initial setup and configurations as required by DJI SDK.
@@ -834,8 +835,8 @@ The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (s
 
 Example:
 ```
-static Future<void> videoFeedStart() async {
-  await _api?.videoFeedStart();
+Future<void> _videoFeedStart() async {
+  await Dji.videoFeedStart();
 }
 ```
 
@@ -845,8 +846,8 @@ Stops the DJI Video Feeder.
 Example:
 
 ```
-static Future<void> videoFeedStop() async {
-  await _api?.videoFeedStop();
+Future<void> _videoFeedStop() async {
+  await Dji.videoFeedStop();
 }
 ```
 
@@ -860,6 +861,27 @@ void sendVideo(Stream stream) {
   if (stream.data != null && _videoFeedFile != null) {
     _videoFeedSink?.add(stream.data!);
   }
+}
+```
+
+#### Dji.videoRecordStart
+Starts the DJI Video Recorder.
+
+Example:
+```
+Future<void> _videoRecordStart() async {
+  await Dji.videoRecordStart();
+}
+```
+
+#### Dji.videoRecordStop
+Stops the DJI Video Recorder.
+
+Example:
+
+```
+Future<void> _videoRecordStop() async {
+  await Dji.videoRecordStop();
 }
 ```
 
