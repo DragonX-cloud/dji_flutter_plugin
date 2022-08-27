@@ -24,6 +24,7 @@ import dji.midware.usb.P3.UsbAccessoryService
 import dji.sdk.base.BaseComponent
 import dji.sdk.base.BaseProduct
 import dji.sdk.base.BaseProduct.ComponentKey
+import dji.sdk.camera.Camera
 import dji.sdk.camera.VideoFeeder
 import dji.sdk.codec.DJICodecManager
 import dji.sdk.codec.DJICodecManager.YuvDataCallback
@@ -42,6 +43,7 @@ import dji.sdk.products.Aircraft
 import dji.sdk.sdkmanager.DJISDKInitEvent
 import dji.sdk.sdkmanager.DJISDKManager
 import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
+import dji.sdk.sdkmanager.DJISDKManager.getInstance
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -941,15 +943,20 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           Log.d(TAG, "Video record start failed with error: " + error.description)
           _fltSetStatus("Record Start Failed")
         } else {
-          _droneCamera.startRecordVideo { error ->
-            if (error != null) {
-              Log.d(TAG, "Video record start failed with error: " + error.description)
-              _fltSetStatus("Record Start Failed")
-            } else {
-              Log.d(TAG, "Video record stared")
-              _fltSetStatus("Record Started")
-            }
-          }
+          // For some reason, the DJI completion callback of the startRecordVideo() method causes the app to crash, which I couldn't resolve.
+          // So for now I'm simply not using it...
+//          _droneCamera.startRecordVideo { error ->
+//            if (error != null) {
+//              Log.d(TAG, "Video record start failed with error: " + error.description)
+//              //_fltSetStatus("Record Start Failed")
+//            } else {
+//              Log.d(TAG, "Video record stared")
+//              //_fltSetStatus("Record Started")
+//            }
+//          }
+          _droneCamera.startRecordVideo(null);
+          Log.d(TAG, "Video record stared")
+          _fltSetStatus("Record Started")
         }
       }
     } else {
@@ -966,15 +973,20 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           Log.d(TAG, "Video record stop failed with error: " + error.description)
           _fltSetStatus("Record Stop Failed")
         } else {
-          _droneCamera.startRecordVideo { error ->
-            if (error != null) {
-              Log.d(TAG, "Video record stop failed with error: " + error.description)
-              _fltSetStatus("Record Stop Failed")
-            } else {
-              Log.d(TAG, "Video record stopped")
-              _fltSetStatus("Record Stopped")
-            }
-          }
+          // For some reason, the DJI completion callback of the stopRecordVideo() method causes the app to crash, which I couldn't resolve.
+          // So for now I'm simply not using it...
+//          _droneCamera.stopRecordVideo { error ->
+//            if (error != null) {
+//              Log.d(TAG, "Video record stop failed with error: " + error.description)
+//              _fltSetStatus("Record Stop Failed")
+//            } else {
+//              Log.d(TAG, "Video record stopped")
+//              _fltSetStatus("Record Stopped")
+//            }
+//          }
+          _droneCamera.stopRecordVideo(null);
+          Log.d(TAG, "Video record stopped")
+          _fltSetStatus("Record Stopped")
         }
       }
     } else {
