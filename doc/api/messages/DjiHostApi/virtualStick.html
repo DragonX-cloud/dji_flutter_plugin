@@ -69,18 +69,26 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; virtualStick(bool arg_enabled, double arg_pitch, double arg_roll, double arg_yaw, double arg_verticalThrottle) async {
+  <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; virtualStick(bool arg_enabled, double arg_pitch, double arg_roll,
+    double arg_yaw, double arg_verticalThrottle) async {
   final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-      &#39;dev.flutter.pigeon.DjiHostApi.virtualStick&#39;, codec, binaryMessenger: _binaryMessenger);
-  final Map&lt;Object?, Object?&gt;? replyMap =
-      await channel.send(&lt;Object?&gt;[arg_enabled, arg_pitch, arg_roll, arg_yaw, arg_verticalThrottle]) as Map&lt;Object?, Object?&gt;?;
+      &#39;dev.flutter.pigeon.DjiHostApi.virtualStick&#39;, codec,
+      binaryMessenger: _binaryMessenger);
+  final Map&lt;Object?, Object?&gt;? replyMap = await channel.send(&lt;Object?&gt;[
+    arg_enabled,
+    arg_pitch,
+    arg_roll,
+    arg_yaw,
+    arg_verticalThrottle
+  ]) as Map&lt;Object?, Object?&gt;?;
   if (replyMap == null) {
     throw PlatformException(
       code: &#39;channel-error&#39;,
       message: &#39;Unable to establish connection on channel.&#39;,
     );
   } else if (replyMap[&#39;error&#39;] != null) {
-    final Map&lt;Object?, Object?&gt; error = (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
+    final Map&lt;Object?, Object?&gt; error =
+        (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
     throw PlatformException(
       code: (error[&#39;code&#39;] as String?)!,
       message: error[&#39;message&#39;] as String?,
@@ -166,7 +174,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.22
+      1.0.0
   </span>
 
   

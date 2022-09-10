@@ -69,15 +69,18 @@
   <pre class="language-dart"><code class="language-dart">static void setup(DjiFlutterApi? api, {BinaryMessenger? binaryMessenger}) {
   {
     final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-        &#39;dev.flutter.pigeon.DjiFlutterApi.setStatus&#39;, codec, binaryMessenger: binaryMessenger);
+        &#39;dev.flutter.pigeon.DjiFlutterApi.setStatus&#39;, codec,
+        binaryMessenger: binaryMessenger);
     if (api == null) {
       channel.setMessageHandler(null);
     } else {
       channel.setMessageHandler((Object? message) async {
-        assert(message != null, &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null.&#39;);
+        assert(message != null,
+            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null.&#39;);
         final List&lt;Object?&gt; args = (message as List&lt;Object?&gt;?)!;
         final Drone? arg_drone = (args[0] as Drone?);
-        assert(arg_drone != null, &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null, expected non-null Drone.&#39;);
+        assert(arg_drone != null,
+            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.setStatus was null, expected non-null Drone.&#39;);
         api.setStatus(arg_drone!);
         return;
       });
@@ -85,15 +88,18 @@
   }
   {
     final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-        &#39;dev.flutter.pigeon.DjiFlutterApi.sendVideo&#39;, codec, binaryMessenger: binaryMessenger);
+        &#39;dev.flutter.pigeon.DjiFlutterApi.sendVideo&#39;, codec,
+        binaryMessenger: binaryMessenger);
     if (api == null) {
       channel.setMessageHandler(null);
     } else {
       channel.setMessageHandler((Object? message) async {
-        assert(message != null, &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null.&#39;);
+        assert(message != null,
+            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null.&#39;);
         final List&lt;Object?&gt; args = (message as List&lt;Object?&gt;?)!;
         final Stream? arg_stream = (args[0] as Stream?);
-        assert(arg_stream != null, &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null, expected non-null Stream.&#39;);
+        assert(arg_stream != null,
+            &#39;Argument for dev.flutter.pigeon.DjiFlutterApi.sendVideo was null, expected non-null Stream.&#39;);
         api.sendVideo(arg_stream!);
         return;
       });
@@ -161,7 +167,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.22
+      1.0.0
   </span>
 
   

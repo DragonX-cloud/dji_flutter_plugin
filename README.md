@@ -9,9 +9,7 @@ And the DJI Mobile SDK Introduction:
 https://developer.dji.com/document/4cd08995-3952-4db6-ab6e-bc3a754da153  
 To get familiar with the basic terminology and concepts.
 
-**// WORK IN PROGRESS**  
-This plugin is still in-progress.  
-It currently supports the following features:
+The plugin supports the following features:
 - Register
 - Connect / Disconnect
 - Takeoff

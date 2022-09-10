@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+- Upgraded packages.
+- Tested with Flutter 3.3.
+
 ## 1.0.0-dev.23
 - Added mobile-remote-controller methods (relevant when the drone is connected via Wifi).
 - Added virtual-stick methods (relevant when the drone is connected via the physical remote controller).

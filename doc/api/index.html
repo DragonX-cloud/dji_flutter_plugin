@@ -53,9 +53,7 @@
 And the DJI Mobile SDK Introduction:<br>
 <a href="https://developer.dji.com/document/4cd08995-3952-4db6-ab6e-bc3a754da153">https://developer.dji.com/document/4cd08995-3952-4db6-ab6e-bc3a754da153</a><br>
 To get familiar with the basic terminology and concepts.</p>
-<p><strong>// WORK IN PROGRESS</strong><br>
-This plugin is still in-progress.<br>
-It currently supports the following features:</p>
+<p>The plugin supports the following features:</p>
 <ul>
 <li>Register</li>
 <li>Connect / Disconnect</li>
@@ -77,6 +75,7 @@ It currently supports the following features:</p>
 <li>Download Media File by Index</li>
 <li>Delete Media File by Index</li>
 <li>Live Video Feed (rawvideo YUV420p)</li>
+<li>Start/Stop Video Recording</li>
 </ul>
 <h2 id="setup">SETUP</h2>
 <p>Before you start using the DJI Flutter plugin, you must first perform some initial setup and configurations as required by DJI SDK.</p>
@@ -188,7 +187,7 @@ Please note this "sync" might take several long minutes.</p>
 <h5 id="3-update-androidappbuildgradle">3. Update android/app/build.gradle</h5>
 <p>Open the android/app/build.grade file and update the following:</p>
 <ul>
-<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 30 (the Target SDK to 30 and not 31, as it caused issues with the Manifest merge).<br>
+<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 32.
 Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
 </ul>
 <pre class="language-dart"><code>android {
@@ -196,7 +195,7 @@ Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 30
+        targetSdkVersion 32
         ...
 
         multiDexEnabled true
@@ -827,15 +826,15 @@ Triggers the DJI Camera Preview and streams YUV420p rawvideo byte-stream to the 
 The <code>Stream</code> class has a <code>data</code> property of type <code>Uint8List</code> optional.
 The byte-stream can be converted to MP4, HLS or any other format using FFMPEG (see example code).</p>
 <p>Example:</p>
-<pre class="language-dart"><code>static Future&lt;void&gt; videoFeedStart() async {
-  await _api?.videoFeedStart();
+<pre class="language-dart"><code>Future&lt;void&gt; _videoFeedStart() async {
+  await Dji.videoFeedStart();
 }
 </code></pre>
 <h4 id="djivideofeedstop">Dji.videoFeedStop</h4>
 <p>Stops the DJI Video Feeder.</p>
 <p>Example:</p>
-<pre class="language-dart"><code>static Future&lt;void&gt; videoFeedStop() async {
-  await _api?.videoFeedStop();
+<pre class="language-dart"><code>Future&lt;void&gt; _videoFeedStop() async {
+  await Dji.videoFeedStop();
 }
 </code></pre>
 <h4 id="sendvideo">sendVideo</h4>
@@ -846,6 +845,20 @@ void sendVideo(Stream stream) {
   if (stream.data != null &amp;&amp; _videoFeedFile != null) {
     _videoFeedSink?.add(stream.data!);
   }
+}
+</code></pre>
+<h4 id="djivideorecordstart">Dji.videoRecordStart</h4>
+<p>Starts the DJI Video Recorder.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _videoRecordStart() async {
+  await Dji.videoRecordStart();
+}
+</code></pre>
+<h4 id="djivideorecordstop">Dji.videoRecordStop</h4>
+<p>Stops the DJI Video Recorder.</p>
+<p>Example:</p>
+<pre class="language-dart"><code>Future&lt;void&gt; _videoRecordStop() async {
+  await Dji.videoRecordStop();
 }
 </code></pre>
 <h2 id="tech-notes">TECH NOTES</h2>
@@ -1088,7 +1101,7 @@ The DJI Flutter plugin converts the H264 to YUV420p and so the sendVideo() metho
 <footer>
   <span class="no-break">
     dji
-      1.0.0-dev.22
+      1.0.0
   </span>
 
   
