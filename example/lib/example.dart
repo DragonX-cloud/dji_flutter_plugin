@@ -852,9 +852,10 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                 );
 
                 setState(() {
-                  // The following doesn't work because the BetterPlayer / Native Video View are unable to play local HLS file
+                  // Playing a local HLS files didn't work with BetterPlayer or Native Video View.
                   // Nor is it able to play an .mp4 file while it's still being written.
                   // The only player that managed to play local HLS files was the VLC Player.
+                  // So eventually we used the local_assets_server plugin to pass the real-time video file as a Network source.
 
                   _betterPlayerController = BetterPlayerController(
                     const BetterPlayerConfiguration(
