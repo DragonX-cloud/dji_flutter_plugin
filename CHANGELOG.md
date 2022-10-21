@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1
+- Updated the Readme with the possible String drone.status property values.
+
 ## 1.0.0
 - Upgraded packages.
 - Tested with Flutter 3.3.

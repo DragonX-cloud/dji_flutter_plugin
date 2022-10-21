@@ -5,35 +5,28 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "dji_flutter_plugin (debug)",
+      "name": "dji_flutter_plugin (Debug)",
       "request": "launch",
       "type": "dart"
     },
     {
-      "name": "dji_flutter_plugin (profile)",
+      "name": "dji_flutter_plugin (Profile)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "profile"
     },
     {
-      "name": "Example (debug)",
+      "name": "Example (Debug)",
       "cwd": "example",
       "request": "launch",
       "type": "dart"
     },
     {
-      "name": "Example (profile)",
+      "name": "Example (Profile)",
       "cwd": "example",
       "request": "launch",
       "type": "dart",
       "flutterMode": "profile"
-    },
-    {
-      "name": "Example (release)",
-      "cwd": "example",
-      "request": "launch",
-      "type": "dart",
-      "flutterMode": "release"
     }
   ]
 }

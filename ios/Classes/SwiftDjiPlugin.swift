@@ -326,7 +326,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			for element in scheduledElements {
 				let error = _missionControl.scheduleElement(element)
 				if error != nil {
-					NSLog("=== DjiPlugin iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
+					print("=== DjiPlugin iOS: Timeline Failed - Error scheduling element \(String(describing: error))")
 					timelineSchedulingCompleted = false
 					return
 				}
@@ -337,9 +337,12 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 				// Starting the Timeline Mission
 				_missionControl.startTimeline()
+				
+				_fltSetStatus("Started")
 			}
 		} else {
-			NSLog("=== DjiPlugin iOS: startFlightTimeline - No Mission Control or Scheduled Elements")
+			print("=== DjiPlugin iOS: startFlightTimeline - No Mission Control or Scheduled Elements")
+			_fltSetStatus("Start Failed")
 		}
 	}
 

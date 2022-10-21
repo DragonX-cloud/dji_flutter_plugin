@@ -224,6 +224,42 @@ https://github.com/DragonX-cloud/dji_flutter_plugin/blob/main/example/lib/exampl
 We want the drone to to send us statuses.  
 This is handled by the `DjiFlutterApi` class.
 
+The `DjiFlutterApi.setStatus(Drone drone)` method is triggered by the native platform part every time there is an update to the Drone's state, location, angle, etc.
+Currently, the Drone class has a String property `status` with a description of the state.
+This will later on be changed to a DroneState class of its own, with an Enum code and a String description.
+
+Currently, the possible `drone.status` strings are:
+```
+Registered
+Connected
+Disconnected
+Delegated
+Error
+Mobile Remote
+Mobile Remote Failed
+Virtual Stick
+Virtual Stick Failed
+Gimbal Rotated
+Gimbal Failed
+Started
+Start Failed
+Got Media List
+Media List Failed
+Download Started (Once a download started - the drone.status changes to the actual percentage progress)
+Downloaded
+Download Failed
+Deleted
+Delete Failed
+Video Started
+Video Start Failed
+Video Stopped
+Video Stop Failed
+Record Started
+Record Start Failed
+Record Stopped
+Record Stop Failed
+```
+
 #### Extend your Widget with DjiFlutterApi
 First, extend your Widget with DjiFlutterApi, define the drone properties, and override your initState() method with the `_initDroneState()` and `DjiFlutterApi.setup()` methods per your needs.
 ```

@@ -8,7 +8,49 @@ class Battery {
   int? level;
 }
 
+// enum DroneStateCode {
+//   registerAppSuccess,
+//   registerAppFail,
+//   connectDroneSuccess,
+//   connectDroneFail,
+//   disconnectDroneSuccess,
+//   disconnectDroneFail,
+//   delegateDroneSuccess,
+//   delegateDroneFail,
+//   takeOffSuccess,
+//   takeOffFail,
+//   startSuccess,
+//   startFailed,
+//   mobileRemoteControllerSuccess,
+//   mobileRemoteControllerFail,
+//   virtualStickSuccess,
+//   virtualStickFail,
+//   gimbalRotatePitchSuccess,
+//   gimbalRotatePitchFail,
+//   getMediaListSuccess,
+//   getMediaListFail,
+//   downloadMediaSuccess,
+//   downloadMediaFail,
+//   deleteMediaSuccess,
+//   deleteMediaFail,
+//   videoFeedStartSuccess,
+//   videoFeedStartFail,
+//   videoFeedStopSuccess,
+//   videoFeedStopFail,
+//   videoRecordStartSuccess,
+//   videoRecordStartFail,
+//   videoRecordStopSuccess,
+//   videoRecordStopFail,
+//   error,
+// }
+
+// class DroneState {
+//   DroneStateCode? code;
+//   String? description;
+// }
+
 class Drone {
+  // DroneState? state;
   String? status;
   double? batteryPercent;
   double? altitude;
