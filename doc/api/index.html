@@ -158,14 +158,14 @@ In any case, in order to truly develop while being connected to the Drone, you m
 </code></pre>
 <p>Then, update the <code>buildScript</code> in the <code>android/build.gradle</code> file to:</p>
 <pre class="language-dart"><code>buildscript {
-    ext.kotlin_version = '1.5.31'
+    ext.kotlin_version = '1.7.0'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -173,8 +173,36 @@ In any case, in order to truly develop while being connected to the Drone, you m
 <p>Lastly, open the Project in Android Studio and let the Gradle sync.
 Please note this "sync" might take several long minutes.</p>
 <h5 id="2-updated-the-android-manifest-xml">2. Updated the Android Manifest XML</h5>
+<p>Below the <manifest> tag and above the <application> tag, add the following permissions: 
+(you might not need all of these, but usually that's what's needed for full functionality of the DJI SDK)</application></manifest></p>
+<pre class="language-dart"><code>&lt;manifest xmlns:android="http://schemas.android.com/apk/res/android" package="..."&gt;
+  &lt;!-- Permissions and features --&gt;
+  &lt;uses-permission android:name="android.permission.BLUETOOTH" /&gt;
+  &lt;uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /&gt;
+  &lt;uses-permission android:name="android.permission.VIBRATE" /&gt;
+  &lt;uses-permission android:name="android.permission.INTERNET" /&gt;
+  &lt;uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /&gt;
+  &lt;uses-permission android:name="android.permission.CHANGE_WIFI_STATE" /&gt;
+  &lt;uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /&gt;
+  &lt;uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /&gt;
+  &lt;uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /&gt;
+  &lt;uses-permission android:name="android.permission.RECORD_AUDIO" /&gt;
+  &lt;uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /&gt;
+  &lt;uses-permission android:name="android.permission.READ_PHONE_STATE" /&gt;
+
+  &lt;uses-feature android:name="android.hardware.camera" /&gt;
+  &lt;uses-feature android:name="android.hardware.camera.autofocus" /&gt;
+  &lt;uses-feature
+      android:name="android.hardware.usb.host"
+      android:required="false" /&gt;
+  &lt;uses-feature
+      android:name="android.hardware.usb.accessory"
+      android:required="true" /&gt;
+</code></pre>
 <p>Below the <code>&lt;application&gt;</code> tag and above the <code>&lt;activity&gt;</code> tag, add the following and fill-in your Android DJI App Key:</p>
-<pre class="language-dart"><code>&lt;application ...&gt;
+<pre class="language-dart"><code>&lt;application
+  ...
+  android:usesCleartextTraffic="true"&gt;
   ...
   &lt;!-- Start of DJI SDK --&gt;
   &lt;uses-library android:name="com.android.future.usb.accessory" /&gt;
@@ -187,15 +215,17 @@ Please note this "sync" might take several long minutes.</p>
 <h5 id="3-update-androidappbuildgradle">3. Update android/app/build.gradle</h5>
 <p>Open the android/app/build.grade file and update the following:</p>
 <ul>
-<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 32.
+<li>Set the compileSdkVersion to 33</li>
+<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 33.
 Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
 </ul>
 <pre class="language-dart"><code>android {
+    compileSdkVersion 33
     ...
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 32
+        targetSdkVersion 33
         ...
 
         multiDexEnabled true
@@ -259,6 +289,39 @@ The <code>DjiFlutterApi</code> class is responsible for allowing the host to tri
 <h3 id="getting-continuous-updates-of-the-drone-status">Getting continuous updates of the Drone Status</h3>
 <p>We want the drone to to send us statuses.<br>
 This is handled by the <code>DjiFlutterApi</code> class.</p>
+<p>The <code>DjiFlutterApi.setStatus(Drone drone)</code> method is triggered by the native platform part every time there is an update to the Drone's state, location, angle, etc.
+Currently, the Drone class has a String property <code>status</code> with a description of the state.
+This will later on be changed to a DroneState class of its own, with an Enum code and a String description.</p>
+<p>Currently, the possible <code>drone.status</code> strings are:</p>
+<pre class="language-dart"><code>Registered
+Connected
+Disconnected
+Delegated
+Error
+Mobile Remote
+Mobile Remote Failed
+Virtual Stick
+Virtual Stick Failed
+Gimbal Rotated
+Gimbal Failed
+Started
+Start Failed
+Got Media List
+Media List Failed
+Download Started (Once a download started - the drone.status changes to the actual percentage progress)
+Downloaded
+Download Failed
+Deleted
+Delete Failed
+Video Started
+Video Start Failed
+Video Stopped
+Video Stop Failed
+Record Started
+Record Start Failed
+Record Stopped
+Record Stop Failed
+</code></pre>
 <h4 id="extend-your-widget-with-djiflutterapi">Extend your Widget with DjiFlutterApi</h4>
 <p>First, extend your Widget with DjiFlutterApi, define the drone properties, and override your initState() method with the <code>_initDroneState()</code> and <code>DjiFlutterApi.setup()</code> methods per your needs.</p>
 <pre class="language-dart"><code>class _ExampleWidgetState extends State&lt;ExampleWidget&gt;
@@ -1101,7 +1164,7 @@ The DJI Flutter plugin converts the H264 to YUV420p and so the sendVideo() metho
 <footer>
   <span class="no-break">
     dji
-      1.0.0
+      1.0.2
   </span>
 
   
