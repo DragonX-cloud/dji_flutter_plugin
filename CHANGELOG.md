@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.2
+- Added some missing Android configuration instructions to the Readme.
+
 ## 1.0.1
 - Updated the Readme with the possible String drone.status property values.
 

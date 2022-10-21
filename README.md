@@ -113,14 +113,14 @@ distributionUrl=https\://services.gradle.org/distributions/gradle-7.0.2-all.zip
 Then, update the `buildScript` in the `android/build.gradle` file to:
 ```
 buildscript {
-    ext.kotlin_version = '1.5.31'
+    ext.kotlin_version = '1.7.0'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.2'
+        classpath 'com.android.tools.build:gradle:7.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -130,9 +130,39 @@ Lastly, open the Project in Android Studio and let the Gradle sync.
 Please note this "sync" might take several long minutes.
 
 ##### 2. Updated the Android Manifest XML
+Below the <manifest> tag and above the <application> tag, add the following permissions: 
+(you might not need all of these, but usually that's what's needed for full functionality of the DJI SDK) 
+```
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="...">
+  <!-- Permissions and features -->
+  <uses-permission android:name="android.permission.BLUETOOTH" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+  <uses-feature android:name="android.hardware.camera" />
+  <uses-feature android:name="android.hardware.camera.autofocus" />
+  <uses-feature
+      android:name="android.hardware.usb.host"
+      android:required="false" />
+  <uses-feature
+      android:name="android.hardware.usb.accessory"
+      android:required="true" />
+```
+
 Below the `<application>` tag and above the `<activity>` tag, add the following and fill-in your Android DJI App Key:
 ```
-<application ...>
+<application
+  ...
+  android:usesCleartextTraffic="true">
   ...
   <!-- Start of DJI SDK -->
   <uses-library android:name="com.android.future.usb.accessory" />
@@ -145,15 +175,17 @@ Below the `<application>` tag and above the `<activity>` tag, add the following 
 
 ##### 3. Update android/app/build.gradle
 Open the android/app/build.grade file and update the following:
-- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 32.
+- Set the compileSdkVersion to 33
+- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 33.
 Also, **add and make sure multiDexEnabled is set to TRUE**:
 ```
 android {
+    compileSdkVersion 33
     ...
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 32
+        targetSdkVersion 33
         ...
 
         multiDexEnabled true
