@@ -71,10 +71,6 @@ class CoordinatesConvertion {
       {required FlightLocation droneLocation,
       required FlightLocation pointOfInterest,
       required FlightVector vector}) {
-    final double azimuthToDestination;
-    final double destinationLatitude;
-    final double destinationLongitude;
-
     if (droneLocation.latitude == pointOfInterest.latitude &&
         droneLocation.longitude == pointOfInterest.longitude) {
       developer.log(
@@ -84,29 +80,34 @@ class CoordinatesConvertion {
       return null;
     }
 
-    azimuthToDestination = 180 -
-        vector.headingRelativeToPointOfInterest -
-        (atan((droneLocation.latitude - pointOfInterest.latitude) /
+    final double beta = (atan(
+            (droneLocation.latitude - pointOfInterest.latitude) /
                 (droneLocation.longitude - pointOfInterest.longitude)) *
-            180 /
-            pi);
+        180 /
+        pi);
+    final double azimuth = 90 - beta;
+    final double azimuthToDestination =
+        azimuth + vector.headingRelativeToPointOfInterest;
+
     // Latitude = North/South
     double computedDestinationLatitude = pointOfInterest.latitude +
         (vector.distanceFromPointOfInterest *
-            sin(azimuthToDestination * pi / 180) *
+            sin((90 - azimuthToDestination) * pi / 180) *
             meterToDecimalDegree);
     // Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
     computedDestinationLatitude = computedDestinationLatitude * 100000000;
-    destinationLatitude = computedDestinationLatitude.round() / 100000000;
+    final double destinationLatitude =
+        computedDestinationLatitude.round() / 100000000;
 
     // Longitude = East/West
     double computedDestinationLongitude = pointOfInterest.longitude +
         (vector.distanceFromPointOfInterest *
-            cos(azimuthToDestination * pi / 180) *
+            cos((90 - azimuthToDestination) * pi / 180) *
             meterToDecimalDegree);
     // Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
     computedDestinationLongitude = computedDestinationLongitude * 100000000;
-    destinationLongitude = computedDestinationLongitude.round() / 100000000;
+    final double destinationLongitude =
+        computedDestinationLongitude.round() / 100000000;
 
     developer.log(
       'vectorToLocation - computed coordinates:',

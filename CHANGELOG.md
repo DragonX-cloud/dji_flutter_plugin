@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+- Fixed vector to location coordinates calculations.
+- Updated tests.
+
 ## 1.0.2
 - Added some missing Android configuration instructions to the Readme.
 
