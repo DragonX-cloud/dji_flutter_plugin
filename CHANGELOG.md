@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.5
+- Fixed Azimuth calculation.
+
 ## 1.0.4
 - Fixed gimbal pitch computed angle.
 

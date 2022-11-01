@@ -80,14 +80,23 @@ class CoordinatesConvertion {
       return null;
     }
 
-    final double beta = (atan(
-            (droneLocation.latitude - pointOfInterest.latitude) /
-                (droneLocation.longitude - pointOfInterest.longitude)) *
+    final double alpha = (atan(
+            (droneLocation.longitude - pointOfInterest.longitude).abs() /
+                (droneLocation.latitude - pointOfInterest.latitude).abs()) *
         180 /
         pi);
-    final double azimuth = 90 - beta;
+
+    final double azimuth;
+    if (droneLocation.latitude - pointOfInterest.latitude < 0) {
+      // Drone is south to the Point of Interest
+      // We need to add 180 to the azimuth (to compensate for the negative angle)
+      azimuth = (alpha + 180) % 360;
+    } else {
+      azimuth = alpha % 360;
+    }
+
     final double azimuthToDestination =
-        azimuth + vector.headingRelativeToPointOfInterest;
+        (azimuth + vector.headingRelativeToPointOfInterest) % 360;
 
     // Latitude = North/South
     double computedDestinationLatitude = pointOfInterest.latitude +
