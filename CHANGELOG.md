@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.4
+- Fixed gimbal pitch computed angle.
+
 ## 1.0.3
 - Fixed vector to location coordinates calculations.
 - Updated tests.

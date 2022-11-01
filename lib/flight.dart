@@ -149,7 +149,7 @@ class CoordinatesConvertion {
         sqrt(pow(longitudeDeltaInMeters, 2) + pow(latitudeDeltaInMeters, 2));
 
     final double gimbalAngleInDegrees =
-        atan(groundDistanceInMeters / altitudeDeltaInMeters) * 180 / pi;
+        atan(altitudeDeltaInMeters / groundDistanceInMeters) * 180 / pi;
 
     /// We return the gimbal angle as a "minus" to match the DJI SDK gimbalPitch definition.
     return (gimbalAngleInDegrees.abs() * -1).roundToDouble();
