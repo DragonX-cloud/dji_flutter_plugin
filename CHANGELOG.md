@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.6
+- Fixed additional issues with Azimuth calculation.
+
 ## 1.0.5
 - Fixed Azimuth calculation.
 

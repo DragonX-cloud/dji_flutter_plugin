@@ -81,8 +81,8 @@ class CoordinatesConvertion {
     }
 
     final double alpha = (atan(
-            (droneLocation.longitude - pointOfInterest.longitude).abs() /
-                (droneLocation.latitude - pointOfInterest.latitude).abs()) *
+            (droneLocation.longitude - pointOfInterest.longitude) /
+                (droneLocation.latitude - pointOfInterest.latitude)) *
         180 /
         pi);
 
