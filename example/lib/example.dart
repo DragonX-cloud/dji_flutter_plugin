@@ -28,6 +28,7 @@ class ExampleWidget extends StatefulWidget {
 class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   String _droneStatus = 'Disconnected';
+  String _droneError = '';
   String _droneBatteryPercent = '0';
   String _droneAltitude = '0.0';
   String _droneLatitude = '0.0';
@@ -73,6 +74,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   void setStatus(Drone drone) async {
     setState(() {
       _droneStatus = drone.status ?? 'Disconnected';
+      _droneError = drone.error ?? '';
       _droneAltitude = drone.altitude?.toStringAsFixed(2) ?? '0.0';
       _droneBatteryPercent = drone.batteryPercent?.toStringAsFixed(0) ?? '0';
       _droneLatitude = drone.latitude?.toStringAsFixed(7) ?? '0.0';
@@ -1173,9 +1175,43 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                               label: 'Running on',
                               value: _platformVersion,
                             ),
-                            DronePropertyRow(
-                              label: 'Status',
-                              value: _droneStatus,
+                            InkWell(
+                              onTap: () {
+                                if (_droneError == '') {
+                                  return;
+                                }
+
+                                showDialog<void>(
+                                  context: context,
+                                  barrierDismissible: true,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Error Description'),
+                                      content: SingleChildScrollView(
+                                        child: ListBody(
+                                          children: [
+                                            Text(_droneError),
+                                          ],
+                                        ),
+                                      ),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          child: const Text('Close'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: DronePropertyRow(
+                                label: 'Status',
+                                value: _droneError != ''
+                                    ? '$_droneStatus [ ! ]'
+                                    : _droneStatus,
+                              ),
                             ),
                             DronePropertyRow(
                               label: 'Drone Battery',

@@ -273,6 +273,10 @@ Virtual Stick
 Virtual Stick Failed
 Gimbal Rotated
 Gimbal Failed
+Takeoff
+Takeoff Failed
+Land
+Land Failed
 Started
 Start Failed
 Got Media List
@@ -299,6 +303,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
     implements DjiFlutterApi {
   String _platformVersion = 'Unknown';
   String _droneStatus = 'Disconnected';
+  String _droneError = '';
   String _droneBatteryPercent = '0';
   String _droneAltitude = '0.0';
   String _droneLatitude = '0.0';
@@ -330,6 +335,7 @@ Example:
 void setStatus(Drone drone) async {
   setState(() {
     _droneStatus = drone.status ?? 'Disconnected';
+    _droneError = drone.error ?? '';
     _droneAltitude = drone.altitude?.toStringAsFixed(2) ?? '0.0';
     _droneBatteryPercent = drone.batteryPercent?.toStringAsFixed(0) ?? '0';
     _droneLatitude = drone.latitude?.toStringAsFixed(7) ?? '0.0';

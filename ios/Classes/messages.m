@@ -97,6 +97,7 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 
 @implementation FLTDrone
 + (instancetype)makeWithStatus:(nullable NSString *)status
+    error:(nullable NSString *)error
     batteryPercent:(nullable NSNumber *)batteryPercent
     altitude:(nullable NSNumber *)altitude
     latitude:(nullable NSNumber *)latitude
@@ -107,6 +108,7 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
     yaw:(nullable NSNumber *)yaw {
   FLTDrone* pigeonResult = [[FLTDrone alloc] init];
   pigeonResult.status = status;
+  pigeonResult.error = error;
   pigeonResult.batteryPercent = batteryPercent;
   pigeonResult.altitude = altitude;
   pigeonResult.latitude = latitude;
@@ -120,6 +122,7 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 + (FLTDrone *)fromMap:(NSDictionary *)dict {
   FLTDrone *pigeonResult = [[FLTDrone alloc] init];
   pigeonResult.status = GetNullableObject(dict, @"status");
+  pigeonResult.error = GetNullableObject(dict, @"error");
   pigeonResult.batteryPercent = GetNullableObject(dict, @"batteryPercent");
   pigeonResult.altitude = GetNullableObject(dict, @"altitude");
   pigeonResult.latitude = GetNullableObject(dict, @"latitude");
@@ -134,6 +137,7 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 - (NSDictionary *)toMap {
   return @{
     @"status" : (self.status ?: [NSNull null]),
+    @"error" : (self.error ?: [NSNull null]),
     @"batteryPercent" : (self.batteryPercent ?: [NSNull null]),
     @"altitude" : (self.altitude ?: [NSNull null]),
     @"latitude" : (self.latitude ?: [NSNull null]),

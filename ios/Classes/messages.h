@@ -26,6 +26,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface FLTDrone : NSObject
 + (instancetype)makeWithStatus:(nullable NSString *)status
+    error:(nullable NSString *)error
     batteryPercent:(nullable NSNumber *)batteryPercent
     altitude:(nullable NSNumber *)altitude
     latitude:(nullable NSNumber *)latitude
@@ -35,6 +36,7 @@ NS_ASSUME_NONNULL_BEGIN
     pitch:(nullable NSNumber *)pitch
     yaw:(nullable NSNumber *)yaw;
 @property(nonatomic, copy, nullable) NSString * status;
+@property(nonatomic, copy, nullable) NSString * error;
 @property(nonatomic, strong, nullable) NSNumber * batteryPercent;
 @property(nonatomic, strong, nullable) NSNumber * altitude;
 @property(nonatomic, strong, nullable) NSNumber * latitude;

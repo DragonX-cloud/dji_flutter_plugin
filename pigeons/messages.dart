@@ -52,6 +52,7 @@ class Battery {
 class Drone {
   // DroneState? state;
   String? status;
+  String? error;
   double? batteryPercent;
   double? altitude;
   double? latitude;

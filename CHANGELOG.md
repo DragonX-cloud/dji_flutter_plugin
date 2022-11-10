@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.7
+- Added drone status error description property.
+
 ## 1.0.6
 - Fixed additional issues with Azimuth calculation.
 

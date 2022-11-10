@@ -96,6 +96,12 @@ public class Messages {
       this.status = setterArg;
     }
 
+    private @Nullable String error;
+    public @Nullable String getError() { return error; }
+    public void setError(@Nullable String setterArg) {
+      this.error = setterArg;
+    }
+
     private @Nullable Double batteryPercent;
     public @Nullable Double getBatteryPercent() { return batteryPercent; }
     public void setBatteryPercent(@Nullable Double setterArg) {
@@ -150,6 +156,11 @@ public class Messages {
         this.status = setterArg;
         return this;
       }
+      private @Nullable String error;
+      public @NonNull Builder setError(@Nullable String setterArg) {
+        this.error = setterArg;
+        return this;
+      }
       private @Nullable Double batteryPercent;
       public @NonNull Builder setBatteryPercent(@Nullable Double setterArg) {
         this.batteryPercent = setterArg;
@@ -193,6 +204,7 @@ public class Messages {
       public @NonNull Drone build() {
         Drone pigeonReturn = new Drone();
         pigeonReturn.setStatus(status);
+        pigeonReturn.setError(error);
         pigeonReturn.setBatteryPercent(batteryPercent);
         pigeonReturn.setAltitude(altitude);
         pigeonReturn.setLatitude(latitude);
@@ -207,6 +219,7 @@ public class Messages {
     @NonNull Map<String, Object> toMap() {
       Map<String, Object> toMapResult = new HashMap<>();
       toMapResult.put("status", status);
+      toMapResult.put("error", error);
       toMapResult.put("batteryPercent", batteryPercent);
       toMapResult.put("altitude", altitude);
       toMapResult.put("latitude", latitude);
@@ -221,6 +234,8 @@ public class Messages {
       Drone pigeonResult = new Drone();
       Object status = map.get("status");
       pigeonResult.setStatus((String)status);
+      Object error = map.get("error");
+      pigeonResult.setError((String)error);
       Object batteryPercent = map.get("batteryPercent");
       pigeonResult.setBatteryPercent((Double)batteryPercent);
       Object altitude = map.get("altitude");

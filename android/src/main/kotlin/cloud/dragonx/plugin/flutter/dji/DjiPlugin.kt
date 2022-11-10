@@ -119,6 +119,16 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     })
   }
 
+  private fun _fltSetError(error: String) {
+    fltDrone.error = error
+
+    djiPluginActivity.runOnUiThread(Runnable {
+      fltDjiFlutterApi?.setStatus(fltDrone) {
+        Log.d(TAG, "setStatus (setting drone error) Closure Success: $error")
+      }
+    })
+  }
+
   private fun _fltSendVideo(data: ByteArray?) {
     fltStream.data = data
 
@@ -172,20 +182,25 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           //DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
           Log.d(TAG, "Register Success")
           _fltSetStatus("Registered")
+          _fltSetStatus("")
         } else {
           Log.d(TAG, "Register Failed")
           Log.d(TAG, djiError.description)
+          _fltSetStatus("Error")
+          _fltSetError(djiError.description)
         }
       }
 
       override fun onProductConnect(baseProduct: BaseProduct) {
         Log.d(TAG, String.format("Product Connected: %s", baseProduct))
         _fltSetStatus("Connected")
+        _fltSetStatus("")
       }
 
       override fun onProductDisconnect() {
         Log.d(TAG, "Product Disconnected")
         _fltSetStatus("Disconnected")
+        _fltSetStatus("")
       }
 
       override fun onProductChanged(baseProduct: BaseProduct) {}
@@ -295,6 +310,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         } else {
           Log.d(TAG, "Drone Flight Controller Object does not exist")
           _fltSetStatus("Error")
+          _fltSetError("Drone Flight Controller Object does not exist")
           return
         }
 
@@ -313,15 +329,21 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         } catch (ignored: Exception) {
           Log.d(TAG, "Drone Battery Delegate Error - No Battery Object")
           _fltSetStatus("Error")
+          _fltSetError("Drone Battery Delegate Error - No Battery Object")
         }
 
         Log.d(TAG, "Delegations completed")
         _fltSetStatus("Delegated")
+        _fltSetStatus("")
       } else {
         Log.d(TAG,"Error - Delegations - DJI Aircraft Object does not exist")
+        _fltSetStatus("Error")
+        _fltSetError("Delegations - DJI Aircraft Object does not exist")
       }
     } else {
       Log.d(TAG, "Error - Delegations - DJI Product Object does not exist")
+      _fltSetStatus("Error")
+      _fltSetError("Delegations - DJI Product Object does not exist")
     }
   }
 
@@ -329,9 +351,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     Log.d(TAG, "Takeoff Started")
     if ((drone as Aircraft).flightController != null) {
       Log.d(TAG,"Takeoff Started")
+      _fltSetStatus("Takeoff")
+      _fltSetStatus("")
       (drone as Aircraft).flightController.startTakeoff(null)
     } else {
       Log.d(TAG,"Takeoff Failed - No Flight Controller")
+      _fltSetStatus("Takeoff Failed")
+      _fltSetError("Takeoff Failed - No Flight Controller")
     }
   }
 
@@ -339,9 +365,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     Log.d(TAG, "Land Started")
     if ((drone as Aircraft).flightController != null) {
       Log.d(TAG,"Landing Started")
+      _fltSetStatus("Land")
+      _fltSetStatus("")
       (drone as Aircraft).flightController.startLanding(null)
     } else {
       Log.d(TAG,"Landing Failed - No Flight Controller")
+      _fltSetStatus("Land Failed")
+      _fltSetError("Land Failed - No Flight Controller")
     }
   }
 
@@ -361,9 +391,11 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       drone?.mobileRemoteController?.rightStickHorizontal = rightStickHorizontal.toFloat()
       drone?.mobileRemoteController?.rightStickVertical = rightStickVertical.toFloat()
       _fltSetStatus("Mobile Remote")
+      _fltSetStatus("")
     } else {
       Log.d(TAG, "Mobile Remote - isConnected FALSE")
       _fltSetStatus("Mobile Remote Failed")
+      _fltSetError("Mobile Remote - isConnected FALSE")
     }
   }
 
@@ -381,6 +413,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if (_droneFlightController == null) {
       Log.d(TAG, "Virtual Stick - No Flight Controller")
       _fltSetStatus("Virtual Stick Failed")
+      _fltSetError("Virtual Stick - No Flight Controller")
       return
     }
 
@@ -388,6 +421,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       if (error != null) {
         Log.d(TAG, "Enable Virtual Stick failed with error" + error.description)
         _fltSetStatus("Virtual Stick Failed")
+        _fltSetError("Enable Virtual Stick failed with error" + error.description)
       } else {
         val virtualStickControlData = FlightControlData(pitch.toFloat(), roll.toFloat(), yaw.toFloat(), verticalThrottle.toFloat())
         // Setting the drone's flight control parameters for easy Virtual Stick usage
@@ -396,6 +430,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           if (error != null) {
             Log.d(TAG, "Virtual Stick - setFlightOrientationMode (as FlightOrientationMode.AIRCRAFT_HEADING) failed with error" + error.description)
             _fltSetStatus("Virtual Stick Failed")
+            _fltSetError("Virtual Stick - setFlightOrientationMode (as FlightOrientationMode.AIRCRAFT_HEADING) failed with error" + error.description)
           }
         } // Mandatory for Virtual Stick Control Mode to be available.
         //_droneFlightController.isVirtualStickAdvancedModeEnabled = true
@@ -407,13 +442,16 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (!_droneFlightController.isVirtualStickControlModeAvailable) {
           Log.d(TAG, "Virtual Stick control mode is not available")
           _fltSetStatus("Virtual Stick Failed")
+          _fltSetError("Virtual Stick control mode is not available")
         } else {
           _droneFlightController.sendVirtualStickFlightControlData(virtualStickControlData) { error ->
             if (error != null) {
               Log.d(TAG, "Virtual Stick send failed with error" + error.description)
               _fltSetStatus("Virtual Stick Failed")
+              _fltSetError("Virtual Stick send failed with error" + error.description)
             } else {
               _fltSetStatus("Virtual Stick")
+              _fltSetStatus("")
             }
           }
         }
@@ -435,13 +473,16 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Gimbal Rotate failed with error" + error.description)
           _fltSetStatus("Gimbal Failed")
+          _fltSetError("Gimbal Rotate failed with error" + error.description)
         } else {
           _fltSetStatus("Gimbal Rotated")
+          _fltSetStatus("")
         }
       }
     } else {
       Log.d(TAG, "Gimbal - isConnected FALSE")
       _fltSetStatus("Gimbal Failed")
+      _fltSetError("Gimbal - isConnected FALSE")
     }
   }
 
@@ -460,24 +501,32 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       startFlightTimeline(f)
     } catch (e: Error) {
       Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
+      _fltSetStatus("Start Failed")
+      _fltSetError("Error - Failed to parse Flight JSON: ${e.message}")
     }
   }
 
   private fun startFlightTimeline(flight: Flight) {
     val timeline = flight.timeline
     if (timeline == null || timeline.isEmpty()) {
-      Log.d(TAG, "startFlightTimeline - timeline List is empty")
+      Log.d(TAG, "startFlightTimeline - Timeline List is empty")
+      _fltSetStatus("Start Failed")
+      _fltSetError("startFlightTimeline - Timeline List is empty")
       return
     }
 
     val _droneFlightController : FlightController? = (drone as Aircraft).flightController
     if (_droneFlightController == null) {
       Log.d(TAG, "startFlightTimeline - No Flight Controller")
+      _fltSetStatus("Start Failed")
+      _fltSetError("startFlightTimeline - No Flight Controller")
       return
     }
 
     if (MissionControl.getInstance().isTimelineRunning == true) {
       Log.d(TAG, "startFlightTimeline - Timeline already running - attempting to stop it")
+      _fltSetStatus("Start Failed")
+      _fltSetError("startFlightTimeline - Timeline already running - attempting to stop it")
       return
     }
 
@@ -560,6 +609,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         _missionControl.startTimeline()
     } else {
       Log.d(TAG, "startFlightTimeline - No Mission Control or Scheduled Elements")
+      _fltSetStatus("Start Failed")
+      _fltSetError("startFlightTimeline - No Mission Control or Scheduled Elements")
       return
     }
   }
@@ -650,7 +701,9 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       missionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
 
     } else {
-      Log.d(TAG,"waypointMission - No waypoints available - exiting.")
+      Log.d(TAG, "waypointMission - No waypoints available - exiting")
+      _fltSetStatus("Error")
+      _fltSetError("waypointMission - No waypoints available - exiting")
     }
 
     return missionBuilder.build()
@@ -666,7 +719,8 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
         if (error != null) {
           Log.d(TAG, "Get media list - set camera mode failed with error" + error.description)
-          _fltSetStatus("Download Failed")
+          _fltSetStatus("Media List Failed")
+          _fltSetError("Get media list - set camera mode failed with error" + error.description)
         } else {
           Log.d(TAG, "Get media list started")
 
@@ -676,16 +730,19 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
             if (_droneMediaManager.sdCardFileListState == FileListState.SYNCING || _droneMediaManager.sdCardFileListState == FileListState.DELETING) {
               Log.d(TAG, "Get media list failed - Media Manager is busy")
               _fltSetStatus("Media List Failed")
+              _fltSetError("Get media list failed - Media Manager is busy")
             } else {
               _droneMediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD) { error ->
                 if (error != null) {
                   Log.d(TAG, "Get media list failed: " + error.description)
                   _fltSetStatus("Media List Failed")
+                  _fltSetError("Get media list failed: " + error.description)
                 } else {
                   val sdCardMediaFileList = _droneMediaManager.sdCardFileListSnapshot
                   if (sdCardMediaFileList != null && !sdCardMediaFileList.isEmpty()) {
                     Log.d(TAG, "Get media list successful")
                     _fltSetStatus("Got Media List")
+                    _fltSetStatus("")
 
                     mediaFileList = sdCardMediaFileList
 
@@ -700,6 +757,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
                   } else {
                     Log.d(TAG, "Get media list failed - list is empty")
                     _fltSetStatus("Media List Failed")
+                    _fltSetError("Get media list failed - list is empty")
                   }
                 }
               }
@@ -707,12 +765,14 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           } else {
             Log.d(TAG, "Get media list failed - no Media Manager")
             _fltSetStatus("Media List Failed")
+            _fltSetError("Get media list failed - no Media Manager")
           }
         }
       }
     } else {
       Log.d(TAG, "Get media list failed - no Camera object")
       _fltSetStatus("Media List Failed")
+      _fltSetError("Get media list failed - no Camera object")
     }
 
     return _fltMediaList
@@ -725,6 +785,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if (_index < 0) {
       Log.d(TAG, "Download media failed - invalid index")
       _fltSetStatus("Download Failed")
+      _fltSetError("Download media failed - invalid index")
 
       return ""
     }
@@ -732,6 +793,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if (mediaFileList.isEmpty()) {
       Log.d(TAG, "Download media failed - list is empty")
       _fltSetStatus("Download Failed")
+      _fltSetError("Download media failed - list is empty")
 
       return ""
     }
@@ -742,6 +804,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Download media - set camera mode failed with error" + error.description)
           _fltSetStatus("Download Failed")
+          _fltSetError("Download media - set camera mode failed with error" + error.description)
         } else if (mediaFileList[_index] != null) {
           Log.d(TAG, "Download media started")
 
@@ -757,6 +820,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
             override fun onFailure(error: DJIError) {
               Log.d(TAG, "Download media failed - Fetch File Data: " + error.description)
               _fltSetStatus("Download Failed")
+              _fltSetError("Download media failed - Fetch File Data: " + error.description)
               currentProgress = -1
             }
 
@@ -765,6 +829,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
               val progress = (current * 1F / total * 100).toInt()
               if (progress != currentProgress) {
                 _fltSetStatus(progress.toString() + "%")
+                _fltSetStatus("")
                 currentProgress = progress
               }
             }
@@ -774,6 +839,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
               Log.d(TAG, "Download media started")
               _fltSetStatus("Download Started")
+              _fltSetStatus("")
             }
 
             override fun onSuccess(filePath: String) {
@@ -781,6 +847,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
               Log.d(TAG, "Download media completed: $filePath")
               _fltSetStatus("Downloaded")
+              _fltSetStatus("")
             }
 
             override fun onRealtimeDataUpdate(p0: ByteArray?, p1: Long, p2: Boolean) {
@@ -789,6 +856,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         } else {
           Log.d(TAG, "Download media - file not found")
           _fltSetStatus("Download Failed")
+          _fltSetError("Download media - file not found")
         }
       }
     }
@@ -803,13 +871,15 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if (_index < 0) {
       Log.d(TAG, "Delete media failed - invalid index")
       _fltSetStatus("Delete Failed")
+      _fltSetError("Delete media failed - invalid index")
 
       return false
     }
 
     if (mediaFileList.isEmpty()) {
-      Log.d(TAG, "Download media failed - list is empty")
+      Log.d(TAG, "Delete media failed - list is empty")
       _fltSetStatus("Delete Failed")
+      _fltSetError("Delete media failed - list is empty")
 
       return false
     }
@@ -819,6 +889,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Delete media - set camera mode failed with error: " + error.description)
           _fltSetStatus("Delete Failed")
+          _fltSetError("Delete media - set camera mode failed with error: " + error.description)
         } else if (mediaFileList[_index] != null) {
           Log.d(TAG, "Delete media started")
 
@@ -835,12 +906,14 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
                 override fun onSuccess(x: List<MediaFile?>?, y: DJICameraError?) {
                   Log.d(TAG, "Delete media completed")
                   _fltSetStatus("Deleted")
+                  _fltSetStatus("")
                   _success = true
                 }
 
                 override fun onFailure(error: DJIError) {
                   Log.d(TAG, "Delete media failed: " + error.description)
                   _fltSetStatus("Delete Failed")
+                  _fltSetError("Delete media failed: " + error.description)
                   _success = false
                 }
               })
@@ -848,6 +921,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         } else {
           Log.d(TAG, "Delete media - file not found")
           _fltSetStatus("Delete Failed")
+          _fltSetError("Delete media - file not found")
         }
       }
     }
@@ -864,6 +938,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Video feed start failed with error: " + error.description)
           _fltSetStatus("Video Start Failed")
+          _fltSetError("Video feed start failed with error: " + error.description)
         } else {
           // When I tried to use `VideoFeeder.VideoDataListener` I encountered a class-not-found issue, and couldn't resolve it no matter what I tried.
           // So the following cannot be used.
@@ -904,11 +979,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           //}
 
           _fltSetStatus("Video Started")
+          _fltSetStatus("")
         }
       }
     } else {
       Log.d(TAG, "Video feed start failed - no Camera object")
       _fltSetStatus("Video Start Failed")
+      _fltSetError("Video feed start failed - no Camera object")
     }
   }
 
@@ -919,6 +996,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Video feed stop failed with error: " + error.description)
           _fltSetStatus("Video Stop Failed")
+          _fltSetError("Video feed stop failed with error: " + error.description)
         } else {
           codecManager.enabledYuvData(false)
           codecManager.yuvDataCallback = null
@@ -927,11 +1005,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           //  _fltSendVideo(bytes)
           //}
           _fltSetStatus("Video Stopped")
+          _fltSetStatus("")
         }
       }
     } else {
       Log.d(TAG, "Video feed stop failed - no Camera object")
       _fltSetStatus("Video Stop Failed")
+      _fltSetError("Video feed stop failed - no Camera object")
     }
   }
 
@@ -942,6 +1022,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Video record start failed with error: " + error.description)
           _fltSetStatus("Record Start Failed")
+          _fltSetError("Video record start failed with error: " + error.description)
         } else {
           // For some reason, the DJI completion callback of the startRecordVideo() method causes the app to crash, which I couldn't resolve.
           // So for now I'm simply not using it...
@@ -957,11 +1038,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           _droneCamera.startRecordVideo(null);
           Log.d(TAG, "Video record stared")
           _fltSetStatus("Record Started")
+          _fltSetStatus("")
         }
       }
     } else {
       Log.d(TAG, "Video record start failed - no Camera object")
       _fltSetStatus("Record Start Failed")
+      _fltSetError("Video record start failed - no Camera object")
     }
   }
 
@@ -972,6 +1055,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
         if (error != null) {
           Log.d(TAG, "Video record stop failed with error: " + error.description)
           _fltSetStatus("Record Stop Failed")
+          _fltSetError("Video record stop failed with error: " + error.description)
         } else {
           // For some reason, the DJI completion callback of the stopRecordVideo() method causes the app to crash, which I couldn't resolve.
           // So for now I'm simply not using it...
@@ -987,11 +1071,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           _droneCamera.stopRecordVideo(null);
           Log.d(TAG, "Video record stopped")
           _fltSetStatus("Record Stopped")
+          _fltSetStatus("")
         }
       }
     } else {
       Log.d(TAG, "Video record stop failed - no Camera object")
       _fltSetStatus("Record Stop Failed")
+      _fltSetError("Video record stop failed - no Camera object")
     }
   }
 
