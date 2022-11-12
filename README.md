@@ -1178,6 +1178,13 @@ Solution for how to enable the VideoDataListener on Android:
 (search for "codecManager.enabledYuvData(true);")
 https://github.com/dji-sdk/Mobile-SDK-Android/issues/352
 
+### FFMpeg Xcode BitCode Issue
+If Xcode compilation fails with an error similar to this one:
+```
+...FFmpeg.framework/FFmpeg' does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE)...
+```
+Open Xcode > for each Target (e.g. DJI-SDK-IOS, ffmpeg-kit-ios, etc.) - search for "BitCode" under the Build Settings section - and change to NO.
+
 ### Android issue with the better_player plugin
 If you encounter the following error while trying to build the Android example project:
 ```
