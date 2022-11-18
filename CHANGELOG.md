@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.9
+- Upgraded DJI SDKs to latest versions on Android.
+
 ## 1.0.8
 - Fixed an issue with Drone Status being an empty-string on Android.
 

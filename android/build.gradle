@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:7.2.1"
+        classpath "com.android.tools.build:gradle:7.2.2"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
     }
@@ -67,10 +67,6 @@ android {
         }
     }
 
-    dexOptions {
-        javaMaxHeapSize "4g"
-    }
-
     packagingOptions {
         doNotStrip "*/*/libdjivideo.so"
         doNotStrip "*/*/libSDKRelativeJNI.so"
@@ -112,50 +108,50 @@ android {
 }
 
 dependencies {
-    implementation ("com.dji:dji-sdk:4.16.1", {
+    implementation ("com.dji:dji-sdk:4.16.4", {
         exclude module: "library-anti-distortion"
         exclude module: "fly-safe-database"
     })
-    implementation ("com.dji:dji-uxsdk:4.16", {
+    implementation ("com.dji:dji-uxsdk:4.16.2", {
         exclude module: "dji-sdk"
         exclude group: "com.amap.api"
     })
-    compileOnly ("com.dji:dji-sdk-provided:4.16.1")
+    compileOnly ("com.dji:dji-sdk-provided:4.16.4")
 
     // https://stackoverflow.com/questions/58281124/layout-constraintbottom-totopof-not-found
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
 
     implementation "androidx.multidex:multidex:2.0.1"
-    implementation "androidx.appcompat:appcompat:1.4.2"
-    implementation "com.google.android.material:material:1.6.1"
+    implementation "androidx.appcompat:appcompat:1.5.1"
+    implementation "com.google.android.material:material:1.7.0"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
-    implementation "androidx.annotation:annotation:1.4.0"
+    implementation "androidx.annotation:annotation:1.5.0"
 
     // Kotlin Coroutines
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2"
 
     // Ktx
-    implementation "androidx.activity:activity-ktx:1.4.0"
-    implementation "androidx.core:core-ktx:1.8.0"
-    implementation "androidx.fragment:fragment-ktx:1.4.1"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.4.1"
-    implementation "androidx.lifecycle:lifecycle-process:2.4.1"
+    implementation "androidx.activity:activity-ktx:1.6.1"
+    implementation "androidx.core:core-ktx:1.9.0"
+    implementation "androidx.fragment:fragment-ktx:1.5.4"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
+    implementation "androidx.lifecycle:lifecycle-process:2.5.1"
 
     // Lifecycle, LiveData, ViewModel
     implementation "androidx.recyclerview:recyclerview:1.2.1"
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
-    implementation "androidx.lifecycle:lifecycle-common-java8:2.4.1"
+    implementation "androidx.lifecycle:lifecycle-common-java8:2.5.1"
 
     // ButterKnife
     implementation "com.jakewharton:butterknife:10.0.0"
     annotationProcessor "com.jakewharton:butterknife-compiler:10.0.0"
 
     // Testing
-    androidTestImplementation "androidx.test.ext:junit:1.1.3"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.4.0"
+    androidTestImplementation "androidx.test.ext:junit:1.1.4"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.0"
 
     implementation "com.squareup:otto:1.3.8"
 }
