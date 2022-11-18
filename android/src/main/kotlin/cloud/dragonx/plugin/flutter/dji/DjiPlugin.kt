@@ -182,7 +182,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           //DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
           Log.d(TAG, "Register Success")
           _fltSetStatus("Registered")
-          _fltSetStatus("")
+          _fltSetError("")
         } else {
           Log.d(TAG, "Register Failed")
           Log.d(TAG, djiError.description)
@@ -194,13 +194,13 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       override fun onProductConnect(baseProduct: BaseProduct) {
         Log.d(TAG, String.format("Product Connected: %s", baseProduct))
         _fltSetStatus("Connected")
-        _fltSetStatus("")
+        _fltSetError("")
       }
 
       override fun onProductDisconnect() {
         Log.d(TAG, "Product Disconnected")
         _fltSetStatus("Disconnected")
-        _fltSetStatus("")
+        _fltSetError("")
       }
 
       override fun onProductChanged(baseProduct: BaseProduct) {}
@@ -334,7 +334,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
         Log.d(TAG, "Delegations completed")
         _fltSetStatus("Delegated")
-        _fltSetStatus("")
+        _fltSetError("")
       } else {
         Log.d(TAG,"Error - Delegations - DJI Aircraft Object does not exist")
         _fltSetStatus("Error")
@@ -352,7 +352,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if ((drone as Aircraft).flightController != null) {
       Log.d(TAG,"Takeoff Started")
       _fltSetStatus("Takeoff")
-      _fltSetStatus("")
+      _fltSetError("")
       (drone as Aircraft).flightController.startTakeoff(null)
     } else {
       Log.d(TAG,"Takeoff Failed - No Flight Controller")
@@ -366,7 +366,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     if ((drone as Aircraft).flightController != null) {
       Log.d(TAG,"Landing Started")
       _fltSetStatus("Land")
-      _fltSetStatus("")
+      _fltSetError("")
       (drone as Aircraft).flightController.startLanding(null)
     } else {
       Log.d(TAG,"Landing Failed - No Flight Controller")
@@ -391,7 +391,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
       drone?.mobileRemoteController?.rightStickHorizontal = rightStickHorizontal.toFloat()
       drone?.mobileRemoteController?.rightStickVertical = rightStickVertical.toFloat()
       _fltSetStatus("Mobile Remote")
-      _fltSetStatus("")
+      _fltSetError("")
     } else {
       Log.d(TAG, "Mobile Remote - isConnected FALSE")
       _fltSetStatus("Mobile Remote Failed")
@@ -451,7 +451,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
               _fltSetError("Virtual Stick send failed with error" + error.description)
             } else {
               _fltSetStatus("Virtual Stick")
-              _fltSetStatus("")
+              _fltSetError("")
             }
           }
         }
@@ -476,7 +476,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           _fltSetError("Gimbal Rotate failed with error" + error.description)
         } else {
           _fltSetStatus("Gimbal Rotated")
-          _fltSetStatus("")
+          _fltSetError("")
         }
       }
     } else {
@@ -742,7 +742,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
                   if (sdCardMediaFileList != null && !sdCardMediaFileList.isEmpty()) {
                     Log.d(TAG, "Get media list successful")
                     _fltSetStatus("Got Media List")
-                    _fltSetStatus("")
+                    _fltSetError("")
 
                     mediaFileList = sdCardMediaFileList
 
@@ -829,7 +829,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
               val progress = (current * 1F / total * 100).toInt()
               if (progress != currentProgress) {
                 _fltSetStatus(progress.toString() + "%")
-                _fltSetStatus("")
+                _fltSetError("")
                 currentProgress = progress
               }
             }
@@ -839,7 +839,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
               Log.d(TAG, "Download media started")
               _fltSetStatus("Download Started")
-              _fltSetStatus("")
+              _fltSetError("")
             }
 
             override fun onSuccess(filePath: String) {
@@ -847,7 +847,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
 
               Log.d(TAG, "Download media completed: $filePath")
               _fltSetStatus("Downloaded")
-              _fltSetStatus("")
+              _fltSetError("")
             }
 
             override fun onRealtimeDataUpdate(p0: ByteArray?, p1: Long, p2: Boolean) {
@@ -906,7 +906,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
                 override fun onSuccess(x: List<MediaFile?>?, y: DJICameraError?) {
                   Log.d(TAG, "Delete media completed")
                   _fltSetStatus("Deleted")
-                  _fltSetStatus("")
+                  _fltSetError("")
                   _success = true
                 }
 
@@ -979,7 +979,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           //}
 
           _fltSetStatus("Video Started")
-          _fltSetStatus("")
+          _fltSetError("")
         }
       }
     } else {
@@ -1005,7 +1005,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           //  _fltSendVideo(bytes)
           //}
           _fltSetStatus("Video Stopped")
-          _fltSetStatus("")
+          _fltSetError("")
         }
       }
     } else {
@@ -1038,7 +1038,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           _droneCamera.startRecordVideo(null);
           Log.d(TAG, "Video record stared")
           _fltSetStatus("Record Started")
-          _fltSetStatus("")
+          _fltSetError("")
         }
       }
     } else {
@@ -1071,7 +1071,7 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
           _droneCamera.stopRecordVideo(null);
           Log.d(TAG, "Video record stopped")
           _fltSetStatus("Record Stopped")
-          _fltSetStatus("")
+          _fltSetError("")
         }
       }
     } else {
