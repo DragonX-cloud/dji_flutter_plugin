@@ -6,7 +6,7 @@ import FlutterMacOS
 import Foundation
 
 import ffmpeg_kit_flutter_full_gpl
-import path_provider_macos
+import path_provider_foundation
 import wakelock_macos
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
