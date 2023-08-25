@@ -11,7 +11,7 @@
   
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
   
   <link rel="stylesheet" href="../static-assets/github.css?v1">
   <link rel="stylesheet" href="../static-assets/styles.css?v1">
@@ -21,13 +21,12 @@
 </head>
 
 
-<body data-base-href="../"
-      data-using-base-href="false">
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
 
 <div id="overlay-under-drawer"></div>
 
 <header id="title">
-  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../index.html">dji</a></li>
     <li><a href="../flight/flight-library.html">flight</a></li>
@@ -37,19 +36,32 @@
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span id="dark-theme-button" class="material-symbols-outlined">
+        brightness_4
+      </span>
+      <span id="light-theme-button" class="material-symbols-outlined">
+        brightness_5
+      </span>
+    </label>
+  </div>
 </header>
-
 <main>
 
-
-  <div id="dartdoc-main-content" class="main-content">
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="flight&#47;flight-library-sidebar.html"
+      data-below-sidebar="">
       <div>
 <h1><span class="kind-top-level-property">kLogKindDjiFlutterPlugin</span> top-level constant 
-    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
  
 </h1></div>
 
         <section class="multi-line-signature">
+          
           <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>
           const <span class="name ">kLogKindDjiFlutterPlugin</span>
           
@@ -68,48 +80,21 @@
   </div> <!-- /.main-content -->
 
   <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
-    <header id="header-search-sidebar" class="hidden-l">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
   <form class="search-sidebar" role="search">
     <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
 </header>
 
 <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
-  <li><a href="../index.html">dji</a></li>
-  <li><a href="../flight/flight-library.html">flight</a></li>
-  <li class="self-crumb">kLogKindDjiFlutterPlugin constant</li>
+    <li><a href="../index.html">dji</a></li>
+    <li><a href="../flight/flight-library.html">flight</a></li>
+    <li class="self-crumb">kLogKindDjiFlutterPlugin constant</li>
 </ol>
 
 
     <h5>flight library</h5>
-    <ol>
-  <li class="section-title"><a href="../flight/flight-library.html#classes">Classes</a></li>
-  <li><a href="../flight/CoordinatesConvertion-class.html">CoordinatesConvertion</a></li>
-  <li><a href="../flight/EnumConvertion-class.html">EnumConvertion</a></li>
-  <li><a href="../flight/Flight-class.html">Flight</a></li>
-  <li><a href="../flight/FlightElement-class.html">FlightElement</a></li>
-  <li><a href="../flight/FlightElementWaypointMission-class.html">FlightElementWaypointMission</a></li>
-  <li><a href="../flight/FlightLocation-class.html">FlightLocation</a></li>
-  <li><a href="../flight/FlightVector-class.html">FlightVector</a></li>
-  <li><a href="../flight/FlightWaypoint-class.html">FlightWaypoint</a></li>
-
-
-
-  <li class="section-title"><a href="../flight/flight-library.html#constants">Constants</a></li>
-  <li><a href="../flight/kLogKindDjiFlutterPlugin-constant.html">kLogKindDjiFlutterPlugin</a></li>
-
-
-
-  <li class="section-title"><a href="../flight/flight-library.html#enums">Enums</a></li>
-  <li><a href="../flight/FlightElementType.html">FlightElementType</a></li>
-  <li><a href="../flight/FlightWaypointMissionFinishedAction.html">FlightWaypointMissionFinishedAction</a></li>
-  <li><a href="../flight/FlightWaypointMissionHeadingMode.html">FlightWaypointMissionHeadingMode</a></li>
-  <li><a href="../flight/FlightWaypointMissionPathMode.html">FlightWaypointMissionPathMode</a></li>
-  <li><a href="../flight/FlightWaypointTurnMode.html">FlightWaypointTurnMode</a></li>
-
-
-</ol>
-
   </div><!--/.sidebar-offcanvas-left-->
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
@@ -120,7 +105,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.2
+      1.0.11
   </span>
 
   
@@ -129,7 +114,7 @@
 
 
 <script src="../static-assets/highlight.pack.js?v1"></script>
-<script src="../static-assets/script.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
 
 
 

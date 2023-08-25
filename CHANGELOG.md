@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.0.11
-- Minor build.gradle and GeneratedPluginRegistrant.swift changes (of the Example project).
+## 1.1.0
+- Added support for Android 13.
+- Upgraded to latest Gradle.
 
 ## 1.0.10
 - Upgraded Android Compile SDK version and Target to 33

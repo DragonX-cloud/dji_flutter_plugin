@@ -107,20 +107,20 @@ However, we still need to configure a few parameters directly on the Android pro
 ##### 1. Upgrade to Kotlin 
 Edit the `android/grade/wrapper/gradle-wrapper.properties` file, and update the last line to:
 ```
-distributionUrl=https\://services.gradle.org/distributions/gradle-7.0.2-all.zip
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.3-bin.zip
 ```
 
 Then, update the `buildScript` in the `android/build.gradle` file to:
 ```
 buildscript {
-    ext.kotlin_version = '1.7.0'
+    ext.kotlin_version = '1.8.20'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
+        classpath 'com.android.tools.build:gradle:8.1.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -145,8 +145,13 @@ Below the <manifest> tag and above the <application> tag, add the following perm
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+  <uses-permission android:name="android.permission.READ_CALL_LOG" />
+  <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
 
   <uses-feature android:name="android.hardware.camera" />
   <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -176,7 +181,7 @@ Below the `<application>` tag and above the `<activity>` tag, add the following 
 ##### 3. Update android/app/build.gradle
 Open the android/app/build.grade file and update the following:
 - Set the compileSdkVersion to 33
-- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 33.
+- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 31.
 Also, **add and make sure multiDexEnabled is set to TRUE**:
 ```
 android {
@@ -185,7 +190,7 @@ android {
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 33
+        targetSdkVersion 31
         ...
 
         multiDexEnabled true
@@ -203,12 +208,11 @@ packagingOptions {
 ```
 dependencies {
     ...
-    implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0'
+    implementation "androidx.multidex:multidex:2.0.1"
+    implementation "androidx.appcompat:appcompat:1.6.1"
+    implementation "com.google.android.material:material:1.9.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0"
+    implementation "androidx.annotation:annotation:1.6.0"
 }
 ```
 
@@ -981,7 +985,7 @@ This plugin uses Pigeon:
 https://pub.dev/packages/pigeon
 
 To re-generate the Pigeon interfaces, execute:
-flutter pub run pigeon \
+dart run pigeon \
   --input pigeons/messages.dart \
   --dart_out lib/messages.dart \
   --objc_header_out ios/Classes/messages.h \
@@ -1069,7 +1073,7 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 ### Tips & Steps before publishing a Flutter / Dart Package
 ```
 flutter analyze
-dartdoc
+dart doc
 dart format .
 dart pub publish --dry-run
 dart pub publish

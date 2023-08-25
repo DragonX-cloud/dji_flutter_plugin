@@ -11,7 +11,7 @@
   
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
   
   <link rel="stylesheet" href="../../static-assets/github.css?v1">
   <link rel="stylesheet" href="../../static-assets/styles.css?v1">
@@ -21,13 +21,12 @@
 </head>
 
 
-<body data-base-href="../../"
-      data-using-base-href="false">
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
 
 <div id="overlay-under-drawer"></div>
 
 <header id="title">
-  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../messages/messages-library.html">messages</a></li>
@@ -38,15 +37,27 @@
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span id="dark-theme-button" class="material-symbols-outlined">
+        brightness_4
+      </span>
+      <span id="light-theme-button" class="material-symbols-outlined">
+        brightness_5
+      </span>
+    </label>
+  </div>
 </header>
-
 <main>
 
-
-  <div id="dartdoc-main-content" class="main-content">
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="messages&#47;DjiHostApi-class-sidebar.html"
+      data-below-sidebar="">
       <div>
 <h1><span class="kind-method">disconnectDrone</span> method 
-    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
 </h1></div>
 
     <section class="multi-line-signature">
@@ -66,22 +77,20 @@
   <h2><span>Implementation</span></h2>
   <pre class="language-dart"><code class="language-dart">Future&lt;void&gt; disconnectDrone() async {
   final BasicMessageChannel&lt;Object?&gt; channel = BasicMessageChannel&lt;Object?&gt;(
-      &#39;dev.flutter.pigeon.DjiHostApi.disconnectDrone&#39;, codec,
+      &#39;dev.flutter.pigeon.dji.DjiHostApi.disconnectDrone&#39;, codec,
       binaryMessenger: _binaryMessenger);
-  final Map&lt;Object?, Object?&gt;? replyMap =
-      await channel.send(null) as Map&lt;Object?, Object?&gt;?;
-  if (replyMap == null) {
+  final List&lt;Object?&gt;? replyList =
+      await channel.send(null) as List&lt;Object?&gt;?;
+  if (replyList == null) {
     throw PlatformException(
       code: &#39;channel-error&#39;,
       message: &#39;Unable to establish connection on channel.&#39;,
     );
-  } else if (replyMap[&#39;error&#39;] != null) {
-    final Map&lt;Object?, Object?&gt; error =
-        (replyMap[&#39;error&#39;] as Map&lt;Object?, Object?&gt;?)!;
+  } else if (replyList.length &gt; 1) {
     throw PlatformException(
-      code: (error[&#39;code&#39;] as String?)!,
-      message: error[&#39;message&#39;] as String?,
-      details: error[&#39;details&#39;],
+      code: replyList[0]! as String,
+      message: replyList[1] as String?,
+      details: replyList[2],
     );
   } else {
     return;
@@ -93,66 +102,22 @@
   </div> <!-- /.main-content -->
 
   <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
-    <header id="header-search-sidebar" class="hidden-l">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
   <form class="search-sidebar" role="search">
     <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
 </header>
 
 <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
-  <li><a href="../../index.html">dji</a></li>
-  <li><a href="../../messages/messages-library.html">messages</a></li>
-  <li><a href="../../messages/DjiHostApi-class.html">DjiHostApi</a></li>
-  <li class="self-crumb">disconnectDrone method</li>
+    <li><a href="../../index.html">dji</a></li>
+    <li><a href="../../messages/messages-library.html">messages</a></li>
+    <li><a href="../../messages/DjiHostApi-class.html">DjiHostApi</a></li>
+    <li class="self-crumb">disconnectDrone method</li>
 </ol>
 
 
     <h5>DjiHostApi class</h5>
-    <ol>
-
-    <li class="section-title"><a href="../../messages/DjiHostApi-class.html#constructors">Constructors</a></li>
-    <li><a href="../../messages/DjiHostApi/DjiHostApi.html">DjiHostApi</a></li>
-
-
-    <li class="section-title inherited">
-      <a href="../../messages/DjiHostApi-class.html#instance-properties">Properties</a>
-    </li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></li>
-
-    <li class="section-title"><a href="../../messages/DjiHostApi-class.html#instance-methods">Methods</a></li>
-    <li><a href="../../messages/DjiHostApi/connectDrone.html">connectDrone</a></li>
-    <li><a href="../../messages/DjiHostApi/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../../messages/DjiHostApi/deleteMedia.html">deleteMedia</a></li>
-    <li><a href="../../messages/DjiHostApi/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../../messages/DjiHostApi/downloadMedia.html">downloadMedia</a></li>
-    <li><a href="../../messages/DjiHostApi/getBatteryLevel.html">getBatteryLevel</a></li>
-    <li><a href="../../messages/DjiHostApi/getMediaList.html">getMediaList</a></li>
-    <li><a href="../../messages/DjiHostApi/getPlatformVersion.html">getPlatformVersion</a></li>
-    <li><a href="../../messages/DjiHostApi/gimbalRotatePitch.html">gimbalRotatePitch</a></li>
-    <li><a href="../../messages/DjiHostApi/land.html">land</a></li>
-    <li><a href="../../messages/DjiHostApi/mobileRemoteController.html">mobileRemoteController</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
-    <li><a href="../../messages/DjiHostApi/registerApp.html">registerApp</a></li>
-    <li><a href="../../messages/DjiHostApi/start.html">start</a></li>
-    <li><a href="../../messages/DjiHostApi/takeOff.html">takeOff</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
-    <li><a href="../../messages/DjiHostApi/videoFeedStart.html">videoFeedStart</a></li>
-    <li><a href="../../messages/DjiHostApi/videoFeedStop.html">videoFeedStop</a></li>
-    <li><a href="../../messages/DjiHostApi/videoRecordStart.html">videoRecordStart</a></li>
-    <li><a href="../../messages/DjiHostApi/videoRecordStop.html">videoRecordStop</a></li>
-    <li><a href="../../messages/DjiHostApi/virtualStick.html">virtualStick</a></li>
-
-    <li class="section-title inherited"><a href="../../messages/DjiHostApi-class.html#operators">Operators</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></li>
-
-
-
-
-    <li class="section-title"><a href="../../messages/DjiHostApi-class.html#constants">Constants</a></li>
-    <li><a href="../../messages/DjiHostApi/codec-constant.html">codec</a></li>
-</ol>
-
   </div><!--/.sidebar-offcanvas-->
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
@@ -163,7 +128,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.2
+      1.0.11
   </span>
 
   
@@ -172,7 +137,7 @@
 
 
 <script src="../../static-assets/highlight.pack.js?v1"></script>
-<script src="../../static-assets/script.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
 
 
 
