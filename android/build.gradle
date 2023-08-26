@@ -27,7 +27,7 @@ apply plugin: "kotlin-android"
 apply plugin: "kotlinx-serialization"
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     useLibrary "org.apache.http.legacy"
 
     compileOptions {
@@ -45,7 +45,7 @@ android {
 
     defaultConfig {
         minSdkVersion 24
-        targetSdkVersion 32
+        targetSdkVersion 31
 
         multiDexEnabled true
 

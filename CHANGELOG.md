@@ -1,10 +1,10 @@
 # Changelog
 
 ## 1.0.11
-- Minor build.gradle and GeneratedPluginRegistrant.swift changes (of the Example project).
+- Updates to support Android 13.
 
 ## 1.0.10
-- Upgraded Android Compile SDK version and Target to 33
+- Upgraded Android Compile SDK version and Target to 33.
 
 ## 1.0.9
 - Upgraded DJI SDKs to latest versions on Android.
