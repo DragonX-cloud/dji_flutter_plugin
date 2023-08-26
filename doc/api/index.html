@@ -227,7 +227,7 @@ Please note this "sync" might take several long minutes.</p>
 <p>Open the android/app/build.grade file and update the following:</p>
 <ul>
 <li>Set the compileSdkVersion to 33</li>
-<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 33.
+<li>Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 31.
 Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
 </ul>
 <pre class="language-dart"><code>android {
@@ -236,7 +236,7 @@ Also, <strong>add and make sure multiDexEnabled is set to TRUE</strong>:</li>
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 33
+        targetSdkVersion 31
         ...
 
         multiDexEnabled true

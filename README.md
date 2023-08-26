@@ -145,8 +145,11 @@ Below the <manifest> tag and above the <application> tag, add the following perm
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
   <uses-feature android:name="android.hardware.camera" />
   <uses-feature android:name="android.hardware.camera.autofocus" />
@@ -176,7 +179,7 @@ Below the `<application>` tag and above the `<activity>` tag, add the following 
 ##### 3. Update android/app/build.gradle
 Open the android/app/build.grade file and update the following:
 - Set the compileSdkVersion to 33
-- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 33.
+- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 31.
 Also, **add and make sure multiDexEnabled is set to TRUE**:
 ```
 android {
@@ -185,7 +188,7 @@ android {
     defaultConfig {
         ...
         minSdkVersion 24
-        targetSdkVersion 33
+        targetSdkVersion 31
         ...
 
         multiDexEnabled true
