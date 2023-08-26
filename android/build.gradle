@@ -27,7 +27,7 @@ apply plugin: "kotlin-android"
 apply plugin: "kotlinx-serialization"
 
 android {
-    compileSdkVersion 33
+    compileSdk 33
     useLibrary "org.apache.http.legacy"
 
     compileOptions {
@@ -44,8 +44,8 @@ android {
     }
 
     defaultConfig {
-        minSdkVersion 24
-        targetSdkVersion 31
+        minSdk 24
+        targetSdk 31
 
         multiDexEnabled true
 
@@ -108,7 +108,7 @@ android {
 }
 
 dependencies {
-    implementation ("com.dji:dji-sdk:4.16.4", {
+    implementation ("com.dji:dji-sdk-alpha:4.17-a1", {
         exclude module: "library-anti-distortion"
         exclude module: "fly-safe-database"
     })
@@ -116,7 +116,7 @@ dependencies {
         exclude module: "dji-sdk"
         exclude group: "com.amap.api"
     })
-    compileOnly ("com.dji:dji-sdk-provided:4.16.4")
+    compileOnly ("com.dji:dji-sdk-provided-alpha:4.17-a1")
 
     // https://stackoverflow.com/questions/58281124/layout-constraintbottom-totopof-not-found
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
