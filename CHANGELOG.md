@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.12
+- Additional updates to support Android 12 and 13.
+
 ## 1.0.11
 - Updates to support Android 13.
 
