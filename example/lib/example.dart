@@ -1485,9 +1485,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                           ),
                                           OutlinedButton(
                                             key: const Key('startVideoRecord'),
-                                            child: Row(
+                                            child: const Row(
                                               mainAxisSize: MainAxisSize.min,
-                                              children: const [
+                                              children: [
                                                 Icon(
                                                   Icons.fiber_manual_record,
                                                 ),
@@ -1503,9 +1503,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                           ),
                                           OutlinedButton(
                                             key: const Key('stoptVideoRecord'),
-                                            child: Row(
+                                            child: const Row(
                                               mainAxisSize: MainAxisSize.min,
-                                              children: const [
+                                              children: [
                                                 Icon(
                                                   Icons.stop,
                                                 ),
@@ -1559,11 +1559,11 @@ class DronePropertyRow extends StatelessWidget {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyText2,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         Text(
           value,
-          style: Theme.of(context).textTheme.bodyText1,
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ],
     );

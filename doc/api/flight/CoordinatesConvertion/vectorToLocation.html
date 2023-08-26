@@ -11,7 +11,7 @@
   
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
   
   <link rel="stylesheet" href="../../static-assets/github.css?v1">
   <link rel="stylesheet" href="../../static-assets/styles.css?v1">
@@ -21,32 +21,43 @@
 </head>
 
 
-<body data-base-href="../../"
-      data-using-base-href="false">
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
 
 <div id="overlay-under-drawer"></div>
 
 <header id="title">
-  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../flight/flight-library.html">flight</a></li>
     <li><a href="../../flight/CoordinatesConvertion-class.html">CoordinatesConvertion</a></li>
-    <li class="self-crumb">vectorToLocation method</li>
+    <li class="self-crumb">vectorToLocation static method</li>
   </ol>
   <div class="self-name">vectorToLocation</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span id="dark-theme-button" class="material-symbols-outlined">
+        brightness_4
+      </span>
+      <span id="light-theme-button" class="material-symbols-outlined">
+        brightness_5
+      </span>
+    </label>
+  </div>
 </header>
-
 <main>
 
-
-  <div id="dartdoc-main-content" class="main-content">
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="flight&#47;CoordinatesConvertion-class-sidebar.html"
+      data-below-sidebar="">
       <div>
-<h1><span class="kind-method">vectorToLocation</span> method 
-    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
+<h1><span class="kind-method">vectorToLocation</span> static method 
 </h1></div>
 
     <section class="multi-line-signature">
@@ -71,10 +82,6 @@
     {required FlightLocation droneLocation,
     required FlightLocation pointOfInterest,
     required FlightVector vector}) {
-  final double azimuthToDestination;
-  final double destinationLatitude;
-  final double destinationLongitude;
-
   if (droneLocation.latitude == pointOfInterest.latitude &amp;&amp;
       droneLocation.longitude == pointOfInterest.longitude) {
     developer.log(
@@ -84,29 +91,43 @@
     return null;
   }
 
-  azimuthToDestination = 180 -
-      vector.headingRelativeToPointOfInterest -
-      (atan((droneLocation.latitude - pointOfInterest.latitude) &#47;
-              (droneLocation.longitude - pointOfInterest.longitude)) *
-          180 &#47;
-          pi);
+  final double alpha = (atan(
+          (droneLocation.longitude - pointOfInterest.longitude) &#47;
+              (droneLocation.latitude - pointOfInterest.latitude)) *
+      180 &#47;
+      pi);
+
+  final double azimuth;
+  if (droneLocation.latitude - pointOfInterest.latitude &lt; 0) {
+    &#47;&#47; Drone is south to the Point of Interest
+    &#47;&#47; We need to add 180 to the azimuth (to compensate for the negative angle)
+    azimuth = (alpha + 180) % 360;
+  } else {
+    azimuth = alpha % 360;
+  }
+
+  final double azimuthToDestination =
+      (azimuth + vector.headingRelativeToPointOfInterest) % 360;
+
   &#47;&#47; Latitude = North&#47;South
   double computedDestinationLatitude = pointOfInterest.latitude +
       (vector.distanceFromPointOfInterest *
-          sin(azimuthToDestination * pi &#47; 180) *
+          sin((90 - azimuthToDestination) * pi &#47; 180) *
           meterToDecimalDegree);
   &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
   computedDestinationLatitude = computedDestinationLatitude * 100000000;
-  destinationLatitude = computedDestinationLatitude.round() &#47; 100000000;
+  final double destinationLatitude =
+      computedDestinationLatitude.round() &#47; 100000000;
 
   &#47;&#47; Longitude = East&#47;West
   double computedDestinationLongitude = pointOfInterest.longitude +
       (vector.distanceFromPointOfInterest *
-          cos(azimuthToDestination * pi &#47; 180) *
+          cos((90 - azimuthToDestination) * pi &#47; 180) *
           meterToDecimalDegree);
   &#47;&#47; Setting the Latitude precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
   computedDestinationLongitude = computedDestinationLongitude * 100000000;
-  destinationLongitude = computedDestinationLongitude.round() &#47; 100000000;
+  final double destinationLongitude =
+      computedDestinationLongitude.round() &#47; 100000000;
 
   developer.log(
     &#39;vectorToLocation - computed coordinates:&#39;,
@@ -136,51 +157,22 @@
   </div> <!-- /.main-content -->
 
   <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
-    <header id="header-search-sidebar" class="hidden-l">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
   <form class="search-sidebar" role="search">
     <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
 </header>
 
 <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
-  <li><a href="../../index.html">dji</a></li>
-  <li><a href="../../flight/flight-library.html">flight</a></li>
-  <li><a href="../../flight/CoordinatesConvertion-class.html">CoordinatesConvertion</a></li>
-  <li class="self-crumb">vectorToLocation method</li>
+    <li><a href="../../index.html">dji</a></li>
+    <li><a href="../../flight/flight-library.html">flight</a></li>
+    <li><a href="../../flight/CoordinatesConvertion-class.html">CoordinatesConvertion</a></li>
+    <li class="self-crumb">vectorToLocation static method</li>
 </ol>
 
 
     <h5>CoordinatesConvertion class</h5>
-    <ol>
-
-    <li class="section-title"><a href="../../flight/CoordinatesConvertion-class.html#constructors">Constructors</a></li>
-    <li><a href="../../flight/CoordinatesConvertion/CoordinatesConvertion.html">CoordinatesConvertion</a></li>
-
-
-    <li class="section-title inherited">
-      <a href="../../flight/CoordinatesConvertion-class.html#instance-properties">Properties</a>
-    </li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></li>
-
-    <li class="section-title inherited"><a href="../../flight/CoordinatesConvertion-class.html#instance-methods">Methods</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
-
-    <li class="section-title inherited"><a href="../../flight/CoordinatesConvertion-class.html#operators">Operators</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></li>
-
-
-
-    <li class="section-title"><a href="../../flight/CoordinatesConvertion-class.html#static-methods">Static methods</a></li>
-    <li><a href="../../flight/CoordinatesConvertion/computeGimbalAngle.html">computeGimbalAngle</a></li>
-    <li><a href="../../flight/CoordinatesConvertion/convertWaypointMissionVectorsToLocationsWithGimbalPitch.html">convertWaypointMissionVectorsToLocationsWithGimbalPitch</a></li>
-    <li><a href="../../flight/CoordinatesConvertion/vectorToLocation.html">vectorToLocation</a></li>
-
-    <li class="section-title"><a href="../../flight/CoordinatesConvertion-class.html#constants">Constants</a></li>
-    <li><a href="../../flight/CoordinatesConvertion/meterToDecimalDegree-constant.html">meterToDecimalDegree</a></li>
-</ol>
-
   </div><!--/.sidebar-offcanvas-->
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
@@ -191,7 +183,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.2
+      1.0.11
   </span>
 
   
@@ -200,7 +192,7 @@
 
 
 <script src="../../static-assets/highlight.pack.js?v1"></script>
-<script src="../../static-assets/script.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
 
 
 

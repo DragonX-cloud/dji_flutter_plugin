@@ -11,7 +11,7 @@
   
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
   
   <link rel="stylesheet" href="../../static-assets/github.css?v1">
   <link rel="stylesheet" href="../../static-assets/styles.css?v1">
@@ -21,32 +21,43 @@
 </head>
 
 
-<body data-base-href="../../"
-      data-using-base-href="false">
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
 
 <div id="overlay-under-drawer"></div>
 
 <header id="title">
-  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../../index.html">dji</a></li>
     <li><a href="../../dji/dji-library.html">dji</a></li>
     <li><a href="../../dji/Dji-class.html">Dji</a></li>
-    <li class="self-crumb">virtualStick method</li>
+    <li class="self-crumb">virtualStick static method</li>
   </ol>
   <div class="self-name">virtualStick</div>
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span id="dark-theme-button" class="material-symbols-outlined">
+        brightness_4
+      </span>
+      <span id="light-theme-button" class="material-symbols-outlined">
+        brightness_5
+      </span>
+    </label>
+  </div>
 </header>
-
 <main>
 
-
-  <div id="dartdoc-main-content" class="main-content">
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar="dji&#47;Dji-class-sidebar.html"
+      data-below-sidebar="">
       <div>
-<h1><span class="kind-method">virtualStick</span> method 
-    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
+<h1><span class="kind-method">virtualStick</span> static method 
 </h1></div>
 
     <section class="multi-line-signature">
@@ -95,66 +106,22 @@ Available only when the drone is connected to the physical remote controller.</p
   </div> <!-- /.main-content -->
 
   <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
-    <header id="header-search-sidebar" class="hidden-l">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
   <form class="search-sidebar" role="search">
     <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
 </header>
 
 <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
-  <li><a href="../../index.html">dji</a></li>
-  <li><a href="../../dji/dji-library.html">dji</a></li>
-  <li><a href="../../dji/Dji-class.html">Dji</a></li>
-  <li class="self-crumb">virtualStick method</li>
+    <li><a href="../../index.html">dji</a></li>
+    <li><a href="../../dji/dji-library.html">dji</a></li>
+    <li><a href="../../dji/Dji-class.html">Dji</a></li>
+    <li class="self-crumb">virtualStick static method</li>
 </ol>
 
 
     <h5>Dji class</h5>
-    <ol>
-
-    <li class="section-title"><a href="../../dji/Dji-class.html#constructors">Constructors</a></li>
-    <li><a href="../../dji/Dji/Dji.html">Dji</a></li>
-
-
-    <li class="section-title inherited">
-      <a href="../../dji/Dji-class.html#instance-properties">Properties</a>
-    </li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></li>
-
-    <li class="section-title inherited"><a href="../../dji/Dji-class.html#instance-methods">Methods</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/toString.html">toString</a></li>
-
-    <li class="section-title inherited"><a href="../../dji/Dji-class.html#operators">Operators</a></li>
-    <li class="inherited"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></li>
-
-
-    <li class="section-title"><a href="../../dji/Dji-class.html#static-properties">Static properties</a></li>
-    <li><a href="../../dji/Dji/batteryLevel.html">batteryLevel</a></li>
-    <li><a href="../../dji/Dji/platformVersion.html">platformVersion</a></li>
-
-    <li class="section-title"><a href="../../dji/Dji-class.html#static-methods">Static methods</a></li>
-    <li><a href="../../dji/Dji/connectDrone.html">connectDrone</a></li>
-    <li><a href="../../dji/Dji/delegateDrone.html">delegateDrone</a></li>
-    <li><a href="../../dji/Dji/deleteMedia.html">deleteMedia</a></li>
-    <li><a href="../../dji/Dji/disconnectDrone.html">disconnectDrone</a></li>
-    <li><a href="../../dji/Dji/downloadMedia.html">downloadMedia</a></li>
-    <li><a href="../../dji/Dji/getMediaList.html">getMediaList</a></li>
-    <li><a href="../../dji/Dji/gimbalRotatePitch.html">gimbalRotatePitch</a></li>
-    <li><a href="../../dji/Dji/land.html">land</a></li>
-    <li><a href="../../dji/Dji/mobileRemoteController.html">mobileRemoteController</a></li>
-    <li><a href="../../dji/Dji/registerApp.html">registerApp</a></li>
-    <li><a href="../../dji/Dji/start.html">start</a></li>
-    <li><a href="../../dji/Dji/takeOff.html">takeOff</a></li>
-    <li><a href="../../dji/Dji/videoFeedStart.html">videoFeedStart</a></li>
-    <li><a href="../../dji/Dji/videoFeedStop.html">videoFeedStop</a></li>
-    <li><a href="../../dji/Dji/videoRecordStart.html">videoRecordStart</a></li>
-    <li><a href="../../dji/Dji/videoRecordStop.html">videoRecordStop</a></li>
-    <li><a href="../../dji/Dji/virtualStick.html">virtualStick</a></li>
-
-</ol>
-
   </div><!--/.sidebar-offcanvas-->
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
@@ -165,7 +132,7 @@ Available only when the drone is connected to the physical remote controller.</p
 <footer>
   <span class="no-break">
     dji
-      1.0.2
+      1.0.11
   </span>
 
   
@@ -174,7 +141,7 @@ Available only when the drone is connected to the physical remote controller.</p
 
 
 <script src="../../static-assets/highlight.pack.js?v1"></script>
-<script src="../../static-assets/script.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
 
 
 

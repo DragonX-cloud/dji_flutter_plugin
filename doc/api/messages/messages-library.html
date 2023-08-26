@@ -11,7 +11,7 @@
   
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" rel="stylesheet">
   
   <link rel="stylesheet" href="../static-assets/github.css?v1">
   <link rel="stylesheet" href="../static-assets/styles.css?v1">
@@ -21,13 +21,12 @@
 </head>
 
 
-<body data-base-href="../"
-      data-using-base-href="false">
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
 
 <div id="overlay-under-drawer"></div>
 
 <header id="title">
-  <button id="sidenav-left-toggle" type="button">&nbsp;</button>
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../index.html">dji</a></li>
     <li class="self-crumb">messages library</li>
@@ -36,15 +35,28 @@
   <form class="search navbar-right" role="search">
     <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
+  <div class="toggle" id="theme-button">
+    <label for="theme">
+      <input type="checkbox" id="theme" value="light-theme">
+      <span id="dark-theme-button" class="material-symbols-outlined">
+        brightness_4
+      </span>
+      <span id="light-theme-button" class="material-symbols-outlined">
+        brightness_5
+      </span>
+    </label>
+  </div>
 </header>
-
 <main>
 
-
-  <div id="dartdoc-main-content" class="main-content">
+  <div
+      id="dartdoc-main-content"
+      class="main-content"
+      data-above-sidebar=""
+      data-below-sidebar="messages&#47;messages-library-sidebar.html">
+      
       <div>
 <h1><span class="kind-library">messages</span> library 
-    <a href="https://dart.dev/null-safety" class="feature feature-null-safety" title="Supports the null safety language feature.">Null safety</a>
  
 </h1></div>
 
@@ -60,7 +72,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
         <dt id="DjiFlutterApi">
@@ -68,7 +80,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
         <dt id="DjiHostApi">
@@ -76,7 +88,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
         <dt id="Drone">
@@ -84,7 +96,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
         <dt id="Media">
@@ -92,7 +104,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
         <dt id="Stream">
@@ -100,7 +112,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
         <dt id="Version">
@@ -108,7 +120,7 @@
 
 </dt>
 <dd>
-   
+  
 </dd>
 
       </dl>
@@ -125,15 +137,16 @@
   </div> <!-- /.main-content -->
 
   <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
-    <header id="header-search-sidebar" class="hidden-l">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
   <form class="search-sidebar" role="search">
     <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
   </form>
 </header>
 
 <ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
-  <li><a href="../index.html">dji</a></li>
-  <li class="self-crumb">messages library</li>
+    <li><a href="../index.html">dji</a></li>
+    <li class="self-crumb">messages library</li>
 </ol>
 
 
@@ -149,25 +162,6 @@
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
     <h5>messages library</h5>
-    <ol>
-  <li class="section-title"><a href="../messages/messages-library.html#classes">Classes</a></li>
-  <li><a href="../messages/Battery-class.html">Battery</a></li>
-  <li><a href="../messages/DjiFlutterApi-class.html">DjiFlutterApi</a></li>
-  <li><a href="../messages/DjiHostApi-class.html">DjiHostApi</a></li>
-  <li><a href="../messages/Drone-class.html">Drone</a></li>
-  <li><a href="../messages/Media-class.html">Media</a></li>
-  <li><a href="../messages/Stream-class.html">Stream</a></li>
-  <li><a href="../messages/Version-class.html">Version</a></li>
-
-
-
-
-
-
-
-
-</ol>
-
   </div><!--/sidebar-offcanvas-right-->
 
 </main>
@@ -175,7 +169,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.2
+      1.0.11
   </span>
 
   
@@ -184,7 +178,7 @@
 
 
 <script src="../static-assets/highlight.pack.js?v1"></script>
-<script src="../static-assets/script.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
 
 
 

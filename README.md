@@ -1069,7 +1069,7 @@ So our tip here is to use package names without "-" or underscore, and that's wh
 ### Tips & Steps before publishing a Flutter / Dart Package
 ```
 flutter analyze
-dartdoc
+dart doc
 dart format .
 dart pub publish --dry-run
 dart pub publish
