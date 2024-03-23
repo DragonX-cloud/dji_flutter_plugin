@@ -3,7 +3,7 @@ description: Demonstrates how to use the dji plugin.
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 environment:
   sdk: ">=2.12.0 <4.0.0"
@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  
+
   dji:
     # When depending on this package from a real application you should use:
     #   dji: ^x.y.z
@@ -22,13 +22,13 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.5
-  
+  cupertino_icons: ^1.0.6
+
   path_provider: ^2.0.11
   ffmpeg_kit_flutter_full_gpl: ^4.5.1
   better_player: ^0.0.83
   local_assets_server: ^2.0.2+12
-  
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -38,7 +38,7 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
-flutter:    
+flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
@@ -74,4 +74,3 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-
