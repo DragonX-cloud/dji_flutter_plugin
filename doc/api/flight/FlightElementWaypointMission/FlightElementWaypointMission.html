@@ -29,7 +29,7 @@
   <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../../index.html">dji</a></li>
-    <li><a href="../../flight/flight-library.html">flight</a></li>
+    <li><a href="../../flight/flight-library.html">flight.dart</a></li>
     <li><a href="../../flight/FlightElementWaypointMission-class.html">FlightElementWaypointMission</a></li>
     <li class="self-crumb">FlightElementWaypointMission constructor</li>
   </ol>
@@ -80,7 +80,17 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">FlightElementWaypointMission</code></pre>
+  <pre class="language-dart"><code class="language-dart">FlightElementWaypointMission({
+  this.pointOfInterest,
+  this.maxFlightSpeed = 15.0,
+  this.autoFlightSpeed = 8.0,
+  this.finishedAction = FlightWaypointMissionFinishedAction.noAction,
+  this.headingMode = FlightWaypointMissionHeadingMode.usingWaypointHeading,
+  this.flightPathMode = FlightWaypointMissionPathMode.curved,
+  this.rotateGimbalPitch = true,
+  this.exitMissionOnRCSignalLost = true,
+  required this.waypoints,
+}) : super(type: FlightElementType.waypointMission);</code></pre>
 </section>
 
 
@@ -103,6 +113,7 @@
 
 
     <h5>FlightElementWaypointMission class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
   </div><!--/.sidebar-offcanvas-left-->
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
@@ -113,7 +124,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.11
+      1.0.13
   </span>
 
   

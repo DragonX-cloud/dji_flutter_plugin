@@ -29,7 +29,7 @@
   <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
   <ol class="breadcrumbs gt-separated dark hidden-xs">
     <li><a href="../../index.html">dji</a></li>
-    <li><a href="../../messages/messages-library.html">messages</a></li>
+    <li><a href="../../messages/messages-library.html">messages.dart</a></li>
     <li><a href="../../messages/Drone-class.html">Drone</a></li>
     <li class="self-crumb">Drone constructor</li>
   </ol>
@@ -81,7 +81,18 @@
     
 <section class="summary source-code" id="source">
   <h2><span>Implementation</span></h2>
-  <pre class="language-dart"><code class="language-dart">Drone</code></pre>
+  <pre class="language-dart"><code class="language-dart">Drone({
+  this.status,
+  this.error,
+  this.batteryPercent,
+  this.altitude,
+  this.latitude,
+  this.longitude,
+  this.speed,
+  this.roll,
+  this.pitch,
+  this.yaw,
+});</code></pre>
 </section>
 
 
@@ -104,6 +115,7 @@
 
 
     <h5>Drone class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
   </div><!--/.sidebar-offcanvas-left-->
 
   <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
@@ -114,7 +126,7 @@
 <footer>
   <span class="no-break">
     dji
-      1.0.11
+      1.0.13
   </span>
 
   

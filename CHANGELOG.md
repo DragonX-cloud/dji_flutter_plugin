@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.13
+- Upgraded DJI Mobile SDK Android to v4.17.
+
 ## 1.0.12
 - Additional updates to support Android 12 and 13.
 
