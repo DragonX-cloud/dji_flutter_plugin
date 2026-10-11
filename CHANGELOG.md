@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.0
+- **Breaking (Android):** Migrated from DJI Mobile SDK v4.18 to DJI MSDK v5.18. MSDK v5 ships 16 KB page-aligned native libraries, as required by Google Play for apps targeting Android 15+. MSDK v5 supports a different set of aircraft than v4 – check [DJI's supported products list](https://developer.dji.com/doc/mobile-sdk-tutorial/en/) before upgrading.
+- **Breaking:** Requires Dart 3.13 / Flutter 3.47 or newer.
+- **Breaking:** `DjiFlutterApi.setup(...)` is now `DjiFlutterApi.setUp(...)` (Pigeon 29).
+- Android: AGP 9.1.1, Kotlin 2.4, Gradle 9.3.1, Java 17, compile/target SDK 36. Apps must declare `DjiApplication`, restrict ABIs to arm64-v8a and use R8 9.1.56+ for release builds – see the README.
+- iOS: Pigeon interfaces are now generated in Swift; the Objective-C bridge files were removed. iOS stays on DJI iOS SDK 4.16.
+- `getMediaList`, `downloadMedia` and `deleteMedia` now return their actual results (they previously returned before the drone answered).
+- Example app: removed the discontinued `ffmpeg_kit_flutter_full_gpl`, `better_player` and `local_assets_server` packages; the example now shows the incoming video feed frame count.
+
 ## 1.0.13
 - Upgraded DJI Mobile SDK Android to v4.17.
 

@@ -1,5 +1,16 @@
+// To regenerate the platform interfaces, run from the package root:
+// dart run pigeon --input pigeons/messages.dart
 import 'package:pigeon/pigeon.dart';
 
+@ConfigurePigeon(
+  PigeonOptions(
+    dartOut: 'lib/messages.dart',
+    dartPackageName: 'dji',
+    kotlinOut: 'android/src/main/kotlin/cloud/dragonx/plugin/flutter/dji/Messages.g.kt',
+    kotlinOptions: KotlinOptions(package: 'cloud.dragonx.plugin.flutter.dji'),
+    swiftOut: 'ios/Classes/Messages.g.swift',
+  ),
+)
 class Version {
   String? string;
 }
@@ -8,49 +19,7 @@ class Battery {
   int? level;
 }
 
-// enum DroneStateCode {
-//   registerAppSuccess,
-//   registerAppFail,
-//   connectDroneSuccess,
-//   connectDroneFail,
-//   disconnectDroneSuccess,
-//   disconnectDroneFail,
-//   delegateDroneSuccess,
-//   delegateDroneFail,
-//   takeOffSuccess,
-//   takeOffFail,
-//   startSuccess,
-//   startFailed,
-//   mobileRemoteControllerSuccess,
-//   mobileRemoteControllerFail,
-//   virtualStickSuccess,
-//   virtualStickFail,
-//   gimbalRotatePitchSuccess,
-//   gimbalRotatePitchFail,
-//   getMediaListSuccess,
-//   getMediaListFail,
-//   downloadMediaSuccess,
-//   downloadMediaFail,
-//   deleteMediaSuccess,
-//   deleteMediaFail,
-//   videoFeedStartSuccess,
-//   videoFeedStartFail,
-//   videoFeedStopSuccess,
-//   videoFeedStopFail,
-//   videoRecordStartSuccess,
-//   videoRecordStartFail,
-//   videoRecordStopSuccess,
-//   videoRecordStopFail,
-//   error,
-// }
-
-// class DroneState {
-//   DroneStateCode? code;
-//   String? description;
-// }
-
 class Drone {
-  // DroneState? state;
   String? status;
   String? error;
   double? batteryPercent;
@@ -98,11 +67,12 @@ abstract class DjiHostApi {
     double yaw,
     double verticalThrottle,
   );
-  void gimbalRotatePitch(
-    double degrees,
-  );
+  void gimbalRotatePitch(double degrees);
+  @async
   List<Media> getMediaList();
+  @async
   String downloadMedia(int fileIndex);
+  @async
   bool deleteMedia(int fileIndex);
   void videoFeedStart();
   void videoFeedStop();

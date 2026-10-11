@@ -23,9 +23,7 @@ void main() {
   //   expect(await Dji.platformVersion, '42');
   // });
 
-  test(
-      'Converting Waypoint Mission Vector Objects to Location Objects and compute Gimbal Pitch',
-      () {
+  test('Converting Waypoint Mission Vector Objects to Location Objects and compute Gimbal Pitch', () {
     final droneHomeLocation = FlightLocation(
       latitude: 32.2617757,
       longitude: 34.8821537,
@@ -102,52 +100,78 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        CoordinatesConvertion
-            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-                flightElementWaypointMission: element,
-                droneHomeLocation: droneHomeLocation);
+        CoordinatesConvertion.convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+          flightElementWaypointMission: element,
+          droneHomeLocation: droneHomeLocation,
+        );
       }
     }
 
     final FlightElementWaypointMission element =
         flight.timeline[0] as FlightElementWaypointMission;
 
-    expect(element.waypoints[0].location?.latitude, equals(32.26152879),
-        reason: 'latitude');
-    expect(element.waypoints[0].location?.longitude, equals(34.88215355),
-        reason: 'longitude');
+    expect(
+      element.waypoints[0].location?.latitude,
+      equals(32.26152879),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[0].location?.longitude,
+      equals(34.88215355),
+      reason: 'longitude',
+    );
     // expect(element.waypoints[0].gimbalPitch, equals(-45));
     print(
-        'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}');
+      'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}',
+    );
 
-    expect(element.waypoints[1].location?.latitude, equals(32.26165995),
-        reason: 'latitude');
-    expect(element.waypoints[1].location?.longitude, equals(34.88193561),
-        reason: 'longitude');
+    expect(
+      element.waypoints[1].location?.latitude,
+      equals(32.26165995),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[1].location?.longitude,
+      equals(34.88193561),
+      reason: 'longitude',
+    );
     // expect(element.waypoints[1].gimbalPitch, equals(-45));
     print(
-        'Waypoint 2: ${element.waypoints[1].location?.latitude}, ${element.waypoints[1].location?.longitude}');
+      'Waypoint 2: ${element.waypoints[1].location?.latitude}, ${element.waypoints[1].location?.longitude}',
+    );
 
-    expect(element.waypoints[2].location?.latitude, equals(32.26144201),
-        reason: 'latitude');
-    expect(element.waypoints[2].location?.longitude, equals(34.88180445),
-        reason: 'longitude');
+    expect(
+      element.waypoints[2].location?.latitude,
+      equals(32.26144201),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[2].location?.longitude,
+      equals(34.88180445),
+      reason: 'longitude',
+    );
     // expect(element.waypoints[2].gimbalPitch, equals(-45));
     print(
-        'Waypoint 3: ${element.waypoints[2].location?.latitude}, ${element.waypoints[2].location?.longitude}');
+      'Waypoint 3: ${element.waypoints[2].location?.latitude}, ${element.waypoints[2].location?.longitude}',
+    );
 
-    expect(element.waypoints[3].location?.latitude, equals(32.26131085),
-        reason: 'latitude');
-    expect(element.waypoints[3].location?.longitude, equals(34.88202239),
-        reason: 'longitude');
+    expect(
+      element.waypoints[3].location?.latitude,
+      equals(32.26131085),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[3].location?.longitude,
+      equals(34.88202239),
+      reason: 'longitude',
+    );
     // expect(element.waypoints[3].gimbalPitch, equals(-45));
     print(
-        'Waypoint 4: ${element.waypoints[3].location?.latitude}, ${element.waypoints[3].location?.longitude}');
+      'Waypoint 4: ${element.waypoints[3].location?.latitude}, ${element.waypoints[3].location?.longitude}',
+    );
   });
 
-  test(
-      'Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the south, and the drone destination is 90 degrees to the east.',
-      () {
+  test('Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the south, and the drone destination is 90 degrees to the east.', () {
     final droneHomeLocation = FlightLocation(
       latitude: 0,
       longitude: 0,
@@ -188,10 +212,10 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        CoordinatesConvertion
-            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-                flightElementWaypointMission: element,
-                droneHomeLocation: droneHomeLocation);
+        CoordinatesConvertion.convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+          flightElementWaypointMission: element,
+          droneHomeLocation: droneHomeLocation,
+        );
       }
     }
 
@@ -199,17 +223,22 @@ void main() {
         flight.timeline[0] as FlightElementWaypointMission;
 
     print(
-        'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}');
+      'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}',
+    );
 
-    expect(element.waypoints[0].location?.latitude, equals(-0.000008993 * 10),
-        reason: 'latitude');
-    expect(element.waypoints[0].location?.longitude, equals(0.000008993 * 10),
-        reason: 'longitude');
+    expect(
+      element.waypoints[0].location?.latitude,
+      equals(-0.000008993 * 10),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[0].location?.longitude,
+      equals(0.000008993 * 10),
+      reason: 'longitude',
+    );
   });
 
-  test(
-      'Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the north, and the drone destination is 90 degrees to the west.',
-      () {
+  test('Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the north, and the drone destination is 90 degrees to the west.', () {
     final droneHomeLocation = FlightLocation(
       latitude: 0,
       longitude: 0,
@@ -250,10 +279,10 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        CoordinatesConvertion
-            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-                flightElementWaypointMission: element,
-                droneHomeLocation: droneHomeLocation);
+        CoordinatesConvertion.convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+          flightElementWaypointMission: element,
+          droneHomeLocation: droneHomeLocation,
+        );
       }
     }
 
@@ -261,17 +290,22 @@ void main() {
         flight.timeline[0] as FlightElementWaypointMission;
 
     print(
-        'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}');
+      'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}',
+    );
 
-    expect(element.waypoints[0].location?.latitude, equals(0.000008993 * 10),
-        reason: 'latitude');
-    expect(element.waypoints[0].location?.longitude, equals(-0.000008993 * 10),
-        reason: 'longitude');
+    expect(
+      element.waypoints[0].location?.latitude,
+      equals(0.000008993 * 10),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[0].location?.longitude,
+      equals(-0.000008993 * 10),
+      reason: 'longitude',
+    );
   });
 
-  test(
-      'Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the north and 10m to the east, and the drone destination is 45 degrees to the west.',
-      () {
+  test('Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the north and 10m to the east, and the drone destination is 45 degrees to the west.', () {
     final droneHomeLocation = FlightLocation(
       latitude: 0,
       longitude: 0,
@@ -312,10 +346,10 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        CoordinatesConvertion
-            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-                flightElementWaypointMission: element,
-                droneHomeLocation: droneHomeLocation);
+        CoordinatesConvertion.convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+          flightElementWaypointMission: element,
+          droneHomeLocation: droneHomeLocation,
+        );
       }
     }
 
@@ -323,17 +357,22 @@ void main() {
         flight.timeline[0] as FlightElementWaypointMission;
 
     print(
-        'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}');
+      'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}',
+    );
 
-    expect(element.waypoints[0].location?.latitude, equals(0.000008993 * 10),
-        reason: 'latitude');
-    expect(element.waypoints[0].location?.longitude, equals(0.0),
-        reason: 'longitude');
+    expect(
+      element.waypoints[0].location?.latitude,
+      equals(0.000008993 * 10),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[0].location?.longitude,
+      equals(0.0),
+      reason: 'longitude',
+    );
   });
 
-  test(
-      'Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the north and 10m to the west, and the drone destination is 0 degrees towards the drone home.',
-      () {
+  test('Checking waypoint when Drone is at 0,0 and Point of Interest is 10m to the north and 10m to the west, and the drone destination is 0 degrees towards the drone home.', () {
     final droneHomeLocation = FlightLocation(
       latitude: 0,
       longitude: 0,
@@ -374,10 +413,10 @@ void main() {
     // Converting any vector definitions in waypoint-mission to locations
     for (dynamic element in flight.timeline) {
       if (element.type == FlightElementType.waypointMission) {
-        CoordinatesConvertion
-            .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-                flightElementWaypointMission: element,
-                droneHomeLocation: droneHomeLocation);
+        CoordinatesConvertion.convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+          flightElementWaypointMission: element,
+          droneHomeLocation: droneHomeLocation,
+        );
       }
     }
 
@@ -385,11 +424,18 @@ void main() {
         flight.timeline[0] as FlightElementWaypointMission;
 
     print(
-        'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}');
+      'Waypoint 1: ${element.waypoints[0].location?.latitude}, ${element.waypoints[0].location?.longitude}',
+    );
 
-    expect(element.waypoints[0].location?.latitude, equals(0.0),
-        reason: 'latitude');
-    expect(element.waypoints[0].location?.longitude, equals(0.0),
-        reason: 'longitude');
+    expect(
+      element.waypoints[0].location?.latitude,
+      equals(0.0),
+      reason: 'latitude',
+    );
+    expect(
+      element.waypoints[0].location?.longitude,
+      equals(0.0),
+      reason: 'longitude',
+    );
   });
 }

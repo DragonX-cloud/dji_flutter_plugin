@@ -96,147 +96,93 @@ You can fix this by openining Xcode > and under the Build Settings tab > search 
 Full details of setting up the DJI SDK for iOS can be found here:  
 https://developer.dji.com/document/76942407-070b-4542-8042-204cfb169168  
 ### Configuring the DJI SDK on your Flutter Android (Kotlin) Project
-The DJI SDK is automatically added by the plugin.  
-However, we still need to configure a few parameters directly on the Android project via Android Studio.
+The plugin uses DJI Mobile SDK v5 (MSDK 5.18) on Android, which is added automatically by the plugin.
+MSDK v5 ships 16 KB page-aligned native libraries, as Google Play requires for apps targeting Android 15 and newer.
+Check DJI's list of aircraft supported by MSDK v5 before you start: https://developer.dji.com/doc/mobile-sdk-tutorial/en/
+
+You still need to configure a few things in your Android app project.
+The example app's `android/app` folder shows the complete configuration.
 
 > **[ ! ] Important Note**
-> On Android - the DJI SDK cannot run the Simulator. 
-> If you try to run it on the Android Emulator - it will launch and immediately crash.
-> This is due to a DJI SDK limitation.
-> In any case, in order to truly develop while being connected to the Drone, you must run the app on an actual device (for both iOS and Android).
-##### 1. Upgrade to Kotlin 
-Edit the `android/grade/wrapper/gradle-wrapper.properties` file, and update the last line to:
-```
-distributionUrl=https\://services.gradle.org/distributions/gradle-7.0.2-all.zip
-```
+> The DJI SDK does not run on the Android Emulator. Run the app on an actual arm64 device (for both iOS and Android).
 
-Then, update the `buildScript` in the `android/build.gradle` file to:
-```
-buildscript {
-    ext.kotlin_version = '1.7.0'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.2.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-```
-
-Lastly, open the Project in Android Studio and let the Gradle sync.
-Please note this "sync" might take several long minutes.
-
-##### 2. Updated the Android Manifest XML
-Below the <manifest> tag and above the <application> tag, add the following permissions: 
-(you might not need all of these, but usually that's what's needed for full functionality of the DJI SDK) 
-```
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="...">
-  <!-- Permissions and features -->
-  <uses-permission android:name="android.permission.BLUETOOTH" />
-  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-  <uses-permission android:name="android.permission.VIBRATE" />
-  <uses-permission android:name="android.permission.INTERNET" />
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.RECORD_AUDIO" />
-  <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
-  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
-
-  <uses-feature android:name="android.hardware.camera" />
-  <uses-feature android:name="android.hardware.camera.autofocus" />
+##### 1. Update android/app/src/main/AndroidManifest.xml
+DJI MSDK v5 must be installed before any of its classes are loaded, so your app uses the plugin's `DjiApplication` class.
+Set it as the `android:name` of the `<application>` element (or subclass it if you need your own Application class), and add your Android DJI App Key:
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <uses-feature
       android:name="android.hardware.usb.host"
       android:required="false" />
-  <uses-feature
-      android:name="android.hardware.usb.accessory"
-      android:required="true" />
-```
 
-Below the `<application>` tag and above the `<activity>` tag, add the following and fill-in your Android DJI App Key:
-```
-<application
-  ...
-  android:usesCleartextTraffic="true">
-  ...
-  <!-- Start of DJI SDK -->
-  <uses-library android:name="com.android.future.usb.accessory" />
-  <uses-library android:name="org.apache.http.legacy" android:required="false" />
-  <meta-data android:name="com.dji.sdk.API_KEY" android:value="{{your-dji-app-key}}" />
-  <!-- End of DJI SDK -->
-  
-  <activity...
-```
+  <application
+    android:name="cloud.dragonx.plugin.flutter.dji.DjiApplication"
+    ...>
+    <meta-data android:name="com.dji.sdk.API_KEY" android:value="{{your-dji-app-key}}" />
 
-##### 3. Update android/app/build.gradle
-Open the android/app/build.grade file and update the following:
-- Set the compileSdkVersion to 33
-- Set defaultConfig parameters with minSdkVersion 24 and targetSdkVersion 31.
-Also, **add and make sure multiDexEnabled is set to TRUE**:
+    <activity android:name=".MainActivity" ...>
+      ...
+      <!-- Optional: opens the app when a DJI remote controller is plugged in. -->
+      <intent-filter>
+        <action android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED" />
+      </intent-filter>
+      <meta-data
+        android:name="android.hardware.usb.action.USB_ACCESSORY_ATTACHED"
+        android:resource="@xml/accessory_filter" />
+    </activity>
+  </application>
+</manifest>
 ```
+The DJI SDK declares the permissions it needs itself; they are merged into your app's manifest.
+
+##### 2. Update android/app/build.gradle.kts
+DJI MSDK v5 ships its native libraries for arm64-v8a only, loads them from the extracted library directory, and must not have its libraries stripped:
+```kotlin
 android {
-    compileSdkVersion 33
-    ...
     defaultConfig {
         ...
-        minSdkVersion 24
-        targetSdkVersion 31
-        ...
+        // Replaces the ABI list the Flutter Gradle Plugin sets.
+        ndk {
+            abiFilters.clear()
+            abiFilters += "arm64-v8a"
+        }
+    }
 
-        multiDexEnabled true
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+            pickFirsts += "lib/arm64-v8a/libc++_shared.so"
+            // The list from DJI's MSDK v5 sample - see example/android/app/build.gradle.kts.
+            keepDebugSymbols += listOf("*/*/libdjisdk_jni.so", ...)
+        }
     }
 }
 ```
 
-- Below the `buildTypes` add the `packagingOptions` section to exclude the `rxjava.properties`:
-```
-packagingOptions {
-  exclude 'META-INF/rxjava.properties'
-}
-```
-- Under the dependencies section - include the following dependencies:
-```
-dependencies {
-    ...
-    implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'androidx.core:core-ktx:1.6.0'
-    implementation 'androidx.appcompat:appcompat:1.3.1'
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.1'
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.0'
+##### 3. Use R8 9.1.56 or newer (android/settings.gradle.kts)
+R8 9.1.31, which AGP 9.1.x bundles, crashes on release builds that include DJI MSDK v5 (`NullPointerException` in `com.android.tools.r8.androidapi`).
+Until your AGP version bundles a fixed R8, add this between the `pluginManagement` and `plugins` blocks:
+```kotlin
+buildscript {
+    repositories {
+        google()
+    }
+    dependencies {
+        classpath("com.android.tools:r8:9.1.56")
+    }
 }
 ```
 
-##### 4. Validate gradle.properties
-Open android/gradle.properties and validate that you have both these lines with value TRUE:
-```
-android.useAndroidX=true
-android.enableJetifier=true
-```
 ##### Note
-Full details of setting up the DJI SDK for Android can be found here:  
-https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#android-studio-project-integration
+DJI states MSDK 5.18 supports AGP 8.7 / Gradle 8.12 ([dji-sdk/Mobile-SDK-Android-V5#707](https://github.com/dji-sdk/Mobile-SDK-Android-V5/issues/707)), while current Flutter requires AGP 8.11.1 / Gradle 8.14 or newer. This plugin and its example build with the versions current Flutter generates (AGP 9.1, Gradle 9.3).
 
-If you wish to learn and experiment with the DJI SDK on Android - here are some useful links and tips.
+DJI MSDK v5 connects to the aircraft automatically once the app is registered, so `Dji.connectDrone()` only reports the current connection state, and `Dji.disconnectDrone()` is not supported on Android.
 
-DJI Android Sample App:  
-https://github.com/dji-sdk/Mobile-SDK-Android/tree/master/Sample%20Code
+Full details of setting up DJI MSDK v5 for Android can be found here:  
+https://developer.dji.com/doc/mobile-sdk-tutorial/en/
 
-Another useful demo app - Android Simulator Demo:  
-https://github.com/DJI-Mobile-SDK-Tutorials/Android-SimulatorDemo/blob/master/DJISimulatorDemo/app/src/main/java/com/dji/simulatorDemo/MainActivity.java
-
-The DJI Tutorial can be found here below, but please note you must rely on the above Github Repo as reference, because many of the code examples inside this tutorial are outdated:
-https://developer.dji.com/mobile-sdk/documentation/application-development-workflow/workflow-integrate.html#import-maven-dependency
-
-If you're trying to run the DJI sample, then note that in MainActivity.kt - Need to remove "import android.R".
+DJI Android MSDK v5 Sample App:  
+https://github.com/dji-sdk/Mobile-SDK-Android-V5
 
 ### Preparing your Development Environment & Simulator
 - Your DJI Drone should be connected by a USB to your computer.
@@ -300,7 +246,7 @@ Record Stop Failed
 ```
 
 #### Extend your Widget with DjiFlutterApi
-First, extend your Widget with DjiFlutterApi, define the drone properties, and override your initState() method with the `_initDroneState()` and `DjiFlutterApi.setup()` methods per your needs.
+First, extend your Widget with DjiFlutterApi, define the drone properties, and override your initState() method with the `_initDroneState()` and `DjiFlutterApi.setUp()` methods per your needs.
 ```
 class _ExampleWidgetState extends State<ExampleWidget>
     implements DjiFlutterApi {
@@ -322,7 +268,7 @@ class _ExampleWidgetState extends State<ExampleWidget>
   void initState() {
     super.initState();
 
-    DjiFlutterApi.setup(this);
+    DjiFlutterApi.setUp(this);
 
     ...
   }
@@ -983,15 +929,10 @@ Otherwise, the plugin might not get built properly later on (I don't know why th
 This plugin uses Pigeon:
 https://pub.dev/packages/pigeon
 
-To re-generate the Pigeon interfaces, execute:
-flutter pub run pigeon \
-  --input pigeons/messages.dart \
-  --dart_out lib/messages.dart \
-  --objc_header_out ios/Classes/messages.h \
-  --objc_source_out ios/Classes/messages.m \
-  --objc_prefix FLT \
-  --java_out android/src/main/java/cloud/dragonx/plugin/flutter/dji/Messages.java \
-  --java_package "cloud.dragonx.plugin.flutter.dji"
+To re-generate the Pigeon interfaces (the output paths are configured in `pigeons/messages.dart`), execute:
+```
+dart run pigeon --input pigeons/messages.dart
+```
 
 #### Pigeon Swift Example
 https://github.com/DJI-Mobile-SDK-Tutorials/iOS-ImportAndActivateSDKInXcode-Swift
@@ -1180,27 +1121,3 @@ https://www.toptal.com/apple/introduction-to-http-live-streaming-hls
 Solution for how to enable the VideoDataListener on Android: 
 (search for "codecManager.enabledYuvData(true);")
 https://github.com/dji-sdk/Mobile-SDK-Android/issues/352
-
-### FFMpeg Xcode BitCode Issue
-If Xcode compilation fails with an error similar to this one:
-```
-...FFmpeg.framework/FFmpeg' does not contain bitcode. You must rebuild it with bitcode enabled (Xcode setting ENABLE_BITCODE)...
-```
-Open Xcode > for each Target (e.g. DJI-SDK-IOS, ffmpeg-kit-ios, etc.) - search for "BitCode" under the Build Settings section - and change to NO.
-
-### Android issue with the better_player plugin
-If you encounter the following error while trying to build the Android example project:
-```
-Could not find com.mapbox.mapboxsdk:mapbox-android-accounts:0.7.0.
-```
-
-Add `jcenter()` to your android/build.gradle file:
-```
-allprojects {
-    repositories {
-        ...
-        jcenter()
-    }
-}
-```
-	

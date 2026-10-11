@@ -2,13 +2,13 @@ import Foundation
 import DJISDK
 import DJIWidget
 import Flutter
+import Photos
 import UIKit
 
-public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener, VideoFrameProcessor {
+public class DjiPlugin: NSObject, FlutterPlugin, DjiHostApi, DJISDKManagerDelegate, DJIFlightControllerDelegate, DJIBatteryDelegate, DJIVideoFeedListener, VideoFrameProcessor {
 	
-	static var fltDjiFlutterApi: FLTDjiFlutterApi?
-	let fltDrone = FLTDrone()
-	let fltStream = FLTStream()
+	var fltDjiFlutterApi: DjiFlutterApi?
+	var fltDrone = Drone()
 	
 	var drone: DJIAircraft?
 	var droneCurrentLocation: CLLocation?
@@ -19,42 +19,39 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	public static func register(with registrar: FlutterPluginRegistrar) {
 		let messenger: FlutterBinaryMessenger = registrar.messenger()
-		let api: FLTDjiHostApi & NSObjectProtocol = SwiftDjiPlugin()
-		FLTDjiHostApiSetup(messenger, api)
-		fltDjiFlutterApi = FLTDjiFlutterApi(binaryMessenger: messenger)
+		let instance = DjiPlugin()
+		DjiHostApiSetup.setUp(binaryMessenger: messenger, api: instance)
+		instance.fltDjiFlutterApi = DjiFlutterApi(binaryMessenger: messenger)
+	}
+
+	private func _fltSendStatus(_ logContext: String) {
+		let drone = fltDrone
+		Task { @MainActor in
+			do {
+				try await self.fltDjiFlutterApi?.setStatus(drone: drone)
+			} catch {
+				print("=== DjiPlugin iOS: Error: SetStatus Closure Error (\(logContext))")
+				NSLog("error: \(error.localizedDescription)")
+			}
+		}
 	}
 
 	private func _fltSetStatus(_ status: String) {
 		fltDrone.status = status
-
-		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
-			if let error = e {
-				print("=== DjiPlugin iOS: Error: SetStatus Closure Error")
-				NSLog("error: \(error.localizedDescription)")
-			} else {
-				print("=== DjiPlugin iOS: setStatus Closure Success: \(status)")
-			}
-		}
+		_fltSendStatus("status: \(status)")
 	}
 
 	private func _fltSetError(_ error: String) {
 		fltDrone.error = error
-
-		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
-			if let error = e {
-				print("=== DjiPlugin iOS: Error: SetStatus (setting drone error) Closure Error")
-				NSLog("error: \(error.localizedDescription)")
-			} else {
-				print("=== DjiPlugin iOS: setStatus (setting drone error) Closure Success: \(error)")
-			}
-		}
+		_fltSendStatus("error: \(error)")
 	}
 	
 	private func _fltSendVideo(_ data: Data) {
-		fltStream.data = FlutterStandardTypedData(bytes: data)
-		
-		SwiftDjiPlugin.fltDjiFlutterApi?.sendVideoStream(fltStream) { e in
-			if let error = e {
+		let stream = Stream(data: FlutterStandardTypedData(bytes: data))
+		Task { @MainActor in
+			do {
+				try await self.fltDjiFlutterApi?.sendVideo(stream: stream)
+			} catch {
 				print("=== DjiPlugin iOS: Error: sendVideo Closure Error")
 				NSLog("error: \(error.localizedDescription)")
 			}
@@ -63,14 +60,14 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	// MARK: - Basic Methods
 
-	public func getPlatformVersionWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> FLTVersion? {
-		let result = FLTVersion()
+	func getPlatformVersion() throws -> Version {
+		var result = Version()
 		result.string = "iOS " + UIDevice.current.systemVersion
 		return result
 	}
 
-	public func getBatteryLevelWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> FLTBattery? {
-		let result = FLTBattery()
+	func getBatteryLevel() throws -> Battery {
+		var result = Battery()
 
 		let device = UIDevice.current
 		device.isBatteryMonitoringEnabled = true
@@ -79,29 +76,29 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			result.level = -1
 		} else {
 			print("=== DjiPlugin iOS: Host (Mobile Device) Battery level \(device.batteryLevel)")
-			result.level = Int(device.batteryLevel * 100) as NSNumber
+			result.level = Int64(device.batteryLevel * 100)
 		}
 
 		return result
 	}
 
-	public func registerAppWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func registerApp() throws {
 		print("=== DjiPlugin iOS: Register App Started")
 		DJISDKManager.registerApp(with: self)
 	}
 
-	public func connectDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func connectDrone() throws {
 		print("=== DjiPlugin iOS: Connect Drone Started")
 
 		DJISDKManager.startConnectionToProduct()
 	}
 
-	public func disconnectDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func disconnectDrone() throws {
 		print("=== DjiPlugin iOS: Disconnect Drone Started")
 		DJISDKManager.stopConnectionToProduct()
 	}
 
-	public func delegateDroneWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func delegateDrone() throws {
 		print("=== DjiPlugin iOS: Delegate Drone Started")
 		if let product = DJISDKManager.product() {
 			if product.isKind(of: DJIAircraft.self) {
@@ -143,7 +140,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 
-	public func takeOffWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func takeOff() throws {
 		if let _droneFlightController = drone?.flightController {
 			print("=== DjiPlugin iOS: Takeoff Started")
 			_fltSetStatus("Takeoff")
@@ -156,7 +153,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
-	public func landWithError(_: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func land() throws {
 		if let _droneFlightController = drone?.flightController {
 			print("=== DjiPlugin iOS: Landing Started")
 			_fltSetStatus("Land")
@@ -171,14 +168,14 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Mobile Remote Controller
 	
-	public func mobileRemoteControllerEnabled(_ enabled: NSNumber, leftStickHorizontal: NSNumber, leftStickVertical: NSNumber, rightStickHorizontal: NSNumber, rightStickVertical: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func mobileRemoteController(enabled: Bool, leftStickHorizontal: Double, leftStickVertical: Double, rightStickHorizontal: Double, rightStickVertical: Double) throws {
 		// the `enabled` property is redundant at this point, but it's here as a placeholder for possible usage in the future.
 		
 		if (drone?.mobileRemoteController?.isConnected == true) {
-			drone?.mobileRemoteController?.leftStickHorizontal = Float(truncating: leftStickHorizontal)
-			drone?.mobileRemoteController?.leftStickVertical = Float(truncating: leftStickVertical)
-			drone?.mobileRemoteController?.rightStickHorizontal = Float(truncating: rightStickHorizontal)
-			drone?.mobileRemoteController?.rightStickVertical = Float(truncating: rightStickVertical)
+			drone?.mobileRemoteController?.leftStickHorizontal = Float(leftStickHorizontal)
+			drone?.mobileRemoteController?.leftStickVertical = Float(leftStickVertical)
+			drone?.mobileRemoteController?.rightStickHorizontal = Float(rightStickHorizontal)
+			drone?.mobileRemoteController?.rightStickVertical = Float(rightStickVertical)
 			self._fltSetStatus("Mobile Remote")
 			self._fltSetError("")
 		} else {
@@ -190,7 +187,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Virtual Stick Methods
 	
-	public func virtualStickEnabled(_ enabled: NSNumber, pitch: NSNumber, roll: NSNumber, yaw: NSNumber, verticalThrottle: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func virtualStick(enabled: Bool, pitch: Double, roll: Double, yaw: Double, verticalThrottle: Double) throws {
 		var virtualStickControlData: DJIVirtualStickFlightControlData = DJIVirtualStickFlightControlData()
 		
         guard let _droneFlightController = drone?.flightController else {
@@ -200,16 +197,16 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			return
 		}
 		
-		_droneFlightController.setVirtualStickModeEnabled(enabled as! Bool, withCompletion: { (error: Error?) in
+		_droneFlightController.setVirtualStickModeEnabled(enabled, withCompletion: { (error: Error?) in
 			if (error != nil) {
 				print("=== DjiPlugin iOS: Enable Virtual Stick failed with error - \(String(describing: error?.localizedDescription))")
 				self._fltSetStatus("Virtual Stick Failed")
 				self._fltSetError("Enable Virtual Stick failed with error - \(String(describing: error?.localizedDescription))")
 			} else {
-				virtualStickControlData.pitch = Float(truncating: pitch)
-				virtualStickControlData.roll = Float(truncating: roll)
-				virtualStickControlData.yaw = Float(truncating: yaw)
-				virtualStickControlData.verticalThrottle = Float(truncating: verticalThrottle)
+				virtualStickControlData.pitch = Float(pitch)
+				virtualStickControlData.roll = Float(roll)
+				virtualStickControlData.yaw = Float(yaw)
+				virtualStickControlData.verticalThrottle = Float(verticalThrottle)
 
 				// Setting the drone's flight control parameters for easy Virtual Stick usage
 				_droneFlightController.setFlightOrientationMode(DJIFlightOrientationMode.aircraftHeading) // Mandatory for Virtual Stick Control Mode to be available.
@@ -243,11 +240,11 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Gimbal Methods
 	
-	public func gimbalRotatePitchDegrees(_ degrees: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func gimbalRotatePitch(degrees: Double) throws {
 		if (drone?.gimbal?.isConnected == true) {
 			//drone?.gimbal?.setMode(DJIGimbalMode.yawFollow)
 			
-			let djiGimbalRotation = DJIGimbalRotation.init(pitchValue: degrees, rollValue: nil, yawValue: nil, time: 1.0 as TimeInterval, mode: .absoluteAngle, ignore: true)
+			let djiGimbalRotation = DJIGimbalRotation.init(pitchValue: degrees as NSNumber, rollValue: nil, yawValue: nil, time: 1.0 as TimeInterval, mode: .absoluteAngle, ignore: true)
 			drone?.gimbal?.rotate(with: djiGimbalRotation, completion: { (error: Error?) in
 				if (error != nil) {
 					print("=== DjiPlugin iOS: Gimbal Rotate failed with error - \(String(describing: error?.localizedDescription))")
@@ -267,7 +264,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Timeline Methods
 
-	public func startFlightJson(_ flightJson: String, error _: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func start(flightJson: String) throws {
 		print("=== DjiPlugin iOS: Start Flight JSON: \(flightJson)")
 
 		let decoder = JSONDecoder()
@@ -478,82 +475,85 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 	
 	// MARK: - Media Methods
 	
-	public func getMediaListWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> [FLTMedia]? {
-		var _fltMediaList = [FLTMedia]()
-		
-		if let _droneCamera = drone?.camera {
+	func getMediaList() async throws -> [Media] {
+		guard let _droneCamera = drone?.camera else {
+			print("=== DjiPlugin iOS: Get media list - no Camera object")
+			_fltSetStatus("Media List Failed")
+			_fltSetError("Get media list - no Camera object")
+			return []
+		}
+
+		return await withCheckedContinuation { (continuation: CheckedContinuation<[Media], Never>) in
 			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
 				if (error != nil) {
 					print("=== DjiPlugin iOS: Get media list - set camera mode failed with error - \(String(describing: error?.localizedDescription))")
 					self._fltSetStatus("Media List Failed")
 					self._fltSetError("Get media list - set camera mode failed with error - \(String(describing: error?.localizedDescription))")
-				} else {
-					print("=== DjiPlugin iOS: Get media list started")
-					
-					if let _droneMediaManager = _droneCamera.mediaManager {
-						// Fetching the Media List from the Drone's SD Card
-						if _droneMediaManager.sdCardFileListState == DJIMediaFileListState.syncing ||
-						   _droneMediaManager.sdCardFileListState == DJIMediaFileListState.deleting {
-							print("=== DjiPlugin iOS: Get media list failed - Media Manager is busy")
-							self._fltSetStatus("Media List Failed")
-							self._fltSetError("Get media list failed - Media Manager is busy")
-						} else {
-							_droneMediaManager.refreshFileList(of: DJICameraStorageLocation.sdCard, withCompletion: {[weak self] (e: Error?) in
-								if let error = e {
-									print("=== DjiPlugin iOS: Get media list failed: \(error.localizedDescription)")
-									self?._fltSetStatus("Media List Failed")
-									self?._fltSetError("Get media list failed: \(error.localizedDescription)")
-								} else {
-									if let sdCardMediaFileList = _droneMediaManager.sdCardFileListSnapshot() {
-										print("=== DjiPlugin iOS: Get media list successful")
-										self?._fltSetStatus("Got Media List")
-										self?._fltSetError("")
-										
-										self?.mediaFileList = sdCardMediaFileList
-										
-										// Preparing the Flutter Media List
-										for mediaFile in sdCardMediaFileList {
-											let fltMediaListElement = FLTMedia()
-											fltMediaListElement.fileName = mediaFile.fileName
-											fltMediaListElement.fileIndex = mediaFile.index as NSNumber
-											
-											_fltMediaList.append(fltMediaListElement)
-											
-											print("=== DjiPlugin iOS: Get media list - added file \(mediaFile.fileName)")
-										}
-									} else {
-										print("=== DjiPlugin iOS: Get media list failed - list is empty")
-										self?._fltSetStatus("Get Media Failed")
-										self?._fltSetError("Get media list failed - list is empty")
-									}
-								}
-							})
-						}
-					} else {
-						print("=== DjiPlugin iOS: Get media list - no Media Manager")
-						self._fltSetStatus("Media List Failed")
-						self._fltSetError("Get media list - no Media Manager")
-					}
+					continuation.resume(returning: [])
+					return
 				}
+
+				print("=== DjiPlugin iOS: Get media list started")
+
+				guard let _droneMediaManager = _droneCamera.mediaManager else {
+					print("=== DjiPlugin iOS: Get media list - no Media Manager")
+					self._fltSetStatus("Media List Failed")
+					self._fltSetError("Get media list - no Media Manager")
+					continuation.resume(returning: [])
+					return
+				}
+
+				// Fetching the Media List from the Drone's SD Card
+				if _droneMediaManager.sdCardFileListState == DJIMediaFileListState.syncing ||
+				   _droneMediaManager.sdCardFileListState == DJIMediaFileListState.deleting {
+					print("=== DjiPlugin iOS: Get media list failed - Media Manager is busy")
+					self._fltSetStatus("Media List Failed")
+					self._fltSetError("Get media list failed - Media Manager is busy")
+					continuation.resume(returning: [])
+					return
+				}
+
+				_droneMediaManager.refreshFileList(of: DJICameraStorageLocation.sdCard, withCompletion: {[weak self] (e: Error?) in
+					if let error = e {
+						print("=== DjiPlugin iOS: Get media list failed: \(error.localizedDescription)")
+						self?._fltSetStatus("Media List Failed")
+						self?._fltSetError("Get media list failed: \(error.localizedDescription)")
+						continuation.resume(returning: [])
+						return
+					}
+
+					guard let sdCardMediaFileList = _droneMediaManager.sdCardFileListSnapshot() else {
+						print("=== DjiPlugin iOS: Get media list failed - list is empty")
+						self?._fltSetStatus("Get Media Failed")
+						self?._fltSetError("Get media list failed - list is empty")
+						continuation.resume(returning: [])
+						return
+					}
+
+					print("=== DjiPlugin iOS: Get media list successful")
+					self?._fltSetStatus("Got Media List")
+					self?._fltSetError("")
+
+					self?.mediaFileList = sdCardMediaFileList
+
+					// Preparing the Flutter Media List
+					let fltMediaList = sdCardMediaFileList.map { mediaFile in
+						print("=== DjiPlugin iOS: Get media list - added file \(mediaFile.fileName)")
+						return Media(fileName: mediaFile.fileName, fileIndex: Int64(mediaFile.index))
+					}
+					continuation.resume(returning: fltMediaList)
+				})
 			})
-		} else {
-			print("=== DjiPlugin iOS: Get media list - no Camera object")
-			_fltSetStatus("Media List Failed")
-			_fltSetError("Get media list - no Camera object")
 		}
-		
-		return _fltMediaList
 	}
 	
-	public func downloadMediaFileIndex(_ fileIndex: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> String? {
-		var _mediaURLString: String = ""
-		let _index: Int = fileIndex.intValue
+	func downloadMedia(fileIndex: Int64) async throws -> String {
+		let _index = Int(fileIndex)
 
 		guard _index >= 0 else {
 			print("=== DjiPlugin iOS: Download media failed - invalid index")
 			_fltSetStatus("Download Failed")
 			_fltSetError("Download media failed - invalid index")
-
 			return ""
 		}
 
@@ -561,184 +561,198 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 			print("=== DjiPlugin iOS: Download media failed - list is empty")
 			_fltSetStatus("Download Failed")
 			_fltSetError("Download media failed - list is empty")
-
 			return ""
 		}
 
-		if let _droneCamera = drone?.camera {
+		guard let _droneCamera = drone?.camera else {
+			print("=== DjiPlugin iOS: Download all media failed - no Camera object")
+			_fltSetStatus("Download Failed")
+			_fltSetError("Download all media failed - no Camera object")
+			return ""
+		}
+
+		return await withCheckedContinuation { (continuation: CheckedContinuation<String, Never>) in
 			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
 				if (error != nil) {
 					print("=== DjiPlugin iOS: Download media - set camera mode failed with error - \(String(describing: error?.localizedDescription))")
 					self._fltSetStatus("Download Failed")
 					self._fltSetError("Download media - set camera mode failed with error - \(String(describing: error?.localizedDescription))")
-				} else {
-					print("=== DjiPlugin iOS: Download media started")
-					self._fltSetStatus("Download Started")
-					self._fltSetError("")
-
-					if let selectedMedia = self.mediaFileList[_index] {
-						let isPhoto = selectedMedia.mediaType == DJIMediaType.JPEG || selectedMedia.mediaType == DJIMediaType.TIFF
-						var previousOffset = UInt(0)
-						var fileData: Data?
-
-						selectedMedia.fetchData(withOffset: previousOffset, update: DispatchQueue.main, update: {[weak self] (data:Data?, isComplete: Bool, e: Error?) in
-							if let error = e {
-								print("=== DjiPlugin iOS: Download media failed - Fetch File Data: \(error.localizedDescription)")
-								self?._fltSetStatus("Download Failed")
-								self?._fltSetError("Download media failed - Fetch File Data: \(error.localizedDescription)")
-							} else {
-								if let data = data {
-									if fileData == nil {
-										fileData = data
-									} else {
-										fileData?.append(data)
-									}
-
-									if (isPhoto == false) {
-										previousOffset = previousOffset + UInt(data.count)
-									}
-								}
-
-								let selectedFileSizeBytes = selectedMedia.fileSizeInBytes
-								let progress = Float(previousOffset) * 100.0 / Float(selectedFileSizeBytes)
-
-								self?._fltSetStatus(String(format: "%0.1f%%", progress))
-								self?._fltSetError("")
-
-								if (isComplete == true) {
-
-									let tmpDir = NSTemporaryDirectory() as NSString
-									let tmpMediaFilePath = tmpDir.appendingPathComponent(isPhoto ? "image.jpg" : "video.mp4")
-									let url = URL(fileURLWithPath: tmpMediaFilePath)
-
-									do {
-										try fileData?.write(to: url)
-									} catch {
-										print("=== DjiPlugin iOS: Download failed to write data to file: \(error)")
-										self?._fltSetStatus("Download Failed")
-										self?._fltSetError("Download failed to write data to file: \(error)")
-									}
-
-									guard let mediaURL = URL(string: tmpMediaFilePath) else {
-										print("=== DjiPlugin iOS: Download failed to load a filepath to save to")
-										self?._fltSetStatus("Download Failed")
-										self?._fltSetError("Download failed to load a filepath to save to")
-										return
-									}
-
-									print("=== DjiPlugin iOS: Download media completed: \(mediaURL.absoluteString)")
-									self?._fltSetStatus("Downloaded")
-									self?._fltSetError("")
-
-									_mediaURLString = mediaURL.absoluteString
-
-									// Saving the media to the Photo Gallery
-									PHPhotoLibrary.shared().performChanges {
-										if (isPhoto) {
-											PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: mediaURL)
-										} else {
-											PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: mediaURL)
-										}
-									} completionHandler: { (success:Bool, e: Error?) in
-										if (success == true) {
-											print("=== DjiPlugin iOS: Successfully saved media to gallery")
-
-											print("=== DjiPlugin iOS: Download media completed")
-											self?._fltSetStatus("Downloaded")
-											self?._fltSetError("")
-
-										} else if let error = e {
-											print("=== DjiPlugin iOS: Download failed to save media to gallery - \(error.localizedDescription)")
-											self?._fltSetStatus("Download Failed")
-											self?._fltSetError("Download failed to save media to gallery - \(error.localizedDescription)")
-										}
-									}
-								}
-							}
-						})
-					} else {
-						print("=== DjiPlugin iOS: Download media - file not found")
-						self._fltSetStatus("Download Failed")
-						self._fltSetError("Download media - file not found")
-					}
+					continuation.resume(returning: "")
+					return
 				}
-			})
-		} else {
-			print("=== DjiPlugin iOS: Download all media failed - no Camera object")
-			_fltSetStatus("Download Failed")
-			_fltSetError("Download all media failed - no Camera object")
-		}
 
-		return _mediaURLString
+				guard _index < self.mediaFileList.count, let selectedMedia = self.mediaFileList[_index] else {
+					print("=== DjiPlugin iOS: Download media - file not found")
+					self._fltSetStatus("Download Failed")
+					self._fltSetError("Download media - file not found")
+					continuation.resume(returning: "")
+					return
+				}
+
+				print("=== DjiPlugin iOS: Download media started")
+				self._fltSetStatus("Download Started")
+				self._fltSetError("")
+
+				let isPhoto = selectedMedia.mediaType == DJIMediaType.JPEG || selectedMedia.mediaType == DJIMediaType.TIFF
+				var previousOffset = UInt(0)
+				var fileData: Data?
+				// fetchData reports progress repeatedly; the continuation must resume exactly once.
+				var finished = false
+
+				selectedMedia.fetchData(withOffset: previousOffset, update: DispatchQueue.main, update: {[weak self] (data:Data?, isComplete: Bool, e: Error?) in
+					if finished { return }
+
+					if let error = e {
+						print("=== DjiPlugin iOS: Download media failed - Fetch File Data: \(error.localizedDescription)")
+						self?._fltSetStatus("Download Failed")
+						self?._fltSetError("Download media failed - Fetch File Data: \(error.localizedDescription)")
+						finished = true
+						continuation.resume(returning: "")
+						return
+					}
+
+					if let data = data {
+						if fileData == nil {
+							fileData = data
+						} else {
+							fileData?.append(data)
+						}
+
+						if (isPhoto == false) {
+							previousOffset = previousOffset + UInt(data.count)
+						}
+					}
+
+					let selectedFileSizeBytes = selectedMedia.fileSizeInBytes
+					let progress = Float(previousOffset) * 100.0 / Float(selectedFileSizeBytes)
+
+					self?._fltSetStatus(String(format: "%0.1f%%", progress))
+					self?._fltSetError("")
+
+					guard isComplete else { return }
+					finished = true
+
+					let tmpDir = NSTemporaryDirectory() as NSString
+					let tmpMediaFilePath = tmpDir.appendingPathComponent(isPhoto ? "image.jpg" : "video.mp4")
+					let url = URL(fileURLWithPath: tmpMediaFilePath)
+
+					do {
+						try fileData?.write(to: url)
+					} catch {
+						print("=== DjiPlugin iOS: Download failed to write data to file: \(error)")
+						self?._fltSetStatus("Download Failed")
+						self?._fltSetError("Download failed to write data to file: \(error)")
+						continuation.resume(returning: "")
+						return
+					}
+
+					guard let mediaURL = URL(string: tmpMediaFilePath) else {
+						print("=== DjiPlugin iOS: Download failed to load a filepath to save to")
+						self?._fltSetStatus("Download Failed")
+						self?._fltSetError("Download failed to load a filepath to save to")
+						continuation.resume(returning: "")
+						return
+					}
+
+					print("=== DjiPlugin iOS: Download media completed: \(mediaURL.absoluteString)")
+					self?._fltSetStatus("Downloaded")
+					self?._fltSetError("")
+
+					continuation.resume(returning: mediaURL.absoluteString)
+
+					// Saving the media to the Photo Gallery
+					PHPhotoLibrary.shared().performChanges {
+						if (isPhoto) {
+							PHAssetChangeRequest.creationRequestForAssetFromImage(atFileURL: mediaURL)
+						} else {
+							PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: mediaURL)
+						}
+					} completionHandler: { (success:Bool, e: Error?) in
+						if (success == true) {
+							print("=== DjiPlugin iOS: Successfully saved media to gallery")
+
+							print("=== DjiPlugin iOS: Download media completed")
+							self?._fltSetStatus("Downloaded")
+							self?._fltSetError("")
+
+						} else if let error = e {
+							print("=== DjiPlugin iOS: Download failed to save media to gallery - \(error.localizedDescription)")
+							self?._fltSetStatus("Download Failed")
+							self?._fltSetError("Download failed to save media to gallery - \(error.localizedDescription)")
+						}
+					}
+				})
+			})
+		}
 	}
 	
-	public func deleteMediaFileIndex(_ fileIndex: NSNumber, error: AutoreleasingUnsafeMutablePointer<FlutterError?>) -> NSNumber? {
-		var _success: Bool = false
-		let _index: Int = fileIndex.intValue
+	func deleteMedia(fileIndex: Int64) async throws -> Bool {
+		let _index = Int(fileIndex)
 		
 		guard _index >= 0 else {
 			print("=== DjiPlugin iOS: Delete media failed - invalid index")
 			_fltSetStatus("Delete Failed")
 			_fltSetError("Delete media failed - invalid index")
-			
-			return nil
+			return false
 		}
 		
 		guard !mediaFileList.isEmpty else {
 			print("=== DjiPlugin iOS: Delete media failed - list is empty")
 			_fltSetStatus("Delete Failed")
 			_fltSetError("Delete media failed - list is empty")
-			
-			return nil
+			return false
 		}
 		
-		if let _droneCamera = drone?.camera {
+		guard let _droneCamera = drone?.camera else {
+			print("=== DjiPlugin iOS: Delete all media failed - no Camera object")
+			_fltSetStatus("Delete Failed")
+			_fltSetError("Delete all media failed - no Camera object")
+			return false
+		}
+
+		return await withCheckedContinuation { (continuation: CheckedContinuation<Bool, Never>) in
 			_droneCamera.setMode(DJICameraMode.mediaDownload, withCompletion: { (error: Error?) in
 				if (error != nil) {
 					print("=== DjiPlugin iOS: Delete media failed with error - \(String(describing: error?.localizedDescription))")
 					self._fltSetStatus("Delete Failed")
 					self._fltSetError("Delete media failed with error - \(String(describing: error?.localizedDescription))")
-				} else {
-					print("=== DjiPlugin iOS: Delete media started")
-					self._fltSetStatus("Delete Started")
-					self._fltSetError("")
-					
-					if let _droneMediaManager = _droneCamera.mediaManager {
-						if let selectedMedia = self.mediaFileList[_index] {
-							_droneMediaManager.delete([selectedMedia])
-							
-							print("=== DjiPlugin iOS: Delete media completed")
-							self._fltSetStatus("Deleted")
-							self._fltSetError("")
-							_success = true
-						} else {
-							print("=== DjiPlugin iOS: Delete media - file not found")
-							self._fltSetStatus("Delete Failed")
-							self._fltSetError("Delete media - file not found")
-							_success = false
-						}
-					} else {
-						print("=== DjiPlugin iOS: Delete media failed - no Playback Manager")
-						
-						self._fltSetStatus("Delete Failed")
-						self._fltSetError("Delete media failed - no Playback Manager")
-						_success = false
-					}
+					continuation.resume(returning: false)
+					return
 				}
+
+				print("=== DjiPlugin iOS: Delete media started")
+				self._fltSetStatus("Delete Started")
+				self._fltSetError("")
+				
+				guard let _droneMediaManager = _droneCamera.mediaManager else {
+					print("=== DjiPlugin iOS: Delete media failed - no Playback Manager")
+					self._fltSetStatus("Delete Failed")
+					self._fltSetError("Delete media failed - no Playback Manager")
+					continuation.resume(returning: false)
+					return
+				}
+
+				guard _index < self.mediaFileList.count, let selectedMedia = self.mediaFileList[_index] else {
+					print("=== DjiPlugin iOS: Delete media - file not found")
+					self._fltSetStatus("Delete Failed")
+					self._fltSetError("Delete media - file not found")
+					continuation.resume(returning: false)
+					return
+				}
+
+				_droneMediaManager.delete([selectedMedia])
+				
+				print("=== DjiPlugin iOS: Delete media completed")
+				self._fltSetStatus("Deleted")
+				self._fltSetError("")
+				continuation.resume(returning: true)
 			})
-		} else {
-			print("=== DjiPlugin iOS: Delete all media failed - no Camera object")
-			_fltSetStatus("Delete Failed")
-			_fltSetError("Delete all media failed - no Camera object")
-			_success = false
 		}
-		
-		return _success as NSNumber
 	}
 	
 	// MARK: - Video Feed Methods
 	
-	public func videoFeedStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func videoFeedStart() throws {
 		if let _droneCamera = drone?.camera {
 			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
 				if (error != nil) {
@@ -767,7 +781,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
-	public func videoFeedStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func videoFeedStop() throws {
 		if let _droneCamera = drone?.camera {
 			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
 				if (error != nil) {
@@ -796,7 +810,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		return true
 	}
 	
-	public func videoRecordStartWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func videoRecordStart() throws {
 		if let _droneCamera = drone?.camera {
 			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
 				if (error != nil) {
@@ -824,7 +838,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		}
 	}
 	
-	public func videoRecordStopWithError(_ error: AutoreleasingUnsafeMutablePointer<FlutterError?>) {
+	func videoRecordStop() throws {
 		if let _droneCamera = drone?.camera {
 			_droneCamera.setMode(DJICameraMode.recordVideo, withCompletion: { (error: Error?) in
 				if (error != nil) {
@@ -963,31 +977,26 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 	public func battery(_: DJIBattery, didUpdate state: DJIBatteryState) {
 		// Updating Flutter
-		fltDrone.batteryPercent = Double(state.chargeRemainingInPercent) as NSNumber
+		fltDrone.batteryPercent = Double(state.chargeRemainingInPercent)
 		// print("=== DjiPlugin iOS: Battery Percent \(fltDrone.batteryPercent ?? 0)%")
 
-		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
-			if let error = e {
-				print("=== DjiPlugin iOS: Error: SetStatus Closure Error")
-				NSLog("error: \(error.localizedDescription)")
-			}
-		}
+		_fltSendStatus("telemetry")
 	}
 
 	// MARK: - DJIFlightController Delegate Methods
 
 	public func flightController(_ fc: DJIFlightController, didUpdate state: DJIFlightControllerState) {
-		var _droneLatitude: NSNumber = 0
-		var _droneLongitude: NSNumber = 0
-		var _droneAltitude: NSNumber = 0
-		var _droneSpeed: NSNumber = 0
-		var _droneRoll: NSNumber = 0
-		var _dronePitch: NSNumber = 0
-		var _droneYaw: NSNumber = 0
+		var _droneLatitude: Double = 0
+		var _droneLongitude: Double = 0
+		var _droneAltitude: Double = 0
+		var _droneSpeed: Double = 0
+		var _droneRoll: Double = 0
+		var _dronePitch: Double = 0
+		var _droneYaw: Double = 0
 
 		if let altitude = state.aircraftLocation?.altitude {
 			// print("= iOS: Altitude - \(altitude)")
-			_droneAltitude = altitude as NSNumber
+			_droneAltitude = altitude
 		}
 
 		// Updating the drone's current location coordinates variable
@@ -997,23 +1006,23 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 
 		if let latitude = state.aircraftLocation?.coordinate.latitude {
 			// print("= iOS: Latitude - \(latitude)")
-			_droneLatitude = latitude as NSNumber
+			_droneLatitude = latitude
 		}
 
 		if let longitude = state.aircraftLocation?.coordinate.longitude {
 			// print("= iOS: Longitude - \(longitude)")
-			_droneLongitude = longitude as NSNumber
+			_droneLongitude = longitude
 		}
 
 		if let speed = state.aircraftLocation?.speed {
 			// print("= iOS: Speed - \(speed)")
-			_droneSpeed = speed as NSNumber
+			_droneSpeed = speed
 		}
 
 		// print("= iOS: Roll \(state.attitude.roll) | Pitch \(state.attitude.pitch) | Yaw \(state.attitude.yaw)")
-		_droneRoll = state.attitude.roll as NSNumber
-		_dronePitch = state.attitude.pitch as NSNumber
-		_droneYaw = state.attitude.yaw as NSNumber
+		_droneRoll = state.attitude.roll
+		_dronePitch = state.attitude.pitch
+		_droneYaw = state.attitude.yaw
 
 		// Confirm Landing
 		if state.isLandingConfirmationNeeded == true {
@@ -1029,12 +1038,7 @@ public class SwiftDjiPlugin: FLTDjiFlutterApi, FlutterPlugin, FLTDjiHostApi, DJI
 		fltDrone.pitch = _dronePitch
 		fltDrone.yaw = _droneYaw
 
-		SwiftDjiPlugin.fltDjiFlutterApi?.setStatusDrone(fltDrone) { e in
-			if let error = e {
-				print("=== DjiPlugin iOS: Error: SetStatus Closure Error")
-				NSLog("error: \(error.localizedDescription)")
-			}
-		}
+		_fltSendStatus("telemetry")
 	}
 
 	// MARK: - Flight Struct

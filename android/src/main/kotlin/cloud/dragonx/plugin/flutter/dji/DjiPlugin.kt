@@ -1,385 +1,292 @@
 package cloud.dragonx.plugin.flutter.dji
 
-import android.Manifest
-import android.app.Activity
 import android.content.Context
+import android.os.BatteryManager
 import android.util.Log
-import androidx.annotation.NonNull
-import androidx.multidex.MultiDex
-import com.secneo.sdk.Helper
-import dji.common.battery.BatteryState
-import dji.common.camera.SettingsDefinitions
-import dji.common.error.DJICameraError
-import dji.common.error.DJIError
-import dji.common.error.DJISDKError
-import dji.common.flightcontroller.FlightOrientationMode
-import dji.common.flightcontroller.LocationCoordinate3D
-import dji.common.flightcontroller.virtualstick.*
-import dji.common.gimbal.Rotation
-import dji.common.gimbal.RotationMode
-import dji.common.mission.waypoint.*
-import dji.common.model.LocationCoordinate2D
-import dji.common.util.CommonCallbacks
-import dji.midware.usb.P3.UsbAccessoryService
-import dji.sdk.base.BaseComponent
-import dji.sdk.base.BaseProduct
-import dji.sdk.base.BaseProduct.ComponentKey
-import dji.sdk.camera.Camera
-import dji.sdk.camera.VideoFeeder
-import dji.sdk.codec.DJICodecManager
-import dji.sdk.codec.DJICodecManager.YuvDataCallback
-import dji.sdk.flightcontroller.FlightController
-import dji.sdk.media.DownloadListener
-import dji.sdk.media.MediaFile
-import dji.sdk.media.MediaManager.FileListState
-import dji.sdk.mission.MissionControl
-import dji.sdk.mission.timeline.TimelineElement
-import dji.sdk.mission.timeline.TimelineMission
-import dji.sdk.mission.timeline.actions.LandAction
-import dji.sdk.mission.timeline.actions.RecordVideoAction
-import dji.sdk.mission.timeline.actions.ShootPhotoAction
-import dji.sdk.mission.timeline.actions.TakeOffAction
-import dji.sdk.products.Aircraft
-import dji.sdk.sdkmanager.DJISDKInitEvent
-import dji.sdk.sdkmanager.DJISDKManager
-import dji.sdk.sdkmanager.DJISDKManager.SDKManagerCallback
-import dji.sdk.sdkmanager.DJISDKManager.getInstance
+import com.dji.wpmzsdk.manager.WPMZManager
+import dji.sdk.keyvalue.key.BatteryKey
+import dji.sdk.keyvalue.key.CameraKey
+import dji.sdk.keyvalue.key.DJIKey
+import dji.sdk.keyvalue.key.DJIKeyInfo
+import dji.sdk.keyvalue.key.FlightControllerKey
+import dji.sdk.keyvalue.key.GimbalKey
+import dji.sdk.keyvalue.value.camera.CameraMode
+import dji.sdk.keyvalue.value.camera.CameraStorageLocation
+import dji.sdk.keyvalue.value.common.ComponentIndexType
+import dji.sdk.keyvalue.value.flightcontroller.FlightCoordinateSystem
+import dji.sdk.keyvalue.value.flightcontroller.FlightMode
+import dji.sdk.keyvalue.value.flightcontroller.RollPitchControlMode
+import dji.sdk.keyvalue.value.flightcontroller.VerticalControlMode
+import dji.sdk.keyvalue.value.flightcontroller.VirtualStickFlightControlParam
+import dji.sdk.keyvalue.value.flightcontroller.YawControlMode
+import dji.sdk.keyvalue.value.gimbal.GimbalAngleRotation
+import dji.sdk.keyvalue.value.gimbal.GimbalAngleRotationMode
+import dji.v5.common.callback.CommonCallbacks
+import dji.v5.common.error.IDJIError
+import dji.v5.common.register.DJISDKInitEvent
+import dji.v5.et.create
+import dji.v5.et.get
+import dji.v5.manager.KeyManager
+import dji.v5.manager.SDKManager
+import dji.v5.manager.aircraft.virtualstick.Stick
+import dji.v5.manager.aircraft.virtualstick.VirtualStickManager
+import dji.v5.manager.aircraft.waypoint3.WaypointMissionExecuteStateListener
+import dji.v5.manager.aircraft.waypoint3.WaypointMissionManager
+import dji.v5.manager.aircraft.waypoint3.model.WaypointMissionExecuteState
+import dji.v5.manager.datacenter.MediaDataCenter
+import dji.v5.manager.datacenter.media.MediaFile
+import dji.v5.manager.datacenter.media.MediaFileDownloadListener
+import dji.v5.manager.datacenter.media.MediaFileListDataSource
+import dji.v5.manager.datacenter.media.PullMediaFileListParam
+import dji.v5.manager.interfaces.ICameraStreamManager
+import dji.v5.manager.interfaces.SDKManagerCallback
+import dji.v5.network.DJINetworkManager
 import io.flutter.embedding.engine.plugins.FlutterPlugin
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.MethodChannel
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import java.io.BufferedOutputStream
 import java.io.File
-import java.nio.ByteBuffer
+import java.io.FileOutputStream
+import java.io.IOException
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.math.roundToInt
+import kotlin.math.sqrt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
+import org.json.JSONException
 
+/** DjiPlugin – the Android host side of the plugin, built on DJI MSDK v5. */
+class DjiPlugin : FlutterPlugin, DjiHostApi {
+  private lateinit var context: Context
+  private var flutterApi: DjiFlutterApi? = null
+  // All plugin state is read and written on the main thread; DJI callbacks hop onto it through this scope.
+  private var scope: CoroutineScope = MainScope()
 
-  /** DjiPlugin */
+  private var fltDrone = Drone()
+  private var sdkInitStarted = false
+  private var sdkInitialized = false
+  private var virtualStickEnabled = false
+  private var mediaPlaybackEnabled = false
+  private var mediaFileList: List<MediaFile> = emptyList()
+  private var timelineJob: Job? = null
+  private var videoFrameListener: ICameraStreamManager.CameraFrameListener? = null
 
-class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
-  private lateinit var channel: MethodChannel
-
-  // How to get context and activity in Flutter Plugin for android:
-  // https://www.jianshu.com/p/eb7df49fdfb1
-  private lateinit var djiPluginActivity: Activity
-  private lateinit var djiPluginContext: Context
-
-  var fltDjiFlutterApi: Messages.DjiFlutterApi? = null
-  val fltDrone = Messages.Drone()
-  val fltStream = Messages.Stream()
-
-  private var drone: Aircraft? = null
-  private var droneCurrentLocation: LocationCoordinate3D? = null // Note: this is different from DJI SDK iOS where CLLocation.coordinate is used (LocationCoordinate3D in dji-android is the same as CLLocation.coordinate in dji-ios).
-  private var mediaFileList: MutableList<MediaFile> = ArrayList<MediaFile>()
-  private lateinit var codecManager: DJICodecManager
-
-  override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    Messages.DjiHostApi.setup(flutterPluginBinding.binaryMessenger, this)
-    fltDjiFlutterApi = Messages.DjiFlutterApi(flutterPluginBinding.binaryMessenger)
-
-    this.djiPluginContext = flutterPluginBinding.applicationContext
+  override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    context = binding.applicationContext
+    scope = MainScope()
+    DjiHostApi.setUp(binding.binaryMessenger, this)
+    flutterApi = DjiFlutterApi(binding.binaryMessenger)
   }
 
-  override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
-    Messages.DjiHostApi.setup(binding.binaryMessenger, null)
+  override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+    DjiHostApi.setUp(binding.binaryMessenger, null)
+    flutterApi = null
+    if (sdkInitialized) {
+      KeyManager.getInstance().cancelListen(this)
+    }
+    scope.cancel()
+  }
 
-    val _missionControl = MissionControl.getInstance()
-    if (_missionControl != null && _missionControl.scheduledCount() > 0) {
-      _missionControl.unscheduleEverything()
-      _missionControl.removeAllListeners()
+  /** Status reporting **/
+
+  private fun report(status: String, error: String = "") {
+    scope.launch {
+      fltDrone = fltDrone.copy(status = status, error = error)
+      sendStatus()
     }
   }
 
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    this.djiPluginActivity = binding.activity
-
-    // [ ! ] DJI SDK Must be "installed" using this function, before any method of DJI SDK is used.
-    MultiDex.install(this.djiPluginContext)
-    Helper.install(this.djiPluginActivity.application)
-  }
-  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    onAttachedToActivity(binding)
-  }
-  override fun onDetachedFromActivityForConfigChanges() {}
-  override fun onDetachedFromActivity() {}
-
-  private fun _fltSetStatus(status: String) {
-    fltDrone.status = status
-
-    djiPluginActivity.runOnUiThread(Runnable {
-      fltDjiFlutterApi?.setStatus(fltDrone) {
-        Log.d(TAG, "setStatus Closure Success: $status")
-      }
-    })
+  private fun fail(status: String, message: String) {
+    Log.d(TAG, "$status: $message")
+    report(status, message)
   }
 
-  private fun _fltSetError(error: String) {
-    fltDrone.error = error
-
-    djiPluginActivity.runOnUiThread(Runnable {
-      fltDjiFlutterApi?.setStatus(fltDrone) {
-        Log.d(TAG, "setStatus (setting drone error) Closure Success: $error")
-      }
-    })
+  private fun updateDrone(update: (Drone) -> Drone) {
+    scope.launch {
+      fltDrone = update(fltDrone)
+      sendStatus()
+    }
   }
 
-  private fun _fltSendVideo(data: ByteArray?) {
-    fltStream.data = data
-
-    djiPluginActivity.runOnUiThread(Runnable {
-      fltDjiFlutterApi?.sendVideo(fltStream) {
-        //Log.d(TAG, "sendVideo Closure Success: ${data?.size}")
-      }
-    })
+  private suspend fun sendStatus() {
+    try {
+      flutterApi?.setStatus(fltDrone)
+    } catch (e: FlutterError) {
+      Log.d(TAG, "setStatus failed: ${e.message}")
+    }
   }
 
   /** Basic Methods **/
 
-  override fun getPlatformVersion(): Messages.Version {
-    val result = Messages.Version()
-    result.string = "Android ${android.os.Build.VERSION.RELEASE}"
-    return result
+  override fun getPlatformVersion(): Version {
+    return Version(string = "Android ${android.os.Build.VERSION.RELEASE}")
   }
 
-  override fun getBatteryLevel(): Messages.Battery {
-    TODO("Not yet implemented")
-  }
-
-  companion object {
-    private val TAG = "=== DjiPlugin Android"
-    const val FLAG_CONNECTION_CHANGE = "dji_sdk_connection_change"
-    private val mProduct: BaseProduct? = null
-    private val REQUIRED_PERMISSION_LIST = arrayOf<String>(
-      Manifest.permission.VIBRATE,
-      Manifest.permission.INTERNET,
-      Manifest.permission.ACCESS_WIFI_STATE,
-      Manifest.permission.WAKE_LOCK,
-      Manifest.permission.ACCESS_COARSE_LOCATION,
-      Manifest.permission.ACCESS_NETWORK_STATE,
-      Manifest.permission.ACCESS_FINE_LOCATION,
-      Manifest.permission.CHANGE_WIFI_STATE,
-      Manifest.permission.BLUETOOTH,
-      Manifest.permission.BLUETOOTH_ADMIN,
-      Manifest.permission.READ_EXTERNAL_STORAGE,
-      Manifest.permission.WRITE_EXTERNAL_STORAGE,
-      Manifest.permission.READ_MEDIA_IMAGES,
-      Manifest.permission.READ_MEDIA_AUDIO,
-      Manifest.permission.READ_MEDIA_VIDEO,
-      Manifest.permission.READ_PHONE_STATE
-    )
-    private const val REQUEST_PERMISSION_CODE = 12345
-    //private val isRegistrationInProgress: AtomicBoolean = AtomicBoolean(false)
+  override fun getBatteryLevel(): Battery {
+    // The host (mobile device) battery level, matching the iOS implementation.
+    val batteryManager = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+    return Battery(level = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY).toLong())
   }
 
   override fun registerApp() {
     Log.d(TAG, "Register App Started")
-    DJISDKManager.getInstance().registerApp(djiPluginContext, object: SDKManagerCallback {
-      override fun onRegister(djiError: DJIError) {
-        if (djiError === DJISDKError.REGISTRATION_SUCCESS) {
-          //DJILog.e("App registration", DJISDKError.REGISTRATION_SUCCESS.description)
-          Log.d(TAG, "Register Success")
-          _fltSetStatus("Registered")
-          _fltSetError("")
-        } else {
-          Log.d(TAG, "Register Failed")
-          Log.d(TAG, djiError.description)
-          _fltSetStatus("Error")
-          _fltSetError(djiError.description)
+    if (sdkInitialized) {
+      SDKManager.getInstance().registerApp()
+      return
+    }
+    if (sdkInitStarted) return
+
+    try {
+      SDKManager.getInstance().init(context, sdkManagerCallback)
+    } catch (e: LinkageError) {
+      // Thrown when DjiApplication did not install the SDK before its classes were loaded.
+      fail("Error", "DJI SDK is not installed. Set android:name=\"cloud.dragonx.plugin.flutter.dji.DjiApplication\" on <application> in AndroidManifest.xml. (${e.message})")
+      return
+    }
+    sdkInitStarted = true
+    WPMZManager.getInstance().init(context)
+
+    // Registration needs internet access. As in DJI's sample, retry once the network becomes available.
+    DJINetworkManager.getInstance().addNetworkStatusListener { isAvailable ->
+      if (sdkInitialized && isAvailable && !SDKManager.getInstance().isRegistered) {
+        SDKManager.getInstance().registerApp()
+      }
+    }
+  }
+
+  private val sdkManagerCallback = object : SDKManagerCallback {
+    override fun onRegisterSuccess() {
+      Log.d(TAG, "Register Success")
+      report("Registered")
+    }
+
+    override fun onRegisterFailure(error: IDJIError) {
+      fail("Error", "Register app failed: ${error.message()}")
+    }
+
+    override fun onProductConnect(productId: Int) {
+      Log.d(TAG, "Product Connected: $productId")
+      report("Connected")
+    }
+
+    override fun onProductDisconnect(productId: Int) {
+      Log.d(TAG, "Product Disconnected: $productId")
+      scope.launch { virtualStickEnabled = false }
+      report("Disconnected")
+    }
+
+    override fun onProductChanged(productId: Int) {
+      Log.d(TAG, "Product Changed: $productId")
+    }
+
+    override fun onInitProcess(event: DJISDKInitEvent, totalProcess: Int) {
+      if (event == DJISDKInitEvent.INITIALIZE_COMPLETE) {
+        scope.launch {
+          sdkInitialized = true
+          SDKManager.getInstance().registerApp()
         }
       }
+    }
 
-      override fun onProductConnect(baseProduct: BaseProduct) {
-        Log.d(TAG, String.format("Product Connected: %s", baseProduct))
-        _fltSetStatus("Connected")
-        _fltSetError("")
-      }
-
-      override fun onProductDisconnect() {
-        Log.d(TAG, "Product Disconnected")
-        _fltSetStatus("Disconnected")
-        _fltSetError("")
-      }
-
-      override fun onProductChanged(baseProduct: BaseProduct) {}
-
-      override fun onComponentChange(
-        componentKey: ComponentKey, oldComponent: BaseComponent?,
-        newComponent: BaseComponent?
-      ) {
-        if (newComponent != null) {
-          newComponent.setComponentListener { isConnected ->
-            Log.d(TAG,"onComponentConnectivityChanged: $isConnected")
-          }
-        }
-        Log.d(
-          TAG, String.format(
-            "onComponentChange key: %s, oldComponent: %s, newComponent: %s",
-            componentKey,
-            oldComponent,
-            newComponent
-          )
-        )
-      }
-
-      override fun onInitProcess(djisdkInitEvent: DJISDKInitEvent, i: Int) {}
-      override fun onDatabaseDownloadProgress(l: Long, l1: Long) {}
-    })
+    override fun onDatabaseDownloadProgress(current: Long, total: Long) {}
   }
 
   override fun connectDrone() {
+    // MSDK v5 connects to the aircraft automatically once the app is registered; report the current state.
     Log.d(TAG, "Connect Drone Started")
-    DJISDKManager.getInstance().startConnectionToProduct()
+    if (!sdkInitialized) {
+      fail("Error", "Connect drone failed - call registerApp first")
+      return
+    }
+    val connected = getValue(FlightControllerKey.KeyConnection, false)
+    report(if (connected) "Connected" else "Disconnected")
   }
 
   override fun disconnectDrone() {
-    Log.d(TAG, "Disconnect Drone Started")
-    DJISDKManager.getInstance().stopConnectionToProduct()
+    fail("Error", "Disconnect drone is not supported by DJI MSDK v5 - the SDK manages the connection")
   }
 
   override fun delegateDrone() {
     Log.d(TAG, "Delegate Drone Started")
-    val product = DJISDKManager.getInstance().product
-    if (product != null) {
-      drone = (DJISDKManager.getInstance().product) as Aircraft?
-
-      if (drone != null && (drone is Aircraft)) {
-        if ((drone as Aircraft).flightController != null) {
-          Log.d(TAG, "Drone Flight Controller successfully configured")
-
-          // Configuring the Flight Controller State Callbacks
-          (drone as Aircraft).flightController.setStateCallback { state ->
-            var _droneLatitude: Double = 0.00
-            var _droneLongitude: Double = 0.00
-            var _droneAltitude: Double = 0.00
-            var _droneSpeed: Double = 0.00
-            var _droneRoll: Double = 0.00
-            var _dronePitch: Double = 0.00
-            var _droneYaw: Double = 0.00
-
-            val altitude = state.aircraftLocation?.altitude
-            if (altitude != null) {
-              _droneAltitude = altitude.toDouble()
-            }
-
-            // Updating the drone's current location coordinates variable
-            val droneLocation = state.aircraftLocation
-            if (droneLocation != null) {
-              droneCurrentLocation = droneLocation
-            }
-
-            val latitude = state.aircraftLocation?.latitude
-            if (latitude != null) {
-              _droneLatitude = latitude
-            }
-
-            val longitude = state.aircraftLocation?.longitude
-            if (longitude != null) {
-              _droneLongitude = longitude
-            }
-
-            val speed = Math.sqrt(Math.pow(state.velocityX.toDouble(), 2.00) + Math.pow(state.velocityX.toDouble(), 2.00))
-            _droneSpeed = speed
-
-            _droneRoll = state.attitude.roll
-            _dronePitch = state.attitude.pitch
-            _droneYaw = state.attitude.yaw
-
-            // Confirm Landing
-            if (state.isLandingConfirmationNeeded) {
-              (drone as Aircraft).flightController.confirmLanding(null)
-            }
-
-            // Updating Flutter
-            fltDrone.latitude = _droneLatitude
-            fltDrone.longitude = _droneLongitude
-            fltDrone.altitude = _droneAltitude
-            fltDrone.speed = _droneSpeed
-            fltDrone.roll = _droneRoll
-            fltDrone.pitch = _dronePitch
-            fltDrone.yaw = _droneYaw
-
-            djiPluginActivity.runOnUiThread(Runnable {
-              fltDjiFlutterApi?.setStatus(fltDrone) {
-//                Log.d(TAG, "setStatus Closure Success")
-              }
-            })
-          }
-        } else {
-          Log.d(TAG, "Drone Flight Controller Object does not exist")
-          _fltSetStatus("Error")
-          _fltSetError("Drone Flight Controller Object does not exist")
-          return
-        }
-
-        try {
-          (drone as Aircraft).getBattery()
-            .setStateCallback(BatteryState.Callback { djiBatteryState ->
-              // Updating Flutter
-              fltDrone.batteryPercent = djiBatteryState.chargeRemainingInPercent.toDouble()
-
-              djiPluginActivity.runOnUiThread(Runnable {
-                fltDjiFlutterApi?.setStatus(fltDrone) {}
-              })
-
-              //Log.d(TAG, "Drone Battery Delegate successfully configured")
-            })
-        } catch (ignored: Exception) {
-          Log.d(TAG, "Drone Battery Delegate Error - No Battery Object")
-          _fltSetStatus("Error")
-          _fltSetError("Drone Battery Delegate Error - No Battery Object")
-        }
-
-        Log.d(TAG, "Delegations completed")
-        _fltSetStatus("Delegated")
-        _fltSetError("")
-      } else {
-        Log.d(TAG,"Error - Delegations - DJI Aircraft Object does not exist")
-        _fltSetStatus("Error")
-        _fltSetError("Delegations - DJI Aircraft Object does not exist")
-      }
-    } else {
-      Log.d(TAG, "Error - Delegations - DJI Product Object does not exist")
-      _fltSetStatus("Error")
-      _fltSetError("Delegations - DJI Product Object does not exist")
+    if (!sdkInitialized) {
+      fail("Error", "Delegations - DJI SDK is not initialized - call registerApp first")
+      return
     }
+
+    val keyManager = KeyManager.getInstance()
+    keyManager.cancelListen(this)
+
+    keyManager.listen(FlightControllerKey.KeyAircraftLocation3D.create(), this) { _, location ->
+      if (location != null) {
+        updateDrone {
+          it.copy(latitude = location.latitude, longitude = location.longitude, altitude = location.altitude)
+        }
+      }
+    }
+    keyManager.listen(FlightControllerKey.KeyAircraftVelocity.create(), this) { _, velocity ->
+      if (velocity != null) {
+        updateDrone { it.copy(speed = sqrt(velocity.x * velocity.x + velocity.y * velocity.y)) }
+      }
+    }
+    keyManager.listen(FlightControllerKey.KeyAircraftAttitude.create(), this) { _, attitude ->
+      if (attitude != null) {
+        updateDrone { it.copy(roll = attitude.roll, pitch = attitude.pitch, yaw = attitude.yaw) }
+      }
+    }
+    keyManager.listen(BatteryKey.KeyChargeRemainingInPercent.create(), this) { _, percent ->
+      if (percent != null) {
+        updateDrone { it.copy(batteryPercent = percent.toDouble()) }
+      }
+    }
+    // Confirm Landing, as the DJI SDK v4 implementation did.
+    keyManager.listen(FlightControllerKey.KeyIsLandingConfirmationNeeded.create(), this) { _, needed ->
+      if (needed == true) {
+        scope.launch {
+          try {
+            FlightControllerKey.KeyConfirmLanding.create().perform()
+          } catch (e: DjiException) {
+            Log.d(TAG, "Confirm landing failed: ${e.message}")
+          }
+        }
+      }
+    }
+
+    Log.d(TAG, "Delegations completed")
+    report("Delegated")
   }
 
   override fun takeOff() {
     Log.d(TAG, "Takeoff Started")
-    if ((drone as Aircraft).flightController != null) {
-      Log.d(TAG,"Takeoff Started")
-      _fltSetStatus("Takeoff")
-      _fltSetError("")
-      (drone as Aircraft).flightController.startTakeoff(null)
-    } else {
-      Log.d(TAG,"Takeoff Failed - No Flight Controller")
-      _fltSetStatus("Takeoff Failed")
-      _fltSetError("Takeoff Failed - No Flight Controller")
+    report("Takeoff")
+    scope.launch {
+      try {
+        FlightControllerKey.KeyStartTakeoff.create().perform()
+      } catch (e: DjiException) {
+        fail("Takeoff Failed", "Takeoff Failed - ${e.message}")
+      }
     }
   }
 
   override fun land() {
     Log.d(TAG, "Land Started")
-    if ((drone as Aircraft).flightController != null) {
-      Log.d(TAG,"Landing Started")
-      _fltSetStatus("Land")
-      _fltSetError("")
-      (drone as Aircraft).flightController.startLanding(null)
-    } else {
-      Log.d(TAG,"Landing Failed - No Flight Controller")
-      _fltSetStatus("Land Failed")
-      _fltSetError("Land Failed - No Flight Controller")
+    report("Land")
+    scope.launch {
+      try {
+        FlightControllerKey.KeyStartAutoLanding.create().perform()
+      } catch (e: DjiException) {
+        fail("Land Failed", "Land Failed - ${e.message}")
+      }
     }
   }
 
   /** Mobile Remote Controller **/
-  // https://github.com/dji-sdk/Mobile-SDK-Android/blob/241af9a45b2753873c601b3988192bb202ed4c30/Sample%20Code/app/src/main/java/com/dji/sdk/sample/demo/mobileremotecontroller/MobileRemoteControllerView.java
+  // MSDK v5 has no mobile remote controller; its virtual stick positions replace it.
 
   override fun mobileRemoteController(
     enabled: Boolean,
@@ -388,22 +295,31 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     rightStickHorizontal: Double,
     rightStickVertical: Double
   ) {
-    if (drone?.mobileRemoteController?.isConnected == true) {
-      drone?.mobileRemoteController?.leftStickHorizontal = leftStickHorizontal.toFloat()
-      drone?.mobileRemoteController?.leftStickVertical = leftStickVertical.toFloat()
-      drone?.mobileRemoteController?.rightStickHorizontal = rightStickHorizontal.toFloat()
-      drone?.mobileRemoteController?.rightStickVertical = rightStickVertical.toFloat()
-      _fltSetStatus("Mobile Remote")
-      _fltSetError("")
-    } else {
-      Log.d(TAG, "Mobile Remote - isConnected FALSE")
-      _fltSetStatus("Mobile Remote Failed")
-      _fltSetError("Mobile Remote - isConnected FALSE")
+    scope.launch {
+      try {
+        if (!enabled) {
+          disableVirtualStick()
+          report("Mobile Remote")
+          return@launch
+        }
+        enableVirtualStick(advancedMode = false)
+        val manager = VirtualStickManager.getInstance()
+        manager.leftStick.horizontalPosition = stickPosition(leftStickHorizontal)
+        manager.leftStick.verticalPosition = stickPosition(leftStickVertical)
+        manager.rightStick.horizontalPosition = stickPosition(rightStickHorizontal)
+        manager.rightStick.verticalPosition = stickPosition(rightStickVertical)
+        report("Mobile Remote")
+      } catch (e: DjiException) {
+        fail("Mobile Remote Failed", "Mobile Remote failed with error ${e.message}")
+      }
     }
   }
 
+  /** Converts a DJI SDK v4 stick value in [-1, 1] to an MSDK v5 stick position. */
+  private fun stickPosition(value: Double): Int =
+    (value.coerceIn(-1.0, 1.0) * Stick.MAX_STICK_POSITION_ABS).roundToInt()
+
   /** Virtual Stick Methods **/
-  // https://github.com/dji-sdk/Mobile-SDK-Android/blob/master/Sample%20Code/app/src/main/java/com/dji/sdk/sample/demo/flightcontroller/VirtualStickView.java
 
   override fun virtualStick(
     enabled: Boolean,
@@ -412,749 +328,449 @@ class DjiPlugin: FlutterPlugin, Messages.DjiHostApi, ActivityAware {
     yaw: Double,
     verticalThrottle: Double
   ) {
-    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
-    if (_droneFlightController == null) {
-      Log.d(TAG, "Virtual Stick - No Flight Controller")
-      _fltSetStatus("Virtual Stick Failed")
-      _fltSetError("Virtual Stick - No Flight Controller")
-      return
-    }
-
-    _droneFlightController.setVirtualStickModeEnabled(true) { error ->
-      if (error != null) {
-        Log.d(TAG, "Enable Virtual Stick failed with error" + error.description)
-        _fltSetStatus("Virtual Stick Failed")
-        _fltSetError("Enable Virtual Stick failed with error" + error.description)
-      } else {
-        val virtualStickControlData = FlightControlData(pitch.toFloat(), roll.toFloat(), yaw.toFloat(), verticalThrottle.toFloat())
-        // Setting the drone's flight control parameters for easy Virtual Stick usage
-        _droneFlightController.setFlightOrientationMode(FlightOrientationMode.AIRCRAFT_HEADING) { error ->
-          // Mandatory for Virtual Stick Control Mode to be available.
-          if (error != null) {
-            Log.d(TAG, "Virtual Stick - setFlightOrientationMode (as FlightOrientationMode.AIRCRAFT_HEADING) failed with error" + error.description)
-            _fltSetStatus("Virtual Stick Failed")
-            _fltSetError("Virtual Stick - setFlightOrientationMode (as FlightOrientationMode.AIRCRAFT_HEADING) failed with error" + error.description)
-          }
-        } // Mandatory for Virtual Stick Control Mode to be available.
-        //_droneFlightController.isVirtualStickAdvancedModeEnabled = true
-        _droneFlightController.rollPitchCoordinateSystem = FlightCoordinateSystem.BODY
-        _droneFlightController.rollPitchControlMode = RollPitchControlMode.ANGLE
-        _droneFlightController.yawControlMode = YawControlMode.ANGLE
-        _droneFlightController.verticalControlMode = VerticalControlMode.POSITION
-
-        if (!_droneFlightController.isVirtualStickControlModeAvailable) {
-          Log.d(TAG, "Virtual Stick control mode is not available")
-          _fltSetStatus("Virtual Stick Failed")
-          _fltSetError("Virtual Stick control mode is not available")
-        } else {
-          _droneFlightController.sendVirtualStickFlightControlData(virtualStickControlData) { error ->
-            if (error != null) {
-              Log.d(TAG, "Virtual Stick send failed with error" + error.description)
-              _fltSetStatus("Virtual Stick Failed")
-              _fltSetError("Virtual Stick send failed with error" + error.description)
-            } else {
-              _fltSetStatus("Virtual Stick")
-              _fltSetError("")
-            }
-          }
+    scope.launch {
+      try {
+        if (!enabled) {
+          disableVirtualStick()
+          report("Virtual Stick")
+          return@launch
         }
+        enableVirtualStick(advancedMode = true)
+        // The same control modes the DJI SDK v4 implementation used.
+        val param = VirtualStickFlightControlParam().apply {
+          this.pitch = pitch
+          this.roll = roll
+          this.yaw = yaw
+          this.verticalThrottle = verticalThrottle
+          rollPitchCoordinateSystem = FlightCoordinateSystem.BODY
+          rollPitchControlMode = RollPitchControlMode.ANGLE
+          yawControlMode = YawControlMode.ANGLE
+          verticalControlMode = VerticalControlMode.POSITION
+        }
+        VirtualStickManager.getInstance().sendVirtualStickAdvancedParam(param)
+        report("Virtual Stick")
+      } catch (e: DjiException) {
+        fail("Virtual Stick Failed", "Enable Virtual Stick failed with error ${e.message}")
       }
     }
+  }
+
+  private suspend fun enableVirtualStick(advancedMode: Boolean) {
+    val manager = VirtualStickManager.getInstance()
+    if (!virtualStickEnabled) {
+      awaitCompletion { manager.enableVirtualStick(it) }
+      virtualStickEnabled = true
+    }
+    manager.setVirtualStickAdvancedModeEnabled(advancedMode)
+  }
+
+  private suspend fun disableVirtualStick() {
+    if (!virtualStickEnabled) return
+    awaitCompletion { VirtualStickManager.getInstance().disableVirtualStick(it) }
+    virtualStickEnabled = false
   }
 
   /** Gimbal Methods **/
 
   override fun gimbalRotatePitch(degrees: Double) {
-    if (drone?.gimbal?.isConnected == true) {
-      //drone?.gimbal?.setMode(GimbalMode.YAW_FOLLOW)
-      val djiGimbalRotation = Rotation.Builder().pitch(degrees.toFloat()).mode(RotationMode.ABSOLUTE_ANGLE)
-        .yaw(Rotation.NO_ROTATION)
-        .roll(Rotation.NO_ROTATION)
-        .time(1.0)
-        .build()
-      drone?.gimbal?.rotate(djiGimbalRotation) { error ->
-        if (error != null) {
-          Log.d(TAG, "Gimbal Rotate failed with error" + error.description)
-          _fltSetStatus("Gimbal Failed")
-          _fltSetError("Gimbal Rotate failed with error" + error.description)
-        } else {
-          _fltSetStatus("Gimbal Rotated")
-          _fltSetError("")
-        }
+    val rotation = GimbalAngleRotation().apply {
+      mode = GimbalAngleRotationMode.ABSOLUTE_ANGLE
+      pitch = degrees
+      rollIgnored = true
+      yawIgnored = true
+      duration = 1.0
+    }
+    scope.launch {
+      try {
+        GimbalKey.KeyRotateByAngle.create(ComponentIndexType.LEFT_OR_MAIN).perform(rotation)
+        report("Gimbal Rotated")
+      } catch (e: DjiException) {
+        fail("Gimbal Failed", "Gimbal Rotate failed with error ${e.message}")
       }
-    } else {
-      Log.d(TAG, "Gimbal - isConnected FALSE")
-      _fltSetStatus("Gimbal Failed")
-      _fltSetError("Gimbal - isConnected FALSE")
     }
   }
 
   /** Timeline Methods **/
+  // MSDK v5 has no MissionControl timeline, so the plugin runs the elements one after another.
 
   override fun start(flightJson: String) {
     Log.d(TAG, "Start Flight JSON: $flightJson")
 
-    try {
-      val json = Json {
-        ignoreUnknownKeys = true
-      }
-      val f: Flight = json.decodeFromString<Flight>(flightJson)
-      Log.d(TAG, "Start Flight JSON parsed successfully: $f")
+    val flight = try {
+      Flight.fromJson(flightJson)
+    } catch (e: JSONException) {
+      fail("Start Failed", "Error - Failed to parse Flight JSON: ${e.message}")
+      return
+    }
 
-      startFlightTimeline(f)
-    } catch (e: Error) {
-      Log.d(TAG, "Error - Failed to parse Flight JSON: ${e.message}")
-      _fltSetStatus("Start Failed")
-      _fltSetError("Error - Failed to parse Flight JSON: ${e.message}")
+    val timeline = flight.timeline
+    if (timeline.isNullOrEmpty()) {
+      fail("Start Failed", "startFlightTimeline - Timeline List is empty")
+      return
+    }
+    if (timelineJob?.isActive == true) {
+      fail("Start Failed", "startFlightTimeline - Timeline already running")
+      return
+    }
+
+    timelineJob = scope.launch {
+      try {
+        // Set Home Location Coordinates (best effort, as in the DJI SDK v4 implementation)
+        try {
+          FlightControllerKey.KeyHomeLocationUsingCurrentAircraftLocation.create().perform()
+        } catch (e: DjiException) {
+          Log.d(TAG, "startFlightTimeline - setting the home location failed: ${e.message}")
+        }
+
+        report("Started")
+        for (element in timeline) {
+          runTimelineElement(element)
+        }
+        report("Timeline Finished")
+      } catch (e: DjiException) {
+        fail("Start Failed", "Timeline Failed - ${e.message}")
+      }
     }
   }
 
-  private fun startFlightTimeline(flight: Flight) {
-    val timeline = flight.timeline
-    if (timeline == null || timeline.isEmpty()) {
-      Log.d(TAG, "startFlightTimeline - Timeline List is empty")
-      _fltSetStatus("Start Failed")
-      _fltSetError("startFlightTimeline - Timeline List is empty")
-      return
-    }
-
-    val _droneFlightController : FlightController? = (drone as Aircraft).flightController
-    if (_droneFlightController == null) {
-      Log.d(TAG, "startFlightTimeline - No Flight Controller")
-      _fltSetStatus("Start Failed")
-      _fltSetError("startFlightTimeline - No Flight Controller")
-      return
-    }
-
-    if (MissionControl.getInstance().isTimelineRunning == true) {
-      Log.d(TAG, "startFlightTimeline - Timeline already running - attempting to stop it")
-      _fltSetStatus("Start Failed")
-      _fltSetError("startFlightTimeline - Timeline already running - attempting to stop it")
-      return
-    }
-
-    // Set Home Location Coordinates
-    if (droneCurrentLocation != null) {
-      val droneHomeLocation =
-        LocationCoordinate2D(droneCurrentLocation!!.latitude, droneCurrentLocation!!.longitude)
-      _droneFlightController.setHomeLocation(droneHomeLocation, null)
-      Log.d(
-        TAG,
-        "startFlightTimeline - Drone Home Location Coordinates: " + droneHomeLocation.latitude + ", " + droneHomeLocation.longitude
-      )
-    }
-
-    val scheduledElements: MutableList<TimelineElement> = ArrayList<TimelineElement>()
-
-    for (flightElement in flight.timeline) {
-      when (flightElement.type) {
-        "takeOff" -> {
-          // Take Off
-          scheduledElements.add(TakeOffAction())
-        }
-
-        "land" -> {
-          // Land
-          scheduledElements.add(LandAction())
-        }
-
-        "waypointMission" -> {
-          // Waypoint Mission
-          val wayPointMission = waypointMission(flightElement)
-          if (wayPointMission != null) {
-            val waypointMissionAsTimelineElement = TimelineMission.elementFromWaypointMission(wayPointMission)
-            scheduledElements.add(waypointMissionAsTimelineElement)
-          }
-        }
-
-        "hotpointAction" -> {
-          TODO("Hotpoint Action to be implemented...")
-        }
-
-        "singleShootPhoto" -> {
-          scheduledElements.add(ShootPhotoAction.newShootSinglePhotoAction())
-        }
-
-        "startRecordVideo" -> {
-          scheduledElements.add(RecordVideoAction.newStartRecordVideoAction())
-        }
-
-        "stopRecordVideo" -> {
-          scheduledElements.add(RecordVideoAction.newStopRecordVideoAction())
+  private suspend fun runTimelineElement(element: FlightElement) {
+    Log.d(TAG, "Timeline element: ${element.type}")
+    when (element.type) {
+      "takeOff" -> {
+        FlightControllerKey.KeyStartTakeoff.create().perform()
+        // Takeoff is complete once the aircraft is flying and has left the automatic takeoff mode.
+        waitUntil(TAKEOFF_TIMEOUT_MS) {
+          getValue(FlightControllerKey.KeyIsFlying, false) &&
+            getValue(FlightControllerKey.KeyFlightMode, FlightMode.UNKNOWN) != FlightMode.AUTO_TAKE_OFF
         }
       }
-    }
 
-    val _missionControl = MissionControl.getInstance()
-    if (_missionControl != null) {
-        // Making sure the MissionControl Timeline is clean
-        _missionControl.unscheduleEverything()
+      "land" -> {
+        FlightControllerKey.KeyStartAutoLanding.create().perform()
+        waitUntil(LANDING_TIMEOUT_MS) { !getValue(FlightControllerKey.KeyIsFlying, true) }
+      }
 
-        // Listening for DJI Mission Control errors
-        _missionControl.removeAllListeners()
-        _missionControl.addListener(MissionControl.Listener {
-            element, event, error ->
-              if (element != null) {
-                if (element is TimelineMission) {
-                  Log.d(TAG, (element as TimelineMission).missionObject.javaClass.simpleName + " event is " + event.toString() + " " + if (error == null) "" else error.description)
-                } else {
-                  Log.d(TAG, element.javaClass.simpleName + " event is " + event.toString() + " " + if (error == null) "" else error.description)
-                }
-              } else {
-                Log.d(TAG, "Timeline Event is $event " + if (error == null) "" else "Failed:" + error.description)
-              }
-        })
+      "waypointMission" -> runWaypointMission(element)
 
-        // Adding the scheduled elements
-        _missionControl.scheduleElements(scheduledElements)
+      "singleShootPhoto" -> {
+        setCameraMode(CameraMode.PHOTO_NORMAL)
+        CameraKey.KeyStartShootPhoto.create(ComponentIndexType.LEFT_OR_MAIN).perform()
+      }
 
-        // Starting the Timeline Mission
-        _missionControl.startTimeline()
-    } else {
-      Log.d(TAG, "startFlightTimeline - No Mission Control or Scheduled Elements")
-      _fltSetStatus("Start Failed")
-      _fltSetError("startFlightTimeline - No Mission Control or Scheduled Elements")
-      return
+      "startRecordVideo" -> {
+        setCameraMode(CameraMode.VIDEO_NORMAL)
+        CameraKey.KeyStartRecord.create(ComponentIndexType.LEFT_OR_MAIN).perform()
+      }
+
+      "stopRecordVideo" -> CameraKey.KeyStopRecord.create(ComponentIndexType.LEFT_OR_MAIN).perform()
+
+      else -> Log.d(TAG, "Timeline element ${element.type} is not supported - skipping")
     }
   }
 
   /** Waypoint Methods */
 
-  private fun waypointMission(flightElementWaypointMission: FlightElement): WaypointMission? {
-
-    var _maxFlightSpeed: Float = 15.toFloat()
-    if (flightElementWaypointMission.maxFlightSpeed != null) {
-      _maxFlightSpeed = flightElementWaypointMission.maxFlightSpeed.toFloat()
+  private suspend fun runWaypointMission(element: FlightElement) {
+    val kmzFile = File(context.cacheDir, "dji_waypoints/$WAYPOINT_MISSION_NAME.kmz")
+    if (WaypointKmz.generate(kmzFile, element) == 0) {
+      throw DjiException("waypointMission - No waypoints available")
     }
 
-    var _autoFlightSpeed: Float = 8.toFloat()
-    if (flightElementWaypointMission.autoFlightSpeed != null) {
-      _autoFlightSpeed = flightElementWaypointMission.autoFlightSpeed.toFloat()
+    val manager = WaypointMissionManager.getInstance()
+    suspendCancellableCoroutine { continuation ->
+      manager.pushKMZFileToAircraft(kmzFile.path, object : CommonCallbacks.CompletionCallbackWithProgress<Double> {
+        override fun onProgressUpdate(progress: Double) {}
+        override fun onSuccess() {
+          if (continuation.isActive) continuation.resume(Unit)
+        }
+        override fun onFailure(error: IDJIError) {
+          if (continuation.isActive) continuation.resumeWithException(DjiException(error))
+        }
+      })
     }
 
-    val _finishedAction: WaypointMissionFinishedAction = when (flightElementWaypointMission.finishedAction) {
-      "autoLand" -> WaypointMissionFinishedAction.AUTO_LAND
-      "continueUntilStop" -> WaypointMissionFinishedAction.CONTINUE_UNTIL_END
-      else -> WaypointMissionFinishedAction.NO_ACTION
-    }
-
-    val _headingMode: WaypointMissionHeadingMode = when (flightElementWaypointMission.headingMode) {
-      "auto" -> WaypointMissionHeadingMode.AUTO
-      "towardPointOfInterest" -> WaypointMissionHeadingMode.TOWARD_POINT_OF_INTEREST
-      else -> WaypointMissionHeadingMode.USING_WAYPOINT_HEADING
-    }
-
-    val _flightPathMode: WaypointMissionFlightPathMode = when (flightElementWaypointMission.flightPathMode) {
-      "normal" -> WaypointMissionFlightPathMode.NORMAL
-      else -> WaypointMissionFlightPathMode.CURVED
-    }
-
-    var _rotateGimbalPitch: Boolean = true
-    if (flightElementWaypointMission.rotateGimbalPitch != null) {
-      _rotateGimbalPitch = flightElementWaypointMission.rotateGimbalPitch
-    }
-
-    var _exitMissionOnRCSignalLost: Boolean = true
-    if (flightElementWaypointMission.exitMissionOnRCSignalLost != null) {
-      _exitMissionOnRCSignalLost = flightElementWaypointMission.exitMissionOnRCSignalLost
-    }
-
-    val missionBuilder: WaypointMission.Builder = WaypointMission.Builder()
-      .maxFlightSpeed(_maxFlightSpeed)
-      .autoFlightSpeed(_autoFlightSpeed)
-      .finishedAction(_finishedAction)
-      .headingMode(_headingMode)
-      .flightPathMode(_flightPathMode)
-      .setGimbalPitchRotationEnabled(_rotateGimbalPitch)
-      .setExitMissionOnRCSignalLostEnabled(_exitMissionOnRCSignalLost)
-      .gotoFirstWaypointMode(WaypointMissionGotoWaypointMode.POINT_TO_POINT)
-      .repeatTimes(1)
-
-    if (flightElementWaypointMission.pointOfInterest != null && flightElementWaypointMission.pointOfInterest.latitude != null && flightElementWaypointMission.pointOfInterest.longitude != null) {
-      missionBuilder.pointOfInterest = LocationCoordinate2D(flightElementWaypointMission.pointOfInterest.latitude, flightElementWaypointMission.pointOfInterest.longitude)
-    }
-
-    val flightWaypoints = flightElementWaypointMission.waypoints
-    if (flightWaypoints != null) {
-      var waypoints : MutableList<Waypoint> = ArrayList<Waypoint>()
-
-      for (flightWaypoint in flightWaypoints) {
-        val _latitude = flightWaypoint.location?.latitude
-        val _longitude = flightWaypoint.location?.longitude
-        val _altitude = flightWaypoint.location?.altitude
-
-        if (_latitude != null && _longitude != null && _altitude != null) {
-          val waypoint: Waypoint = Waypoint(_latitude, _longitude, _altitude.toFloat())
-          waypoint.heading = flightWaypoint.heading?.toInt() ?: 0
-          waypoint.cornerRadiusInMeters = flightWaypoint.cornerRadiusInMeters?.toFloat() ?: 5.toFloat()
-          waypoint.turnMode = when (flightWaypoint.turnMode) {
-            "counterClockwise" -> WaypointTurnMode.COUNTER_CLOCKWISE
-            else -> WaypointTurnMode.CLOCKWISE
+    // Completes when the mission finishes, or fails when it stops early.
+    var executing = false
+    suspendCancellableCoroutine { continuation ->
+      val listener = object : WaypointMissionExecuteStateListener {
+        override fun onMissionStateUpdate(state: WaypointMissionExecuteState) {
+          when (state) {
+            WaypointMissionExecuteState.EXECUTING -> executing = true
+            WaypointMissionExecuteState.FINISHED -> finish(null)
+            WaypointMissionExecuteState.DISCONNECTED,
+            WaypointMissionExecuteState.NOT_SUPPORTED -> finish("Waypoint mission stopped: $state")
+            WaypointMissionExecuteState.IDLE,
+            WaypointMissionExecuteState.READY -> if (executing) finish("Waypoint mission stopped before finishing")
+            else -> {}
           }
-          waypoint.gimbalPitch = flightWaypoint.gimbalPitch?.toFloat() ?: 0.toFloat()
-          waypoint.actionTimeoutInSeconds = 30
-          waypoint.actionRepeatTimes = 1
+        }
 
-          waypoints.add(waypoint)
-        } else {
-          Log.d(TAG,"waypointMission - waypoint without location coordinates - skipping")
+        fun finish(error: String?) {
+          manager.removeWaypointMissionExecuteStateListener(this)
+          if (!continuation.isActive) return
+          if (error == null) continuation.resume(Unit) else continuation.resumeWithException(DjiException(error))
         }
       }
+      manager.addWaypointMissionExecuteStateListener(listener)
+      continuation.invokeOnCancellation { manager.removeWaypointMissionExecuteStateListener(listener) }
 
-      missionBuilder.waypointList(waypoints).waypointCount(waypoints.size)
-
-    } else {
-      Log.d(TAG, "waypointMission - No waypoints available - exiting")
-      _fltSetStatus("Error")
-      _fltSetError("waypointMission - No waypoints available - exiting")
+      manager.startMission(
+        WAYPOINT_MISSION_NAME,
+        manager.getAvailableWaylineIDs(kmzFile.path),
+        object : CommonCallbacks.CompletionCallback {
+          override fun onSuccess() {}
+          override fun onFailure(error: IDJIError) {
+            listener.finish("Start waypoint mission failed: ${error.message()}")
+          }
+        })
     }
-
-    return missionBuilder.build()
   }
 
   /** Media Methods **/
 
-  override fun getMediaList(): MutableList<Messages.Media> {
-    var _fltMediaList: MutableList<Messages.Media> = ArrayList<Messages.Media>()
-
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
-        if (error != null) {
-          Log.d(TAG, "Get media list - set camera mode failed with error" + error.description)
-          _fltSetStatus("Media List Failed")
-          _fltSetError("Get media list - set camera mode failed with error" + error.description)
-        } else {
-          Log.d(TAG, "Get media list started")
-
-          val _droneMediaManager = _droneCamera.mediaManager
-          if (_droneMediaManager != null) {
-            // Fetching the Media List from the Drone's SD Card
-            if (_droneMediaManager.sdCardFileListState == FileListState.SYNCING || _droneMediaManager.sdCardFileListState == FileListState.DELETING) {
-              Log.d(TAG, "Get media list failed - Media Manager is busy")
-              _fltSetStatus("Media List Failed")
-              _fltSetError("Get media list failed - Media Manager is busy")
-            } else {
-              _droneMediaManager.refreshFileListOfStorageLocation(SettingsDefinitions.StorageLocation.SDCARD) { error ->
-                if (error != null) {
-                  Log.d(TAG, "Get media list failed: " + error.description)
-                  _fltSetStatus("Media List Failed")
-                  _fltSetError("Get media list failed: " + error.description)
-                } else {
-                  val sdCardMediaFileList = _droneMediaManager.sdCardFileListSnapshot
-                  if (sdCardMediaFileList != null && !sdCardMediaFileList.isEmpty()) {
-                    Log.d(TAG, "Get media list successful")
-                    _fltSetStatus("Got Media List")
-                    _fltSetError("")
-
-                    mediaFileList = sdCardMediaFileList
-
-                    for (mediaFile in sdCardMediaFileList) {
-                      val fltMediaListElement = Messages.Media()
-                      fltMediaListElement.fileName = mediaFile.fileName
-                      fltMediaListElement.fileIndex = mediaFile.index.toLong()
-
-                      _fltMediaList.add(fltMediaListElement)
-                      Log.d(TAG, "Get media list - added file " + mediaFile.fileName)
-                    }
-                  } else {
-                    Log.d(TAG, "Get media list failed - list is empty")
-                    _fltSetStatus("Media List Failed")
-                    _fltSetError("Get media list failed - list is empty")
-                  }
-                }
-              }
-            }
-          } else {
-            Log.d(TAG, "Get media list failed - no Media Manager")
-            _fltSetStatus("Media List Failed")
-            _fltSetError("Get media list failed - no Media Manager")
-          }
-        }
+  override suspend fun getMediaList(): List<Media> {
+    return try {
+      enableMediaPlayback()
+      val mediaManager = MediaDataCenter.getInstance().mediaManager
+      awaitCompletion {
+        // -1 / -1: from the latest file, all files (as in DJI's sample).
+        mediaManager.pullMediaFileListFromCamera(PullMediaFileListParam.Builder().mediaFileIndex(-1).count(-1).build(), it)
       }
-    } else {
-      Log.d(TAG, "Get media list failed - no Camera object")
-      _fltSetStatus("Media List Failed")
-      _fltSetError("Get media list failed - no Camera object")
+      mediaFileList = mediaManager.mediaFileListData.data.orEmpty()
+      if (mediaFileList.isEmpty()) {
+        fail("Media List Failed", "Get media list failed - list is empty")
+        return emptyList()
+      }
+      report("Got Media List")
+      mediaFileList.map { Media(fileName = it.fileName, fileIndex = it.fileIndex.toLong()) }
+    } catch (e: DjiException) {
+      fail("Media List Failed", "Get media list failed: ${e.message}")
+      emptyList()
     }
-
-    return _fltMediaList
   }
 
-  override fun downloadMedia(fileIndex: Long): String {
-    var _mediaURLString: String = ""
-    val _index: Int = fileIndex?.toInt() ?: -1
-
-    if (_index < 0) {
-      Log.d(TAG, "Download media failed - invalid index")
-      _fltSetStatus("Download Failed")
-      _fltSetError("Download media failed - invalid index")
-
+  override suspend fun downloadMedia(fileIndex: Long): String {
+    val mediaFile = mediaFileList.getOrNull(fileIndex.toInt())
+    if (mediaFile == null) {
+      fail("Download Failed", "Download media failed - file not found (call getMediaList first)")
       return ""
     }
 
-    if (mediaFileList.isEmpty()) {
-      Log.d(TAG, "Download media failed - list is empty")
-      _fltSetStatus("Download Failed")
-      _fltSetError("Download media failed - list is empty")
-
-      return ""
+    return try {
+      enableMediaPlayback()
+      val destination = File(context.getExternalFilesDir(null), "dji_media/${mediaFile.fileName}")
+      destination.parentFile?.mkdirs()
+      destination.delete()
+      pullMediaFile(mediaFile, destination)
+      Log.d(TAG, "Download media completed: ${destination.path}")
+      report("Downloaded")
+      destination.path
+    } catch (e: DjiException) {
+      fail("Download Failed", "Download media failed - Fetch File Data: ${e.message}")
+      ""
+    } catch (e: IOException) {
+      fail("Download Failed", "Download media failed to write the file: ${e.message}")
+      ""
     }
-
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
-        if (error != null) {
-          Log.d(TAG, "Download media - set camera mode failed with error" + error.description)
-          _fltSetStatus("Download Failed")
-          _fltSetError("Download media - set camera mode failed with error" + error.description)
-        } else if (mediaFileList[_index] != null) {
-          Log.d(TAG, "Download media started")
-
-          val selectedMedia = mediaFileList[_index]
-          //val isPhoto = selectedMedia.mediaType == MediaFile.MediaType.JPEG || selectedMedia.mediaType == MediaFile.MediaType.TIFF
-          //var previousOffset: UInt = 0u
-          //var fileData: ByteBuffer?
-          var currentProgress = -1
-
-          val destDownloadDir = File(djiPluginContext.getExternalFilesDir(null)?.path.toString() + "/dji_media/")
-
-          selectedMedia.fetchFileData(destDownloadDir, null, object: DownloadListener<String> {
-            override fun onFailure(error: DJIError) {
-              Log.d(TAG, "Download media failed - Fetch File Data: " + error.description)
-              _fltSetStatus("Download Failed")
-              _fltSetError("Download media failed - Fetch File Data: " + error.description)
-              currentProgress = -1
-            }
-
-            override fun onProgress(total: Long, current: Long) {}
-            override fun onRateUpdate(total: Long, current: Long, persize: Long) {
-              val progress = (current * 1F / total * 100).toInt()
-              if (progress != currentProgress) {
-                _fltSetStatus(progress.toString() + "%")
-                _fltSetError("")
-                currentProgress = progress
-              }
-            }
-
-            override fun onStart() {
-              currentProgress = -1
-
-              Log.d(TAG, "Download media started")
-              _fltSetStatus("Download Started")
-              _fltSetError("")
-            }
-
-            override fun onSuccess(filePath: String) {
-              currentProgress = -1
-
-              Log.d(TAG, "Download media completed: $filePath")
-              _fltSetStatus("Downloaded")
-              _fltSetError("")
-            }
-
-            override fun onRealtimeDataUpdate(p0: ByteArray?, p1: Long, p2: Boolean) {
-            }
-          })
-        } else {
-          Log.d(TAG, "Download media - file not found")
-          _fltSetStatus("Download Failed")
-          _fltSetError("Download media - file not found")
-        }
-      }
-    }
-
-    return _mediaURLString
   }
 
-  override fun deleteMedia(fileIndex: Long): Boolean {
-    var _success: Boolean = false
-    val _index: Int = fileIndex?.toInt() ?: -1
-
-    if (_index < 0) {
-      Log.d(TAG, "Delete media failed - invalid index")
-      _fltSetStatus("Delete Failed")
-      _fltSetError("Delete media failed - invalid index")
-
-      return false
-    }
-
-    if (mediaFileList.isEmpty()) {
-      Log.d(TAG, "Delete media failed - list is empty")
-      _fltSetStatus("Delete Failed")
-      _fltSetError("Delete media failed - list is empty")
-
-      return false
-    }
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.MEDIA_DOWNLOAD) { error ->
-        if (error != null) {
-          Log.d(TAG, "Delete media - set camera mode failed with error: " + error.description)
-          _fltSetStatus("Delete Failed")
-          _fltSetError("Delete media - set camera mode failed with error: " + error.description)
-        } else if (mediaFileList[_index] != null) {
-          Log.d(TAG, "Delete media started")
-
-          val selectedMedia = mediaFileList[_index]
-          val filesToDelete = ArrayList<MediaFile>()
-          filesToDelete.add(selectedMedia)
-
-          val _droneMediaManager = _droneCamera.mediaManager
-          if (_droneMediaManager != null) {
-            _droneMediaManager.deleteFiles(
-              filesToDelete,
-              object :
-                CommonCallbacks.CompletionCallbackWithTwoParam<List<MediaFile?>?, DJICameraError?> {
-                override fun onSuccess(x: List<MediaFile?>?, y: DJICameraError?) {
-                  Log.d(TAG, "Delete media completed")
-                  _fltSetStatus("Deleted")
-                  _fltSetError("")
-                  _success = true
-                }
-
-                override fun onFailure(error: DJIError) {
-                  Log.d(TAG, "Delete media failed: " + error.description)
-                  _fltSetStatus("Delete Failed")
-                  _fltSetError("Delete media failed: " + error.description)
-                  _success = false
-                }
-              })
+  private suspend fun pullMediaFile(mediaFile: MediaFile, destination: File) {
+    val output = BufferedOutputStream(FileOutputStream(destination))
+    try {
+      suspendCancellableCoroutine { continuation ->
+        var currentProgress = -1
+        mediaFile.pullOriginalMediaFileFromCamera(0, object : MediaFileDownloadListener {
+          override fun onStart() {
+            report("Download Started")
           }
-        } else {
-          Log.d(TAG, "Delete media - file not found")
-          _fltSetStatus("Delete Failed")
-          _fltSetError("Delete media - file not found")
-        }
+
+          override fun onProgress(total: Long, current: Long) {
+            val progress = if (total > 0) (current * 100 / total).toInt() else 0
+            if (progress != currentProgress) {
+              currentProgress = progress
+              report("$progress%")
+            }
+          }
+
+          override fun onRealtimeDataUpdate(data: ByteArray, position: Long) {
+            output.write(data)
+          }
+
+          override fun onFinish() {
+            if (continuation.isActive) continuation.resume(Unit)
+          }
+
+          override fun onFailure(error: IDJIError) {
+            if (continuation.isActive) continuation.resumeWithException(DjiException(error))
+          }
+        })
       }
+    } finally {
+      output.close()
+    }
+  }
+
+  override suspend fun deleteMedia(fileIndex: Long): Boolean {
+    val mediaFile = mediaFileList.getOrNull(fileIndex.toInt())
+    if (mediaFile == null) {
+      fail("Delete Failed", "Delete media failed - file not found (call getMediaList first)")
+      return false
     }
 
-    return _success
+    return try {
+      enableMediaPlayback()
+      awaitCompletion { MediaDataCenter.getInstance().mediaManager.deleteMediaFiles(listOf(mediaFile), it) }
+      mediaFileList = mediaFileList - mediaFile
+      report("Deleted")
+      true
+    } catch (e: DjiException) {
+      fail("Delete Failed", "Delete media failed: ${e.message}")
+      false
+    }
+  }
+
+  private suspend fun enableMediaPlayback() {
+    if (mediaPlaybackEnabled) return
+    val mediaManager = MediaDataCenter.getInstance().mediaManager
+    mediaManager.setMediaFileDataSource(
+      MediaFileListDataSource.Builder()
+        .setLocation(CameraStorageLocation.SDCARD)
+        .setIndexType(ComponentIndexType.LEFT_OR_MAIN)
+        .build()
+    )
+    awaitCompletion { mediaManager.enable(it) }
+    mediaPlaybackEnabled = true
+  }
+
+  /** The camera only shoots and records after leaving media playback mode. */
+  private suspend fun disableMediaPlayback() {
+    if (!mediaPlaybackEnabled) return
+    awaitCompletion { MediaDataCenter.getInstance().mediaManager.disable(it) }
+    mediaPlaybackEnabled = false
   }
 
   /** Video Feed Methods **/
 
   override fun videoFeedStart() {
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
-        if (error != null) {
-          Log.d(TAG, "Video feed start failed with error: " + error.description)
-          _fltSetStatus("Video Start Failed")
-          _fltSetError("Video feed start failed with error: " + error.description)
-        } else {
-          // When I tried to use `VideoFeeder.VideoDataListener` I encountered a class-not-found issue, and couldn't resolve it no matter what I tried.
-          // So the following cannot be used.
-          // Instead, I enabled the YuvDataCallback and somehow that allow the addVideoDataListener to work.
-          // And so I couldn't initialize a VideoDataLister. That's why the following block is commented out.
-          //if (videoDataListener == null) {
-          //  videoDataListener = VideoFeeder.VideoDataListener { bytes, _ ->
-          //    _fltSendVideo(bytes)
-          //  }
-          //}
-          //videoDataListener?.let {
-          //  VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener(it)
-          //}
+    if (videoFrameListener != null) {
+      report("Video Started")
+      return
+    }
 
-          // In order for the `VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener` to work
-          // we must enable the `codecManager.enabledYuvData(true)`.
-          // Otherwise, the YuvDataCallback won't work.
-          // And also the primaryVideoFeed.addVideoDataListener won't.
-          // Please note that the videoDataListener callback cannot work in parallel to YuvDataCallback.
-          // If you define both callbacks - only one of them will stream data.
-          // I decided to use the YUV format of the YuvDataCallback (and not the videoDataListener which produces Raw H264), because when
-          // converting the byte-stream on the Flutter side - the H264 byte-stream produced much lower quality than the YUV frames.
-          codecManager = DJICodecManager(djiPluginContext, null, 0, 0, UsbAccessoryService.VideoStreamSource.Camera)
-          codecManager.enabledYuvData(true)
-          codecManager.yuvDataCallback = YuvDataCallback { format, yuvFrame, dataSize, width, height ->
-            // To stream YUV format (raw video) byte-stream
-            val bytes = ByteArray(dataSize)
-            yuvFrame.get(bytes)
-            _fltSendVideo(bytes)
-          }
-
-          // [!] Important Note
-          // If we add the video-data-listener below - then the YuvDataCallback will NOT work.
-          // For some reason, they don't work in parallel.
-          //VideoFeeder.getInstance()?.primaryVideoFeed?.addVideoDataListener { bytes, _ ->
-          //  // To stream raw H264 byte-stream
-          //  _fltSendVideo(bytes)
-          //}
-
-          _fltSetStatus("Video Started")
-          _fltSetError("")
+    // Streams raw I420 (YUV420p) frames, the same format the DJI SDK v4 implementation sent.
+    val listener = ICameraStreamManager.CameraFrameListener { data, offset, length, _, _, _ ->
+      val frame = data.copyOfRange(offset, offset + length)
+      scope.launch {
+        try {
+          flutterApi?.sendVideo(Stream(data = frame))
+        } catch (e: FlutterError) {
+          Log.d(TAG, "sendVideo failed: ${e.message}")
         }
       }
-    } else {
-      Log.d(TAG, "Video feed start failed - no Camera object")
-      _fltSetStatus("Video Start Failed")
-      _fltSetError("Video feed start failed - no Camera object")
     }
+    val cameraStreamManager = MediaDataCenter.getInstance().cameraStreamManager
+    cameraStreamManager.setKeepAliveDecoding(true)
+    cameraStreamManager.addFrameListener(ComponentIndexType.LEFT_OR_MAIN, ICameraStreamManager.FrameFormat.YUV420_888, listener)
+    videoFrameListener = listener
+    report("Video Started")
   }
 
   override fun videoFeedStop() {
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
-        if (error != null) {
-          Log.d(TAG, "Video feed stop failed with error: " + error.description)
-          _fltSetStatus("Video Stop Failed")
-          _fltSetError("Video feed stop failed with error: " + error.description)
-        } else {
-          codecManager.enabledYuvData(false)
-          codecManager.yuvDataCallback = null
-          VideoFeeder.getInstance()?.primaryVideoFeed?.destroy()
-          //VideoFeeder.getInstance()?.primaryVideoFeed?.removeVideoDataListener { bytes, _ ->
-          //  _fltSendVideo(bytes)
-          //}
-          _fltSetStatus("Video Stopped")
-          _fltSetError("")
-        }
-      }
-    } else {
-      Log.d(TAG, "Video feed stop failed - no Camera object")
-      _fltSetStatus("Video Stop Failed")
-      _fltSetError("Video feed stop failed - no Camera object")
+    val listener = videoFrameListener
+    if (listener != null) {
+      val cameraStreamManager = MediaDataCenter.getInstance().cameraStreamManager
+      cameraStreamManager.removeFrameListener(listener)
+      cameraStreamManager.setKeepAliveDecoding(false)
+      videoFrameListener = null
     }
+    report("Video Stopped")
   }
 
   override fun videoRecordStart() {
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
-        if (error != null) {
-          Log.d(TAG, "Video record start failed with error: " + error.description)
-          _fltSetStatus("Record Start Failed")
-          _fltSetError("Video record start failed with error: " + error.description)
-        } else {
-          // For some reason, the DJI completion callback of the startRecordVideo() method causes the app to crash, which I couldn't resolve.
-          // So for now I'm simply not using it...
-//          _droneCamera.startRecordVideo { error ->
-//            if (error != null) {
-//              Log.d(TAG, "Video record start failed with error: " + error.description)
-//              //_fltSetStatus("Record Start Failed")
-//            } else {
-//              Log.d(TAG, "Video record stared")
-//              //_fltSetStatus("Record Started")
-//            }
-//          }
-          _droneCamera.startRecordVideo(null);
-          Log.d(TAG, "Video record stared")
-          _fltSetStatus("Record Started")
-          _fltSetError("")
-        }
+    scope.launch {
+      try {
+        setCameraMode(CameraMode.VIDEO_NORMAL)
+        CameraKey.KeyStartRecord.create(ComponentIndexType.LEFT_OR_MAIN).perform()
+        Log.d(TAG, "Video record started")
+        report("Record Started")
+      } catch (e: DjiException) {
+        fail("Record Start Failed", "Video record start failed with error: ${e.message}")
       }
-    } else {
-      Log.d(TAG, "Video record start failed - no Camera object")
-      _fltSetStatus("Record Start Failed")
-      _fltSetError("Video record start failed - no Camera object")
     }
   }
 
   override fun videoRecordStop() {
-    val _droneCamera = drone?.camera
-    if (_droneCamera != null) {
-      _droneCamera.setMode(SettingsDefinitions.CameraMode.RECORD_VIDEO) { error ->
-        if (error != null) {
-          Log.d(TAG, "Video record stop failed with error: " + error.description)
-          _fltSetStatus("Record Stop Failed")
-          _fltSetError("Video record stop failed with error: " + error.description)
-        } else {
-          // For some reason, the DJI completion callback of the stopRecordVideo() method causes the app to crash, which I couldn't resolve.
-          // So for now I'm simply not using it...
-//          _droneCamera.stopRecordVideo { error ->
-//            if (error != null) {
-//              Log.d(TAG, "Video record stop failed with error: " + error.description)
-//              _fltSetStatus("Record Stop Failed")
-//            } else {
-//              Log.d(TAG, "Video record stopped")
-//              _fltSetStatus("Record Stopped")
-//            }
-//          }
-          _droneCamera.stopRecordVideo(null);
-          Log.d(TAG, "Video record stopped")
-          _fltSetStatus("Record Stopped")
-          _fltSetError("")
-        }
+    scope.launch {
+      try {
+        CameraKey.KeyStopRecord.create(ComponentIndexType.LEFT_OR_MAIN).perform()
+        Log.d(TAG, "Video record stopped")
+        report("Record Stopped")
+      } catch (e: DjiException) {
+        fail("Record Stop Failed", "Video record stop failed with error: ${e.message}")
       }
-    } else {
-      Log.d(TAG, "Video record stop failed - no Camera object")
-      _fltSetStatus("Record Stop Failed")
-      _fltSetError("Video record stop failed - no Camera object")
     }
   }
 
+  private suspend fun setCameraMode(mode: CameraMode) {
+    disableMediaPlayback()
+    val key = CameraKey.KeyCameraMode.create(ComponentIndexType.LEFT_OR_MAIN)
+    if (key.get() == mode) return
+    awaitCompletion { KeyManager.getInstance().setValue(key, mode, it) }
+  }
+
+  /** MSDK v5 helpers **/
+
+  private fun <T> getValue(keyInfo: DJIKeyInfo<T>, default: T): T = keyInfo.create().get(default) ?: default
+
+  private suspend fun <P, R> DJIKey.ActionKey<P, R>.perform(param: P? = null): R? =
+    suspendCancellableCoroutine { continuation ->
+      val callback = object : CommonCallbacks.CompletionCallbackWithParam<R> {
+        override fun onSuccess(result: R?) {
+          if (continuation.isActive) continuation.resume(result)
+        }
+
+        override fun onFailure(error: IDJIError) {
+          if (continuation.isActive) continuation.resumeWithException(DjiException(error))
+        }
+      }
+      if (param == null) KeyManager.getInstance().performAction(this, callback)
+      else KeyManager.getInstance().performAction(this, param, callback)
+    }
+
+  private suspend fun awaitCompletion(start: (CommonCallbacks.CompletionCallback) -> Unit) =
+    suspendCancellableCoroutine { continuation ->
+      start(object : CommonCallbacks.CompletionCallback {
+        override fun onSuccess() {
+          if (continuation.isActive) continuation.resume(Unit)
+        }
+
+        override fun onFailure(error: IDJIError) {
+          if (continuation.isActive) continuation.resumeWithException(DjiException(error))
+        }
+      })
+    }
+
+  private suspend fun waitUntil(timeoutMs: Long, condition: () -> Boolean) {
+    try {
+      withTimeout(timeoutMs) {
+        while (!condition()) delay(POLL_INTERVAL_MS)
+      }
+    } catch (e: TimeoutCancellationException) {
+      throw DjiException("Timed out after ${timeoutMs / 1000}s")
+    }
+  }
+
+  companion object {
+    private const val TAG = "=== DjiPlugin Android"
+    private const val WAYPOINT_MISSION_NAME = "dji_flutter_waypoint_mission"
+    private const val POLL_INTERVAL_MS = 200L
+    private const val TAKEOFF_TIMEOUT_MS = 60_000L
+    private const val LANDING_TIMEOUT_MS = 180_000L
+  }
 }
 
-/** Flight Classes */
+private fun IDJIError.message(): String = description() ?: hint() ?: errorCode() ?: toString()
 
-/*
-Note:
-Apparently even though you mark something as nullable (optional) in the serializable object, its still considered required.
-For it to truly be optional you need to give it a default value.
-So, that's why we apply "= null" to each optional property here below.
-*/
-
-@Serializable
-data class Flight(
-  @SerialName("timeline")
-  val timeline: List<FlightElement>? = null
-)
-
-@Serializable
-data class FlightElement(
-  @SerialName("type")
-  val type: String? = null,
-  @SerialName("pointOfInterest")
-  val pointOfInterest: FlightLocation? = null,
-  @SerialName("maxFlightSpeed")
-  val maxFlightSpeed: Double? = null,
-  @SerialName("autoFlightSpeed")
-  val autoFlightSpeed: Double? = null,
-  @SerialName("finishedAction")
-  val finishedAction: String? = null,
-  @SerialName("headingMode")
-  val headingMode: String? = null,
-  @SerialName("flightPathMode")
-  val flightPathMode: String? = null,
-  @SerialName("rotateGimbalPitch")
-  val rotateGimbalPitch: Boolean? = null,
-  @SerialName("exitMissionOnRCSignalLost")
-  val exitMissionOnRCSignalLost: Boolean? = null,
-  @SerialName("waypoints")
-  val waypoints: List<FlightWaypoint>? = null
-)
-
-@Serializable
-data class FlightWaypoint(
-  @SerialName("location")
-  val location: FlightLocation? = null,
-  @SerialName("heading")
-  val heading: Int? = null,
-  @SerialName("cornerRadiusInMeters")
-  val cornerRadiusInMeters: Double? = null,
-  @SerialName("turnMode")
-  val turnMode: String? = null,
-  @SerialName("gimbalPitch")
-  val gimbalPitch: Double? = null
-)
-
-@Serializable
-data class FlightLocation(
-  @SerialName("altitude")
-  val altitude: Double? = null,
-  @SerialName("latitude")
-  val latitude: Double? = null,
-  @SerialName("longitude")
-  val longitude: Double? = null
-)
-
-@Serializable
-data class Vector(
-  @SerialName("destinationAltitude")
-  val destinationAltitude: Int? = null,
-  @SerialName("distanceFromPointOfInterest")
-  val distanceFromPointOfInterest: Int? = null,
-  @SerialName("headingRelativeToPointOfInterest")
-  val headingRelativeToPointOfInterest: Int? = null
-)
+internal class DjiException(message: String) : Exception(message) {
+  constructor(error: IDJIError) : this(error.message())
+}

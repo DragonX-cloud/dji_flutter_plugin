@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:async';
-import 'dart:io';
 
 import 'package:dji/flight.dart';
 import 'package:dji/messages.dart';
@@ -9,17 +8,11 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
 import 'package:dji/dji.dart';
+
 import 'constants.dart';
-import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_full_gpl/ffmpeg_kit_config.dart';
-import 'package:path_provider/path_provider.dart';
-// import 'package:flutter_vlc_player/flutter_vlc_player.dart';
-// import 'package:native_video_view/native_video_view.dart';
-import 'package:better_player/better_player.dart';
-import 'package:local_assets_server/local_assets_server.dart';
 
 class ExampleWidget extends StatefulWidget {
-  const ExampleWidget({Key? key}) : super(key: key);
+  const ExampleWidget({super.key});
 
   @override
   ExampleWidgetState createState() => ExampleWidgetState();
@@ -50,21 +43,14 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
   double _gimbalPitchInDegrees = 0.0;
 
-  // VlcPlayerController? _vlcController;
-  // VideoViewController? _nativeVideoViewController;
-  BetterPlayerController? _betterPlayerController;
-  int? _ffmpegKitSessionId;
-  File? _videoFeedFile;
-  IOSink? _videoFeedSink;
-  String? _localServerUrl;
-  final String _outputFileName = 'output.m3u8';
-  // File? _videoFeedFileEndResult;
+  int _videoFeedFrames = 0;
+  int _videoFeedBytes = 0;
 
   @override
   void initState() {
     super.initState();
 
-    DjiFlutterApi.setup(this);
+    DjiFlutterApi.setUp(this);
 
     _getPlatformVersion();
   }
@@ -86,25 +72,17 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
     });
   }
 
-  // This function is triggered by the Native Host side whenever a video byte-stream data is sent.
+  // This function is triggered by the Native Host side whenever a video frame is sent.
+  // The frames are raw YUV bytes; render or encode them as your app requires.
   @override
   void sendVideo(Stream stream) {
-    if (stream.data != null && _videoFeedFile != null) {
-      // developer.log(
-      //   'sendVideo stream data received: ${stream.data?.length}',
-      //   name: kLogKindDjiFlutterPlugin,
-      // );
+    final data = stream.data;
+    if (data == null) return;
 
-      try {
-        _videoFeedSink?.add(stream.data!);
-      } catch (e) {
-        developer.log(
-          'sendVideo videoFeedSink Error',
-          error: e,
-          name: kLogKindDjiFlutterPlugin,
-        );
-      }
-    }
+    setState(() {
+      _videoFeedFrames++;
+      _videoFeedBytes += data.length;
+    });
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -130,34 +108,8 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   }
 
   Future<void> _registerApp() async {
-    // _betterPlayerController = BetterPlayerController(
-    //   const BetterPlayerConfiguration(
-    //     autoPlay: true,
-    //   ),
-    //   betterPlayerDataSource: BetterPlayerDataSource.network(
-    //       'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8'),
-    // );
-
-    // setState(() {
-    //   _nativeVideoViewController
-    //       ?.setVideoSource(
-    //     // outputPath,
-    //     // sourceType: VideoSourceType.file,
-    //     // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-    //     'https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8',
-    //     sourceType: VideoSourceType.network,
-    //     requestAudioFocus: false,
-    //   )
-    //       .then((_) {
-    //     _nativeVideoViewController?.play();
-    //   });
-    // });
-
     try {
-      developer.log(
-        'registerApp requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('registerApp requested', name: kLogKindDjiFlutterPlugin);
       await Dji.registerApp();
     } on PlatformException catch (e) {
       developer.log(
@@ -176,10 +128,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
   Future<void> _connectDrone() async {
     try {
-      developer.log(
-        'connectDrone requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('connectDrone requested', name: kLogKindDjiFlutterPlugin);
       await Dji.connectDrone();
     } on PlatformException catch (e) {
       developer.log(
@@ -220,10 +169,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
   Future<void> _delegateDrone() async {
     try {
-      developer.log(
-        'delegateDrone requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('delegateDrone requested', name: kLogKindDjiFlutterPlugin);
       await Dji.delegateDrone();
     } on PlatformException catch (e) {
       developer.log(
@@ -242,10 +188,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
   Future<void> _takeOff() async {
     try {
-      developer.log(
-        'Takeoff requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Takeoff requested', name: kLogKindDjiFlutterPlugin);
       await Dji.takeOff();
     } on PlatformException catch (e) {
       developer.log(
@@ -254,20 +197,13 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
     } catch (e) {
-      developer.log(
-        'Takeoff Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Takeoff Error', error: e, name: kLogKindDjiFlutterPlugin);
     }
   }
 
   Future<void> _land() async {
     try {
-      developer.log(
-        'Land requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Land requested', name: kLogKindDjiFlutterPlugin);
       await Dji.land();
     } on PlatformException catch (e) {
       developer.log(
@@ -276,11 +212,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
     } catch (e) {
-      developer.log(
-        'Land Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Land Error', error: e, name: kLogKindDjiFlutterPlugin);
     }
   }
 
@@ -323,37 +255,34 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
       if (droneHomeLocation.latitude == 0 || droneHomeLocation.longitude == 0) {
         developer.log(
-            'Invalid drone\'s home location - unable to start the flight',
-            name: kLogKindDjiFlutterPlugin);
+          'Invalid drone\'s home location - unable to start the flight',
+          name: kLogKindDjiFlutterPlugin,
+        );
         return;
       }
 
       Flight flight = Flight.fromJson({
         'timeline': [
-          {
-            'type': 'takeOff',
-          },
-          {
-            'type': 'startRecordVideo',
-          },
+          {'type': 'takeOff'},
+          {'type': 'startRecordVideo'},
           {
             'type': 'waypointMission',
             // For example purposes, we set our Point of Interest a few meters to the north (in relation to the Drone's Home Location).
             // Note: Setting the precision to 8 decimals (~1.1mm accuracy, which is the GPS limit).
             'pointOfInterest': {
-              'latitude': ((droneHomeLocation.latitude + (20 * 0.00000899322)) *
+              'latitude':
+                  ((droneHomeLocation.latitude + (20 * 0.00000899322)) *
                           100000000)
                       .round() /
                   100000000,
               'longitude':
                   ((droneHomeLocation.longitude + (0 * 0.00000899322)) *
-                              100000000)
-                          .round() /
-                      100000000,
+                          100000000)
+                      .round() /
+                  100000000,
               'altitude': droneHomeLocation.altitude,
             },
-            'maxFlightSpeed':
-                15.0, // Max Flight Speed is 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
+            'maxFlightSpeed': 15.0, // Max Flight Speed is 15.0. If you enter a higher value - the waypoint mission won't start due to DJI limits.
             'autoFlightSpeed': 10.0,
             'finishedAction': 'noAction',
             'headingMode': 'towardPointOfInterest',
@@ -431,25 +360,19 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
               },
             ],
           },
-          {
-            'type': 'stopRecordVideo',
-          },
-          {
-            'type': 'singleShootPhoto',
-          },
-          {
-            'type': 'land',
-          },
+          {'type': 'stopRecordVideo'},
+          {'type': 'singleShootPhoto'},
+          {'type': 'land'},
         ],
       });
 
       // Converting any vector definitions in waypoint-mission to locations
       for (dynamic element in flight.timeline) {
         if (element.type == FlightElementType.waypointMission) {
-          CoordinatesConvertion
-              .convertWaypointMissionVectorsToLocationsWithGimbalPitch(
-                  flightElementWaypointMission: element,
-                  droneHomeLocation: droneHomeLocation);
+          CoordinatesConvertion.convertWaypointMissionVectorsToLocationsWithGimbalPitch(
+            flightElementWaypointMission: element,
+            droneHomeLocation: droneHomeLocation,
+          );
         }
       }
 
@@ -458,10 +381,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
 
-      developer.log(
-        'Start Flight requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Start Flight requested', name: kLogKindDjiFlutterPlugin);
       await Dji.start(flight: flight);
     } on PlatformException catch (e) {
       developer.log(
@@ -499,26 +419,18 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   }
 
   Future<void> _updateGimbalRotatePitch() async {
-    await Dji.gimbalRotatePitch(
-      degrees: _gimbalPitchInDegrees,
-    );
+    await Dji.gimbalRotatePitch(degrees: _gimbalPitchInDegrees);
   }
 
   Future<List<Media?>?> _getMediaList() async {
     List<Media?>? mediaList;
 
     try {
-      developer.log(
-        'Get Media List requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Get Media List requested', name: kLogKindDjiFlutterPlugin);
 
       mediaList = await Dji.getMediaList();
 
-      developer.log(
-        'Media List: $mediaList',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Media List: $mediaList', name: kLogKindDjiFlutterPlugin);
     } on PlatformException catch (e) {
       developer.log(
         'Get Media List PlatformException Error',
@@ -538,10 +450,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 
   Future<void> _download() async {
     try {
-      developer.log(
-        'Download requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Download requested', name: kLogKindDjiFlutterPlugin);
       // Downloading media file number "0" (a.k.a index: 0)
       final fileUrl = await Dji.downloadMedia(0);
       developer.log(
@@ -555,32 +464,19 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
     } catch (e) {
-      developer.log(
-        'Download Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Download Error', error: e, name: kLogKindDjiFlutterPlugin);
     }
   }
 
   Future<void> _delete() async {
     try {
-      developer.log(
-        'Delete requested',
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Delete requested', name: kLogKindDjiFlutterPlugin);
       // Deleting media file number "0" (a.k.a index: 0)
       final deleted = await Dji.deleteMedia(0);
       if (deleted == true) {
-        developer.log(
-          'Deleted successfully',
-          name: kLogKindDjiFlutterPlugin,
-        );
+        developer.log('Deleted successfully', name: kLogKindDjiFlutterPlugin);
       } else {
-        developer.log(
-          'Delete failed',
-          name: kLogKindDjiFlutterPlugin,
-        );
+        developer.log('Delete failed', name: kLogKindDjiFlutterPlugin);
       }
     } on PlatformException catch (e) {
       developer.log(
@@ -589,343 +485,21 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         name: kLogKindDjiFlutterPlugin,
       );
     } catch (e) {
-      developer.log(
-        'Delete Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
+      developer.log('Delete Error', error: e, name: kLogKindDjiFlutterPlugin);
     }
   }
 
   Future<void> _videoFeedStart() async {
-    // setState(() {
-    //   _betterPlayerController = BetterPlayerController(
-    //     const BetterPlayerConfiguration(
-    //       autoPlay: true,
-    //     ),
-    //     betterPlayerDataSource: BetterPlayerDataSource(
-    //       BetterPlayerDataSourceType.file,
-    //       '/Users/oren/Library/Developer/CoreSimulator/Devices/7C3B7667-CA77-4249-AA56-ED7B65B9DB16/data/Containers/Data/Application/05D511A9-1B6A-4044-A384-D626F0C45C1A/Library/Caches/output.mp4',
-    //       liveStream: true,
-    //       // bufferingConfiguration:
-    //       //     const BetterPlayerBufferingConfiguration(
-    //       //   minBufferMs: hlsTimeDurationInMs,
-    //       //   maxBufferMs: hlsTimeDurationInMs * 2,
-    //       //   bufferForPlaybackMs: hlsTimeDurationInMs,
-    //       //   bufferForPlaybackAfterRebufferMs:
-    //       //       hlsTimeDurationInMs * 2,
-    //       // ),
-    //       // cacheConfiguration: const BetterPlayerCacheConfiguration(
-    //       //   useCache: false,
-    //       // ),
-    //     ),
-    //   );
-    // });
-    // return;
-
     try {
       developer.log(
         'Video Feed Start requested',
         name: kLogKindDjiFlutterPlugin,
       );
-
-      FFmpegKitConfig.registerNewFFmpegPipe().then((inputPipe) async {
-        if (inputPipe == null) {
-          developer.log(
-            'Video Feed Start failed - no Input Pipe',
-            name: kLogKindDjiFlutterPlugin,
-          );
-
-          return;
-        }
-
-        final String videoFeedPath = inputPipe;
-        _videoFeedFile = File(videoFeedPath);
-
-        FFmpegKitConfig.registerNewFFmpegPipe().then((outputPipe) async {
-          if (outputPipe == null) {
-            developer.log(
-              'Video Feed Start failed - no Output Pipe',
-              name: kLogKindDjiFlutterPlugin,
-            );
-
-            return;
-          }
-
-          // We must close the output pipe here, otherwise the FFMPEG convertion won't start.
-          FFmpegKitConfig.closeFFmpegPipe(outputPipe);
-
-          // Opening the video feed file (input pipe) for writing.
-          _videoFeedSink = _videoFeedFile?.openWrite();
-
-          final Directory directory = await getTemporaryDirectory();
-          final String outputPath = '${directory.path}/$_outputFileName';
-          final File outputFile = File(outputPath);
-          if (await outputFile.exists() == true) {
-            outputFile.delete();
-          }
-
-          // _videoFeedFileEndResult = outputFile;
-
-          if (_localServerUrl == null) {
-            // Setting up the local server
-            final server = LocalAssetsServer(
-              address: InternetAddress.loopbackIPv4,
-              assetsBasePath: '',
-              rootDir: Directory(directory.path),
-              port: 8080,
-              // logger: const DebugLogger(),
-            );
-
-            await server.serve();
-            _localServerUrl = 'http://${server.address.address}:${server.port}';
-
-            developer.log(
-              'Server Address $_localServerUrl',
-              name: kLogKindDjiFlutterPlugin,
-            );
-          }
-
-          // Initializing the VLC Video Player.
-          // setState(() {
-          //   _vlcController ??= VlcPlayerController.file(
-          //     File(outputPath),
-          //     autoInitialize: true,
-          //     autoPlay: false,
-          //     hwAcc: HwAcc.auto,
-          //     options: VlcPlayerOptions(
-          //       video: VlcVideoOptions(
-          //         [
-          //           VlcVideoOptions.dropLateFrames(true),
-          //           VlcVideoOptions.skipFrames(true),
-          //         ],
-          //       ),
-          //       advanced: VlcAdvancedOptions([
-          //         VlcAdvancedOptions.fileCaching(0),
-          //         VlcAdvancedOptions.networkCaching(0),
-          //         VlcAdvancedOptions.liveCaching(0),
-          //         VlcAdvancedOptions.clockSynchronization(0),
-          //       ]),
-          //       sout: VlcStreamOutputOptions([
-          //         VlcStreamOutputOptions.soutMuxCaching(0),
-          //       ]),
-          //       extras: [],
-          //     ),
-          //   );
-          // });
-
-          // _vlcController?.addOnInitListener(() async {
-          //   developer.log(
-          //     'VLC Player: addOnInitListener - initialized',
-          //     name: kLogKindDjiFlutterPlugin,
-          //   );
-          // });
-
-          // setState(() {
-          //   _betterPlayerController = BetterPlayerController(
-          //     const BetterPlayerConfiguration(
-          //       autoPlay: false,
-          //     ),
-          //   );
-          // });
-
-          // Using HLS Base URL to include a full URL (file:///) inside the .m3u8 file.
-          // final hlsBaseUrl = directory.uri.toString();
-          // developer.log(
-          //   'FFMpeg HLS Base URL $hlsBaseUrl}',
-          //   name: kLogKindDjiFlutterPlugin,
-          // );
-
-          // Starting the video feed
-          await Dji.videoFeedStart();
-
-          developer.log(
-            'Video feed started',
-            name: kLogKindDjiFlutterPlugin,
-          );
-
-          bool playing = false;
-          // 2s is the default hls_time duration of ffmpeg, but we use 1s because it makes the VLC Player start faster.
-          const hlsTimeDurationInMs = 1000;
-
-          // Executing the FFMPEG convertion from the native DJI SDK YUV420p Rawvideo Byte Stream to HLS (for minimal latency).
-          await FFmpegKit.executeAsync(
-            // https://www.ffmpeg.org/ffmpeg.html
-            // https://ffmpeg.org/ffmpeg-all.html
-            // https://ffmpeg.org/ffmpeg-formats.html
-            // Explanation about -framerate vs. -r vs -fps: https://stackoverflow.com/questions/51143100/framerate-vs-r-vs-filter-fps
-
-            // '-y -avioflags direct -max_delay 0 -flags2 showall -f h264 -i $inputPipe -fflags nobuffer+discardcorrupt+noparse+nofillin+ignidx+flush_packets+fastseek -avioflags direct -max_delay 0 -f mp4 -movflags frag_keyframe+empty_moov -an $outputPipe',
-            // '-y -flags2 showall -f h264 -i $inputPipe -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
-
-            // HLS
-            '-y -probesize 32 -analyzeduration 0 -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.8*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
-            // '-y -probesize 32 -analyzeduration 0 -fflags nobuffer -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -i $inputPipe -s 640x320 -fflags nobuffer -flags low_delay -avioflags direct -r 25 -vf fps=25 -c:v libx264 -crf 50 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -vsync 2 -copytb 1 -i $inputPipe -avoid_negative_ts disabled -s 640x320 -r 25 -vf fps=25 -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time+delete_segments -an $outputPath',
-            // '-y  -probesize 32 -analyzeduration 0 -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -c:v libx264 -preset ultrafast -tune zerolatency -filter:v "setpts=0.8*PTS" -f hls -hls_time ${hlsTimeDurationInMs}ms -hls_flags split_by_time $outputPath',
-
-            // MP4
-            // MP4 works too, but it's not the best format for streaming, as it causes additional latency. Example with MP4:
-            // To force keyframe every 5 seconds use: -force_key_frames expr:gte(t,n_forced*5)
-            // '-y -f rawvideo -video_size 1280x720 -pix_fmt yuv420p -framerate 29.97 -i $inputPipe -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart -an $outputPath',
-            // '-y -i https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4 -s 640x320 -r 15 -vf fps=15 -f mp4 -movflags frag_keyframe+empty_moov+faststart $outputPath',
-
-            (session) async {
-              _ffmpegKitSessionId = session.getSessionId();
-
-              developer.log(
-                'FFmpegKit sessionId: $_ffmpegKitSessionId',
-                name: kLogKindDjiFlutterPlugin,
-              );
-            },
-            (log) {
-              // The logs here are disabled because they cause additional latency for some reason.
-              // if (log.getLevel() < 32) {
-              // developer.log(
-              //   'FFmpegKit logs: ${log.getMessage()} (level ${log.getLevel()})',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
-              // }
-            },
-            (statistics) async {
-              // The logs here are disabled because they cause additional latency for some reason.
-              // developer.log(
-              //   'FFmpegKit statistics - frame: ${statistics.getVideoFrameNumber()}, time: ${statistics.getTime()}, bitrate: ${statistics.getBitrate()}',
-              //   name: kLogKindDjiFlutterPlugin,
-              // );
-
-              // Using .getVideoFrameNumber == 1 causes the video to start too soon. Therefore we're using .getTime() >= 1 and checking whether the video is already playing.
-              // if (statistics.getTime() > 500 &&
-              //     await _vlcController?.isPlaying() == false &&
-              //     playing == false) {
-              //   developer.log(
-              //     'VLC Player: play',
-              //     name: kLogKindDjiFlutterPlugin,
-              //   );
-
-              //   setState(() {
-              //     _vlcController?.play();
-              //     playing = true;
-              //   });
-              // }
-
-              // if (statistics.getTime() >= 500 &&
-              //     _nativeVideoViewController?.videoFile == null) {
-              //   setState(() {
-              //     _nativeVideoViewController
-              //         ?.setVideoSource(
-              //       outputPath,
-              //       sourceType: VideoSourceType.file,
-              //       // 'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
-              //       // sourceType: VideoSourceType.network,
-              //       requestAudioFocus: false,
-              //     )
-              //         .then((_) {
-              //       developer.log(
-              //         'NativeVideoView - Play',
-              //         name: kLogKindDjiFlutterPlugin,
-              //       );
-
-              //       _nativeVideoViewController?.play();
-              //     }).onError((error, stackTrace) {
-              //       developer.log(
-              //         'NativeVideoView - Error',
-              //         name: kLogKindDjiFlutterPlugin,
-              //         error: error,
-              //         stackTrace: stackTrace,
-              //       );
-              //     });
-              //   });
-              // }
-
-              // This delay is required in order to let enough time for the video files to be accessible for reading by the player.
-              if (statistics.getTime() > hlsTimeDurationInMs &&
-                  playing == false) {
-                playing = true;
-
-                // We must add another second (although the reason for this is unknown, as in Debug mode the additional 1s is not necessary, but in release-mode it is...)
-                await Future.delayed(
-                  const Duration(milliseconds: 1000),
-                );
-
-                developer.log(
-                  'BetterPlayer Video - Play outputPath $outputPath',
-                  name: kLogKindDjiFlutterPlugin,
-                );
-
-                setState(() {
-                  // Playing a local HLS files didn't work with BetterPlayer or Native Video View.
-                  // Nor is it able to play an .mp4 file while it's still being written.
-                  // The only player that managed to play local HLS files was the VLC Player.
-                  // So eventually we used the local_assets_server plugin to pass the real-time video file as a Network source.
-
-                  _betterPlayerController = BetterPlayerController(
-                    const BetterPlayerConfiguration(
-                      autoPlay: true,
-                    ),
-                    betterPlayerDataSource: BetterPlayerDataSource(
-                      BetterPlayerDataSourceType.network,
-                      '$_localServerUrl/$_outputFileName',
-                      // BetterPlayerDataSourceType.file,
-                      // outputPath,
-                      liveStream: true,
-                      bufferingConfiguration:
-                          const BetterPlayerBufferingConfiguration(
-                        minBufferMs:
-                            100, // The plugin refuses this value to be lower or equal to the bufferForPlaybackMs and bufferForPlaybackAfterRebufferMs
-                        maxBufferMs: hlsTimeDurationInMs,
-                        bufferForPlaybackMs: 0,
-                        bufferForPlaybackAfterRebufferMs: 0,
-                      ),
-                      cacheConfiguration: const BetterPlayerCacheConfiguration(
-                        useCache: false,
-                      ),
-                    ),
-                  );
-
-                  // _betterPlayerController
-                  //     ?.setupDataSource(
-                  //   BetterPlayerDataSource.file(outputPath),
-                  // )
-                  //     .then((_) {
-                  //   _betterPlayerController?.play();
-                  // }).onError((error, stackTrace) {
-                  //   developer.log(
-                  //     'BetterPlayer Video - Error',
-                  //     name: kLogKindDjiFlutterPlugin,
-                  //     error: error,
-                  //     stackTrace: stackTrace,
-                  //   );
-                  // });
-                });
-
-                // await Dji.videoFeedStop();
-                // await Future.delayed(
-                //   const Duration(milliseconds: hlsTimeDurationInMs),
-                // );
-                // await Dji.videoFeedStart();
-
-                // await Future.delayed(
-                //   const Duration(
-                //     milliseconds: hlsTimeDurationInMs,
-                //   ),
-                // );
-                // await _betterPlayerController?.seekTo(
-                //   const Duration(
-                //     milliseconds: hlsTimeDurationInMs * 2,
-                //   ),
-                // );
-              }
-            },
-          );
-        });
+      setState(() {
+        _videoFeedFrames = 0;
+        _videoFeedBytes = 0;
       });
-    } on PlatformException catch (e) {
-      developer.log(
-        'Video Feed Start PlatformException Error',
-        error: e,
-        name: kLogKindDjiFlutterPlugin,
-      );
+      await Dji.videoFeedStart();
     } catch (e) {
       developer.log(
         'Video Feed Start Error',
@@ -941,45 +515,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
         'Video Feed Stop requested',
         name: kLogKindDjiFlutterPlugin,
       );
-      // Stop the video feed
       await Dji.videoFeedStop();
-      _videoFeedSink?.close();
-
-      FFmpegKit.cancel(_ffmpegKitSessionId);
-
-      // _vlcController?.stop();
-      // _vlcController?.dispose();
-      // _vlcController = null;
-
-      // _nativeVideoViewController?.stop();
-
-      _betterPlayerController?.pause();
-
-      // The BetterPlayer / Native Video View are unable to play local HLS file or .mp4 file while it's being written.
-      // So only the following works - after we stop the incoming video stream - we can play the end-result file.
-      // if (_betterPlayerController == null && _videoFeedFile != null) {
-      //   // final video = _videoFeedFileEndResult!.uri.toString();
-      //   final video = '$_localServerUrl/$_outputFileName';
-
-      //   developer.log(
-      //     'BetterPlayer Video - Play after ffmpeg ended: $video',
-      //     name: kLogKindDjiFlutterPlugin,
-      //   );
-
-      //   setState(() {
-      //     _betterPlayerController = BetterPlayerController(
-      //       const BetterPlayerConfiguration(
-      //         autoPlay: true,
-      //       ),
-      //       betterPlayerDataSource: BetterPlayerDataSource(
-      //         BetterPlayerDataSourceType.network,
-      //         video,
-      //         liveStream: true,
-      //         // videoFormat: BetterPlayerVideoFormat.ss,
-      //       ),
-      //     );
-      //   });
-      // }
     } catch (e) {
       developer.log(
         'Video Feed Stop Error',
@@ -1001,9 +537,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: const Text('DJI Flutter Plugin Example'),
-        ),
+        appBar: AppBar(title: const Text('DJI Flutter Plugin Example')),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1011,47 +545,13 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
             Container(
               height: MediaQuery.of(context).size.height * 0.2,
               color: Colors.black54,
-              // child: _vlcController != null
-              //     ? VlcPlayer(
-              //         controller: _vlcController!,
-              //         aspectRatio: MediaQuery.of(context).size.width /
-              //             (MediaQuery.of(context).size.height * 0.2),
-              //       )
-              //     : Container(),
-
-              // child: NativeVideoView(
-              //   keepAspectRatio: false,
-              //   showMediaController: false,
-              //   enableVolumeControl: false,
-              //   onCreated: (controller) {
-              //     _nativeVideoViewController = controller;
-              //   },
-              //   onPrepared: (controller, info) {
-              //     developer.log(
-              //       'NativeVideoView - Prepared',
-              //       name: kLogKindDjiFlutterPlugin,
-              //     );
-              //     // controller.play();
-              //   },
-              //   onError: (controller, what, extra, message) {
-              //     developer.log(
-              //       'NativeVideoView - Error ($what | $extra | $message)',
-              //       name: kLogKindDjiFlutterPlugin,
-              //     );
-              //   },
-              //   onCompletion: (controller) {
-              //     developer.log(
-              //       'NativeVideoView - Video ended',
-              //       name: kLogKindDjiFlutterPlugin,
-              //     );
-              //   },
-              // ),
-
-              child: _betterPlayerController != null
-                  ? BetterPlayer(
-                      controller: _betterPlayerController!,
-                    )
-                  : Container(),
+              child: Center(
+                child: Text(
+                  'Video feed: $_videoFeedFrames frames, '
+                  '${(_videoFeedBytes / (1024 * 1024)).toStringAsFixed(1)} MB',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
             ),
             Expanded(
               child: Row(
@@ -1063,7 +563,9 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                     child: SingleChildScrollView(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: kSpacer, vertical: kSpacer * 0.5),
+                          horizontal: kSpacer,
+                          vertical: kSpacer * 0.5,
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1189,9 +691,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                       title: const Text('Error Description'),
                                       content: SingleChildScrollView(
                                         child: ListBody(
-                                          children: [
-                                            Text(_droneError),
-                                          ],
+                                          children: [Text(_droneError)],
                                         ),
                                       ),
                                       actions: <Widget>[
@@ -1233,18 +733,12 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                               label: 'Speed',
                               value: _droneSpeed,
                             ),
-                            DronePropertyRow(
-                              label: 'Roll',
-                              value: _droneRoll,
-                            ),
+                            DronePropertyRow(label: 'Roll', value: _droneRoll),
                             DronePropertyRow(
                               label: 'Pitch',
                               value: _dronePitch,
                             ),
-                            DronePropertyRow(
-                              label: 'Yaw',
-                              value: _droneYaw,
-                            ),
+                            DronePropertyRow(label: 'Yaw', value: _droneYaw),
                             const SizedBox(height: kSpacer),
                             DefaultTabController(
                               length: 3,
@@ -1254,23 +748,26 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                     labelColor: Colors.black,
                                     tabs: [
                                       Tab(
-                                          text: 'Wifi',
-                                          icon: Icon(
-                                            Icons.wifi,
-                                            color: Colors.black,
-                                          )),
+                                        text: 'Wifi',
+                                        icon: Icon(
+                                          Icons.wifi,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                       Tab(
-                                          text: 'Remote',
-                                          icon: Icon(
-                                            Icons.radio,
-                                            color: Colors.black,
-                                          )),
+                                        text: 'Remote',
+                                        icon: Icon(
+                                          Icons.radio,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                       Tab(
-                                          text: 'Gimbal',
-                                          icon: Icon(
-                                            Icons.camera,
-                                            color: Colors.black,
-                                          )),
+                                        text: 'Gimbal',
+                                        icon: Icon(
+                                          Icons.camera,
+                                          color: Colors.black,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: kSpacer),
@@ -1283,9 +780,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const SizedBox(height: kSpacer),
                                             const Text(
                                               'Left Stick Horizontal (Heading)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _leftStickHorizontal,
@@ -1305,9 +800,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                             const Text(
                                               'Left Stick Vertical (Up/Down)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _leftStickVertical,
@@ -1327,9 +820,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                             const Text(
                                               'Right Stick Horizontal (Left/Right)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _rightStickHorizontal,
@@ -1349,9 +840,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                             const Text(
                                               'Right Stick Vertical (Forward/Back)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _rightStickVertical,
@@ -1376,9 +865,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             const SizedBox(height: kSpacer),
                                             const Text(
                                               'Pitch (Backward/Forward)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _virtualStickPitch,
@@ -1396,9 +883,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                             const Text(
                                               'Roll (Left/Right)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _virtualStickRoll,
@@ -1416,9 +901,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                             const Text(
                                               'Yaw (Heading)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value: _virtualStickYaw,
@@ -1436,9 +919,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                             const Text(
                                               'Vertical Throttle (Up/Down)',
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
                                             Slider(
                                               value:
@@ -1459,67 +940,65 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
                                             ),
                                           ],
                                         ),
-                                        Column(children: [
-                                          const SizedBox(height: kSpacer),
-                                          const Text(
-                                            'Gimbal Pitch in Degrees',
-                                            style: TextStyle(
-                                              fontSize: 10.0,
+                                        Column(
+                                          children: [
+                                            const SizedBox(height: kSpacer),
+                                            const Text(
+                                              'Gimbal Pitch in Degrees',
+                                              style: TextStyle(fontSize: 10.0),
                                             ),
-                                          ),
-                                          Slider(
-                                            value: _gimbalPitchInDegrees,
-                                            min: -90.0,
-                                            max: 0,
-                                            divisions: 90,
-                                            label: _gimbalPitchInDegrees
-                                                .toStringAsFixed(2),
-                                            onChanged: (value) {
-                                              setState(() {
-                                                _gimbalPitchInDegrees = value;
-                                              });
-                                            },
-                                            onChangeEnd: (value) {
-                                              _updateGimbalRotatePitch();
-                                            },
-                                          ),
-                                          OutlinedButton(
-                                            key: const Key('startVideoRecord'),
-                                            child: const Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.fiber_manual_record,
-                                                ),
-                                                SizedBox(
-                                                  width: kSpacer / 2,
-                                                ),
-                                                Text('Start Recording'),
-                                              ],
+                                            Slider(
+                                              value: _gimbalPitchInDegrees,
+                                              min: -90.0,
+                                              max: 0,
+                                              divisions: 90,
+                                              label: _gimbalPitchInDegrees
+                                                  .toStringAsFixed(2),
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  _gimbalPitchInDegrees = value;
+                                                });
+                                              },
+                                              onChangeEnd: (value) {
+                                                _updateGimbalRotatePitch();
+                                              },
                                             ),
-                                            onPressed: () async {
-                                              await _videoRecordStart();
-                                            },
-                                          ),
-                                          OutlinedButton(
-                                            key: const Key('stoptVideoRecord'),
-                                            child: const Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                Icon(
-                                                  Icons.stop,
-                                                ),
-                                                SizedBox(
-                                                  width: kSpacer / 2,
-                                                ),
-                                                Text('Stop Recording'),
-                                              ],
+                                            OutlinedButton(
+                                              key: const Key(
+                                                'startVideoRecord',
+                                              ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    Icons.fiber_manual_record,
+                                                  ),
+                                                  SizedBox(width: kSpacer / 2),
+                                                  Text('Start Recording'),
+                                                ],
+                                              ),
+                                              onPressed: () async {
+                                                await _videoRecordStart();
+                                              },
                                             ),
-                                            onPressed: () async {
-                                              await _videoRecordStop();
-                                            },
-                                          ),
-                                        ]),
+                                            OutlinedButton(
+                                              key: const Key(
+                                                'stoptVideoRecord',
+                                              ),
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(Icons.stop),
+                                                  SizedBox(width: kSpacer / 2),
+                                                  Text('Stop Recording'),
+                                                ],
+                                              ),
+                                              onPressed: () async {
+                                                await _videoRecordStop();
+                                              },
+                                            ),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -1542,11 +1021,7 @@ class ExampleWidgetState extends State<ExampleWidget> implements DjiFlutterApi {
 }
 
 class DronePropertyRow extends StatelessWidget {
-  const DronePropertyRow({
-    Key? key,
-    required this.label,
-    required this.value,
-  }) : super(key: key);
+  const DronePropertyRow({super.key, required this.label, required this.value});
 
   final String label;
   final String value;
@@ -1557,14 +1032,8 @@ class DronePropertyRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodyMedium),
+        Text(value, style: Theme.of(context).textTheme.bodyLarge),
       ],
     );
   }
